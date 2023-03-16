@@ -1,0 +1,44 @@
+// Copyright (c) 2023-present, Rover Labs, Inc. All rights reserved.
+// You are hereby granted a non-exclusive, worldwide, royalty-free license to use,
+// copy, modify, and distribute this software in source code or binary form for use
+// in connection with the web services and APIs provided by Rover.
+//
+// This copyright notice shall be included in all copies or substantial portions of
+// the software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+// FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+// COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+// IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+// CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+{% set modelName %}JudoModelV2{% endset %}
+// Current model target is {{ modelName }}
+
+// Update procedure:
+// 1. Update `Sources/JudoModel/CurrentModel.stencil` file `modelName` with current value
+// 2. Update .sourcery.yml with a source to current model target path (eg. `Sources/JudoModelV1`)
+// 3. run `sourcery --config .sourcery.yml`
+
+import Foundation
+import {{ modelName }}
+
+{% for type in types.all where type.accessLevel == "public" and not type.parent %}
+{{ type.accessLevel }} typealias {{type.name}} = {{ modelName }}.{{type.globalName}}
+{% endfor %}
+
+{% for type in types.typealiases where type.accessLevel == "public" and not type.parent %}
+{{ type.accessLevel }} typealias {{type.name}} = {{ modelName }}.{{type.name}}
+{% endfor %}
+
+{% for type in types.protocols where type.accessLevel == "public" and not type.parent %}
+{{ type.accessLevel }} typealias {{type.name}} = {{ modelName }}.{{type.name}}
+{% endfor %}
+
+{% for f in functions where f.accessLevel == "public" and not f.parent and f|!annotated:"skipCurrentModel" %}
+{% typed f as Method %}
+{{ f.accessLevel }} func {{ f.name }} {% if f.throws %}throws {% endif %}-> {{ f.actualReturnTypeName }} {
+    {% if f.throws %}try {% endif %}{{ modelName }}.{{ f.callName }}({% for p in f.parameters %}{{ p.argumentLabel}}{% if p.argumentLabel %}: {% endif %}{{ p.name }}{% if not forloop.last %}, {% endif %}{% endfor %})
+}
+{% endfor %}

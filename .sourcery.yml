@@ -1,0 +1,6 @@
+sources:
+  - Sources/JudoModelV2
+templates:
+  - Sources/JudoModel
+output:
+  Sources/JudoModel
