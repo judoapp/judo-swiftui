@@ -5,6 +5,10 @@ Requirements:
 - iOS SDK: iOS 14 or newer
 - Xcode 13 or newer
 
+# Note
+
+The Judo SDK is currently in beta. Until we release an official version, target the main branch in your SPM configuration.
+
 # Install the SDK
 
 The recommended way to install the Judo SDK is with SwiftPM.
