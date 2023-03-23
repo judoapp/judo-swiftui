@@ -20,17 +20,23 @@ import SwiftUI
 @objc public final class DocumentData: NSObject, Codable, ObservableObject {
 
     @Published @objc public dynamic var nodes = [Node]()
+    @Published @objc public dynamic var deletedNodes = [Node]()
     @Published public var colors = [DocumentColor]()
     @Published public var gradients = [DocumentGradient]()
     @Published public var fonts = [DocumentFont]()
     @Published public var localizations = DocumentLocalizations()
 
+    public var allNodes: [Node] {
+        nodes + deletedNodes
+    }
+    
     override public init() {
         super.init()
     }
 
     public func update(from orig: DocumentData) {
         self.nodes = orig.nodes
+        self.deletedNodes = orig.deletedNodes
         self.colors = orig.colors
         self.gradients = orig.gradients
         self.fonts = orig.fonts
@@ -41,6 +47,7 @@ import SwiftUI
 
     enum CodingKeys: String, CodingKey {
         case nodes
+        case deletedNodes
         case colors
         case gradients
         case fonts
@@ -51,6 +58,11 @@ import SwiftUI
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let coordinator = decoder.userInfo[.decodingCoordinator] as! DecodingCoordinator
         nodes = try container.decodeNodes(forKey: .nodes)
+        
+        if container.contains(.deletedNodes) {
+            deletedNodes = try container.decodeNodes(forKey: .deletedNodes)
+        }
+        
         colors = try container.decode([DocumentColor].self, forKey: .colors)
         gradients = try container.decode([DocumentGradient].self, forKey: .gradients)
         fonts = try container.decode([DocumentFont].self, forKey: .fonts)
@@ -62,9 +74,9 @@ import SwiftUI
         }
 
         super.init()
-
+        
         try coordinator.resolveRelationships(
-            nodes: nodes,
+            nodes: allNodes,
             documentColors: colors,
             documentGradients: gradients
         )
@@ -73,6 +85,7 @@ import SwiftUI
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(nodes, forKey: .nodes)
+        try container.encode(deletedNodes, forKey: .deletedNodes)
         try container.encode(colors, forKey: .colors)
         try container.encode(gradients, forKey: .gradients)
         try container.encode(fonts, forKey: .fonts)

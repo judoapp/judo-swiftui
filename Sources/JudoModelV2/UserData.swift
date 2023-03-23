@@ -13,7 +13,7 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import Foundation
+import Combine
 import CoreGraphics
 import SwiftUI
 
@@ -23,6 +23,7 @@ public final class UserData: Codable, ObservableObject {
 
     @Published public var expandedNodeIDs = Set<Node.ID>()
     @Published public var zoomScale = CGFloat(1.0)
+    @Published public private(set) var isZooming = false
     @Published public var canvasScroll = CGPoint.zero
     @Published public var previewLanguage: PreviewLanguage?
 
@@ -34,7 +35,19 @@ public final class UserData: Codable, ObservableObject {
     @Published public var contentSizeCategory = ContentSizeCategory.large
     @Published public var simulateSlowNetwork = false
 
-    public init() { }
+    var cancellables = Set<AnyCancellable>()
+    
+    public init() {
+        observeZoomScale()
+    }
+    
+    private func observeZoomScale() {
+        isPublisherActive(publisher: $zoomScale.eraseToAnyPublisher(), timeThreshold: 0.1)
+            .sink { [weak self] isActive in
+                self?.isZooming = isActive
+            }
+            .store(in: &cancellables)
+    }
 
     public enum OperatingSystem: String, Codable {
         case iOS
@@ -82,6 +95,8 @@ public final class UserData: Codable, ObservableObject {
         deviceOrientation = try container.decode(DeviceOrientation.self, forKey: .deviceOrientation)
         contentSizeCategory = try container.decode(ContentSizeCategory.self, forKey: .contentSizeCategory)
         simulateSlowNetwork = try container.decode(Bool.self, forKey: .simulateSlowNetwork)
+        
+        observeZoomScale()
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -97,4 +112,31 @@ public final class UserData: Codable, ObservableObject {
         try container.encode(contentSizeCategory, forKey: .contentSizeCategory)
         try container.encode(simulateSlowNetwork, forKey: .simulateSlowNetwork)
     }
+}
+
+/// Yields boolean values describing whether the given [publisher] is actively updating, with a time threshold of [timeThreshold]. Somewhat like debounce, but yields true at the beginning of activity and yields false when it ceases.
+fileprivate func isPublisherActive<Value>(publisher: AnyPublisher<Value, Never>, timeThreshold: TimeInterval) -> AnyPublisher<Bool, Never> {
+    let scheduler = DispatchQueue.main
+    
+    let x = publisher
+        .map { _ in true }
+
+        // now we're going to start a delay timer publisher, and if the
+        .map { _ in
+            // if we're receiving an event, it means the publisher is alive.
+            // we want to emit a single true, then begin a delay subscriber.
+            Publishers.Concatenate(
+                prefix: Just(true),
+                suffix: Just(false).delay(for: .seconds(timeThreshold), scheduler: scheduler)
+            )
+        }
+        // whenever a new publisher value is emitted, we want to  subscribing to a new instance of the delay publisher above, cancelling the old one, thus effectively resetting the timer.
+        .switchToLatest()
+        // clean up the duplicate True emissions from above that occur on every new emission.
+        .removeDuplicates()
+        // start off with false so isPublisherActive() provides an initial value right away.
+        .prepend(false)
+        .eraseToAnyPublisher()
+    
+    return x
 }

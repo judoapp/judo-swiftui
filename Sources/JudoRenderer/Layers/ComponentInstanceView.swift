@@ -18,6 +18,7 @@ import SwiftUI
 
 /// A SwiftUI view for rendering a `ComponentInstance`.
 struct ComponentInstanceView: SwiftUI.View {
+    @Environment(\.properties) private var properties
     @ObservedObject var componentInstance: ComponentInstance
     
     init(componentInstance: ComponentInstance) {
@@ -27,28 +28,26 @@ struct ComponentInstanceView: SwiftUI.View {
     var body: some SwiftUI.View {
         if let mainComponent = mainComponent {
             ContentView(
-                mainComponent: mainComponent
+                mainComponent: mainComponent,
+                overrides: componentInstance.overrides
             )
         }
     }
 
     private var mainComponent: MainComponent? {
-        if case let .reference(mainComponent) = componentInstance.value {
-            return mainComponent
-        } else {
-            return nil
-        }
+        componentInstance.value.resolve(properties: properties)
     }
 }
 
 // Use a nested view that updates whenever the `MainComponent` changes.
 private struct ContentView: SwiftUI.View {
-    @ObservedObject private var mainComponent: MainComponent
+    @EnvironmentObject private var localizations: DocumentLocalizations
+    @Environment(\.data) private var data
+    @Environment(\.properties) private var properties
 
-    init(mainComponent: MainComponent) {
-        self.mainComponent = mainComponent
-    }
-    
+    @ObservedObject var mainComponent: MainComponent
+    let overrides: ComponentInstance.Overrides
+
     var body: some SwiftUI.View {
         ForEach(orderedLayers) {
             LayerView(layer: $0)
@@ -56,9 +55,42 @@ private struct ContentView: SwiftUI.View {
         .modifier(
             ZStackContentIfNeededModifier(for: orderedLayers)
         )
+        .environment(\.properties, resolvedProperties)
     }
     
     private var orderedLayers: [Layer] {
         mainComponent.children.allOf(type: Layer.self).reversed()
+    }
+
+    private var resolvedProperties: MainComponent.Properties {
+        var result = mainComponent.properties
+
+        mainComponent.properties.forEach { (key, value) in
+            switch (value, overrides[key]) {
+            case (.text, .text(let value)):
+                let resolvedValue = value.resolve(
+                    data: data,
+                    properties: properties,
+                    locale: Locale.preferredLocale,
+                    localizations: localizations
+                )
+
+                result[key] = .text(resolvedValue)
+            case (.number, .number(let value)):
+                result[key] = .number(value)
+            case (.boolean, .boolean(let value)):
+                result[key] = .boolean(value)
+            case (.component(let defaultValue), .component(let value)):
+                let resolvedValue = value.resolve(
+                    properties: properties
+                )
+
+                result[key] = .component(resolvedValue ?? defaultValue)
+            default:
+                break
+            }
+        }
+
+        return result
     }
 }

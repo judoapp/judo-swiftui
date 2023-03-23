@@ -32,13 +32,43 @@ public final class ComponentInstance: Layer, Modifiable {
                 return name
             }
         }
+
+        public func resolve(properties: MainComponent.Properties) -> MainComponent? {
+            switch self {
+            case .reference(let mainComponent):
+                return mainComponent
+            case .property(let name):
+                switch properties[name] {
+                case .component(let mainComponent):
+                    return mainComponent
+                default:
+                    return nil
+                }
+            }
+        }
     }
     
-    public enum OverrideValue: Hashable {
+    public enum OverrideValue: Hashable, ExpressibleByStringLiteral, ExpressibleByFloatLiteral, ExpressibleByBooleanLiteral, ExpressibleByIntegerLiteral {
         case text(TextValue)
         case number(CGFloat)
         case boolean(Bool)
         case component(ComponentValue)
+
+        public init(stringLiteral value: StringLiteralType) {
+            self = .text(TextValue(stringLiteral: value))
+        }
+
+        public init(floatLiteral value: FloatLiteralType) {
+            self = .number(value)
+        }
+
+        public init(integerLiteral value: IntegerLiteralType) {
+            self = .number(CGFloat(value))
+        }
+
+        public init(booleanLiteral value: BooleanLiteralType) {
+            self = .boolean(value)
+        }
     }
     
     public typealias Overrides = Dictionary<String, OverrideValue>
@@ -179,7 +209,13 @@ public final class ComponentInstance: Layer, Modifiable {
 
             coordinator.defer { [unowned self] in
                 guard let mainComponent = coordinator.nodes[mainComponentID] as? MainComponent else {
-                    fatalError()
+                    let context = DecodingError.Context(
+                        codingPath: nestedContainer.codingPath,
+                        debugDescription: "No component found with ID \(mainComponentID)",
+                        underlyingError: nil
+                    )
+                    
+                    throw DecodingError.dataCorrupted(context)
                 }
                 
                 self.value = .reference(mainComponent: mainComponent)

@@ -30,7 +30,7 @@ struct TextView: SwiftUI.View {
     }
 
     var body: some SwiftUI.View {
-        RealizeText(text.value.description) { textString in
+        RealizeText(text.value) { textString in
             if let textValue = try? textString.evaluatingExpressions(data: data, properties: properties) {
                 SwiftUI.Text(textValue)
                     .backport.bold(isBold)
@@ -43,50 +43,26 @@ struct TextView: SwiftUI.View {
 
 private struct RealizeText<Content>: SwiftUI.View where Content: SwiftUI.View {
     @EnvironmentObject private var localizations: DocumentLocalizations
+    @Environment(\.properties) private var properties
+    @Environment(\.data) private var data
 
-    private var text: String
+    private var text: TextValue
     private var content: (String) -> Content
 
-    init(_ text: String, @ViewBuilder content: @escaping (String) -> Content) {
+    init(_ text: TextValue, @ViewBuilder content: @escaping (String) -> Content) {
         self.text = text
         self.content = content
     }
 
-    @ViewBuilder
-    var body: some SwiftUI.View {
-        content(textForDisplay)
+    var body: some View {
+        content(
+            text.resolve(
+                data: data,
+                properties: properties,
+                locale: Locale.preferredLocale,
+                localizations: localizations
+            )
+        )
     }
 
-    var textForDisplay: String {
-        let preferredLocale = Locale.preferredLocale()
-
-        if let matchedLocale = localizations[preferredLocale.identifier], let translation = matchedLocale[text] {
-            return translation
-        }
-
-        if  let languageCode = preferredLocale.languageCode,
-            let matchedLocale = localizations.fuzzyMatch(key: languageCode),
-            let translation = matchedLocale[text] {
-            return translation
-        }
-
-        return text
-    }
-}
-
-private extension Locale {
-    static func preferredLocale() -> Locale {
-        guard let preferredIdentifier = Locale.preferredLanguages.first else {
-            return Locale.current
-        }
-
-        switch preferredIdentifier.lowercased(with: Locale(identifier: "en-US")) {
-        case "zh-hant":
-            return Locale(identifier: "zh-CN")
-        case "zh-hans":
-            return Locale(identifier: "zh-TW")
-        default:
-            return Locale(identifier: preferredIdentifier)
-        }
-    }
 }

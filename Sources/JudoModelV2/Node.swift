@@ -190,19 +190,6 @@ extension Sequence where Element: Node {
         }
     }
     
-    /// Calls the given closure on each element in the sequence, then recursively calls the traverse function on each element's children.
-    ///
-    /// - Parameters:
-    ///     - block: The closure called on each element in the sequence hierarchy. Returning `false` breaks out of the enumeration.
-    public func traverse(_ block: (Node) -> Bool) {
-        for node in self {
-            if !block(node) {
-                break
-            }
-            node.children.traverse(block)
-        }
-    }
-
     /// From an array of nodes, remove any descendents already contained within the tree. The result is an array containing the minimum set of nodes that can be traversed to access every node in the original array.
     ///
     /// Consider an array containing nodes A, B, C, D and E that exist in the following tree structure:
@@ -249,7 +236,7 @@ extension Sequence where Element: Node {
         
         return result.elements
     }
-
+    
     /// Traverses the layer graph, starting with the layer's children, until it finds a layer that matches the
     /// supplied predicate, from the top of the z-order.
     public func highest(where predicate: (Node) -> Bool) -> Node? {
@@ -257,15 +244,15 @@ extension Sequence where Element: Node {
             guard result == nil else {
                 return result
             }
-
+            
             if predicate(node) {
                 return node
             }
-
+            
             return node.children.highest(where: predicate)
         }
     }
-
+    
     /// Traverses the layer graph, starting with the layer's children, until it finds a layer that matches the
     /// supplied predicate, from the bottom of the z-order.
     public func lowest(where predicate: (Node) -> Bool) -> Node? {
@@ -273,12 +260,85 @@ extension Sequence where Element: Node {
             guard result == nil else {
                 return result
             }
-
+            
             if predicate(node) {
                 return node
             }
-
+            
             return node.children.lowest(where: predicate)
         }
+    }
+
+    /// Recursively traverse through the node hierarchy collecting any `MainComponent`s referenced by `ComponentInstance` layers.
+    public func referencedComponents() -> Set<MainComponent> {
+        func extractComponents(from nodes: [Node], enclosingMainComponent: MainComponent? = nil, into partialResult: inout Set<MainComponent>) {
+            for node in nodes {
+                switch node {
+                case let componentInstance as ComponentInstance:
+                    extractComponents(
+                        from: componentInstance.value,
+                        enclosingMainComponent: enclosingMainComponent,
+                        into: &partialResult
+                    )
+                    
+                    for `override` in componentInstance.overrides.values {
+                        switch `override` {
+                        case .component(let value):
+                            extractComponents(
+                                from: value,
+                                enclosingMainComponent: enclosingMainComponent,
+                                into: &partialResult
+                            )
+                        default:
+                            break
+                        }
+                    }
+                default:
+                    extractComponents(
+                        from: node.children,
+                        enclosingMainComponent: enclosingMainComponent,
+                        into: &partialResult
+                    )
+                }
+            }
+        }
+        
+        func extractComponents(from value: ComponentInstance.ComponentValue, enclosingMainComponent: MainComponent?, into partialResult: inout Set<MainComponent>) {
+            let mainComponent = value.resolve(
+                properties: enclosingMainComponent?.properties ?? [:]
+            )
+            
+            if let mainComponent, !partialResult.contains(mainComponent) {
+                partialResult.insert(mainComponent)
+                
+                for property in mainComponent.properties.values {
+                    switch property {
+                    case .component(let mainComponent):
+                        partialResult.insert(mainComponent)
+                    default:
+                        break
+                    }
+                }
+                
+                let layers = mainComponent.children.compactMap { element -> Layer? in
+                    guard let layer = element as? Layer else {
+                        assertionFailure("All children must be layers")
+                        return nil
+                    }
+                    
+                    return layer
+                }
+                
+                extractComponents(
+                    from: layers,
+                    enclosingMainComponent: mainComponent,
+                    into: &partialResult
+                )
+            }
+        }
+        
+        var referencedComponents = Set<MainComponent>()
+        extractComponents(from: Array(self), into: &referencedComponents)
+        return referencedComponents
     }
 }

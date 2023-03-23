@@ -13,20 +13,21 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import SwiftUI
+import Foundation
 
-private struct ViewPropertiesKey: EnvironmentKey {
-    static var defaultValue: [String: Any] = [:]
-}
-
-public extension EnvironmentValues {
-    var viewProperties: [String: Any] {
-        get {
-            self[ViewPropertiesKey.self]
+extension Locale {
+    static var preferredLocale: Locale {
+        guard let preferredIdentifier = Locale.preferredLanguages.first else {
+            return Locale.current
         }
 
-        set {
-            self[ViewPropertiesKey.self] = newValue
+        switch preferredIdentifier.lowercased(with: Locale(identifier: "en-US")) {
+        case "zh-hant":
+            return Locale(identifier: "zh-CN")
+        case "zh-hans":
+            return Locale(identifier: "zh-TW")
+        default:
+            return Locale(identifier: preferredIdentifier)
         }
     }
 }

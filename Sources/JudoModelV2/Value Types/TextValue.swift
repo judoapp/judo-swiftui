@@ -68,3 +68,86 @@ public enum TextValue: Codable, CustomStringConvertible, ExpressibleByStringLite
         description.isEmpty
     }
 }
+
+extension TextValue {
+    public func resolve(
+        data: Any?,
+        properties: MainComponent.Properties,
+        locale: Locale?,
+        localizations: DocumentLocalizations
+    ) -> String {
+        switch self {
+        case .literal(let key):
+            return localize(
+                key: key,
+                locale: locale,
+                localizations: localizations
+            )
+        case .verbatim(let content):
+            return content
+        case .property(let name, let localize):
+            switch properties[name] {
+            case .text(let value):
+                if localize {
+                    return self.localize(
+                        key: value,
+                        locale: locale,
+                        localizations: localizations
+                    )
+                } else {
+                    return value
+                }
+            case .number(let value):
+                if #available(macOS 12.0, iOS 15.0, *) {
+                    return value.formatted()
+                } else {
+                    return "\(value)"
+                }
+            case .boolean, .component, .none:
+                return ""
+            }
+        case .data(let keyPath):
+            let value = JSONSerialization.value(
+                forKeyPath: keyPath,
+                data: data,
+                properties: properties
+            )
+
+            switch value {
+            case let string as NSString:
+                return string as String
+            case let number as NSNumber:
+                if #available(macOS 12.0, iOS 15.0, *) {
+                    return number.doubleValue.formatted()
+                } else {
+                    return "\(number.doubleValue)"
+                }
+            default:
+                return ""
+            }
+        }
+    }
+
+    private func localize(
+        key: String,
+        locale: Locale?,
+        localizations: DocumentLocalizations
+    ) -> String {
+        // A simple (and not complete) attempt at RFC 4647 basic filtering.
+        guard let localeIdentifier = locale?.identifier else {
+            return key
+        }
+
+        if let matchedLocale = localizations[localeIdentifier], let translation = matchedLocale[key] {
+            return translation
+        }
+
+        if  let languageCode = Locale(identifier: localeIdentifier).languageCode,
+            let matchedLocale = localizations.fuzzyMatch(key: languageCode),
+            let translation = matchedLocale[key] {
+            return translation
+        }
+
+        return key
+    }
+}

@@ -30,11 +30,27 @@ public final class MainComponent: Element {
         case sizeThatFits
     }
 
-    public enum PropertyValue: Codable, Hashable {
+    public enum PropertyValue: Codable, Hashable, ExpressibleByStringLiteral, ExpressibleByFloatLiteral, ExpressibleByBooleanLiteral, ExpressibleByIntegerLiteral {
         case text(String)
         case number(CGFloat)
         case boolean(Bool)
         case component(MainComponent)
+
+        public init(stringLiteral value: StringLiteralType) {
+            self = .text(value)
+        }
+
+        public init(floatLiteral value: FloatLiteralType) {
+            self = .number(value)
+        }
+
+        public init(integerLiteral value: IntegerLiteralType) {
+            self = .number(CGFloat(value))
+        }
+
+        public init(booleanLiteral value: BooleanLiteralType) {
+            self = .boolean(value)
+        }
     }
     
     public typealias Properties = OrderedDictionary<String, PropertyValue>
@@ -195,7 +211,13 @@ public final class MainComponent: Element {
                 // Lookup by ID
                 coordinator.defer { [unowned self] in
                     guard let mainComponent = coordinator.nodes[mainComponentID] as? MainComponent else {
-                        fatalError()
+                        let context = DecodingError.Context(
+                            codingPath: nestedContainer.codingPath,
+                            debugDescription: "No component found with ID \(mainComponentID)",
+                            underlyingError: nil
+                        )
+
+                        throw DecodingError.dataCorrupted(context)
                     }
                     
                     self.properties[key.stringValue] = .component(mainComponent)

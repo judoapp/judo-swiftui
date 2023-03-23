@@ -39,6 +39,7 @@ struct MainComponentView: SwiftUI.View {
             ZStackContentIfNeededModifier(for: orderedLayers)
         )
         .frame(width: fixedSize?.width, height: fixedSize?.height)
+        .environment(\.properties, component.properties)
     }
     
     private var orderedLayers: [Layer] {

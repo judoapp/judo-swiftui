@@ -1,4 +1,4 @@
-// Generated using Sourcery 2.0.1 — https://github.com/krzysztofzablocki/Sourcery
+// Generated using Sourcery 1.9.0 — https://github.com/krzysztofzablocki/Sourcery
 // DO NOT EDIT
 
 // Current model target is JudoModelV2
@@ -141,7 +141,6 @@ public typealias Traits = JudoModelV2.Traits
 public typealias UserData = JudoModelV2.UserData
 public typealias VStack = JudoModelV2.VStack
 public typealias VerticalAlignment = JudoModelV2.VerticalAlignment
-public typealias ViewID = JudoModelV2.ViewID
 public typealias Visibility = JudoModelV2.Visibility
 public typealias ZStack = JudoModelV2.ZStack
 

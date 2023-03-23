@@ -21,11 +21,14 @@ public extension Judo {
 
     struct View: SwiftUI.View {
 
-        @State private var properties: [String: Any]
-        @State private var viewData: ViewData
-        @StateObject private var component: MainComponent
+        struct Setup {
+            var viewData: ViewData
+            var component: MainComponent
+        }
 
-        public init(_ fileName: String, bundle: Bundle = .main, component componentName: String? = nil, properties: [String: Any] = [:]) {
+        private var viewSetup: Setup?
+
+        public init(_ fileName: String, bundle: Bundle = .main, component componentName: String? = nil, properties: MainComponent.Properties = [:]) {
             let resourceName = (fileName as NSString).deletingPathExtension
             var resourceExtension = (fileName as NSString).pathExtension
 
@@ -38,7 +41,8 @@ public extension Judo {
 
             guard let resourcePath = resourcePath else {
                 logger.error("Unable to find Judo view file to load \"\(resourceName).\(resourceExtension)\" in bundle \(bundle.bundleIdentifier!)")
-                fatalError("Can't find requested Judo View file to load in bundle \(bundle.bundleIdentifier!)")
+                assertionFailure("Can't find requested Judo View file to load in bundle \(bundle.bundleIdentifier!)")
+                return
             }
 
             do {
@@ -56,20 +60,21 @@ public extension Judo {
 
                 guard let foundComponent = foundComponent else {
                     logger.error("Can't find Judo Component to load")
-                    fatalError("Can't find Judo Component to load")
+                    assertionFailure("Can't find Judo Component to load")
+                    return
                 }
 
-                _viewData = State(initialValue: viewData)
-                _properties = State(initialValue: properties)
-                _component = StateObject(wrappedValue: foundComponent)
+                foundComponent.properties = foundComponent.properties.merging(properties, uniquingKeysWith: {(_, new) in new })
+
+                viewSetup = Setup(viewData: viewData, component: foundComponent)
             } catch {
                 logger.error("Failed to load View from \(fileName)")
-                fatalError("Failed to load View from \(fileName)")
+                assertionFailure("Failed to load View from \(fileName)")
             }
 
         }
 
-        public init(fileURL: URL, component componentName: String? = nil, properties: [String: Any] = [:]) {
+        public init(fileURL: URL, component componentName: String? = nil, properties: MainComponent.Properties = [:]) {
             let resourcePath = fileURL.path
             do {
                 let viewData = try Loader.loadViewData(at: resourcePath)
@@ -85,28 +90,31 @@ public extension Judo {
                     foundComponent = nil
                 }
 
-
                 guard let foundComponent = foundComponent else {
                     logger.error("Can't find Judo Component to load")
-                    fatalError("Can't find Judo Component to load")
+                    assertionFailure("Can't find Judo Component to load")
+                    return
                 }
 
-                _viewData = State(initialValue: viewData)
-                _properties = State(initialValue: properties)
-                _component = StateObject(wrappedValue: foundComponent)
+                foundComponent.properties = foundComponent.properties.merging(properties, uniquingKeysWith: {(_, new) in new })
+
+                viewSetup = Setup(viewData: viewData, component: foundComponent)
             } catch {
                 logger.error("Failed to load View from \(fileURL)")
-                fatalError("Failed to load View from \(fileURL)")
+                assertionFailure("Failed to load View from \(fileURL)")
             }
         }
 
         public var body: some SwiftUI.View {
-            ElementView(element: component)
-                .environment(\.viewProperties, properties)
-                .environmentObject(viewData.localizations)
-                .environmentObject(viewData.importedFonts)
-                .environmentObject(viewData.documentData)
-                .environmentObject(viewData.assets)
+            if let viewSetup = viewSetup {
+                ElementView(element: viewSetup.component)
+                    .environmentObject(viewSetup.viewData.localizations)
+                    .environmentObject(viewSetup.viewData.importedFonts)
+                    .environmentObject(viewSetup.viewData.documentData)
+                    .environmentObject(viewSetup.viewData.assets)
+            } else {
+                EmptyView()
+            }
         }
     }
 

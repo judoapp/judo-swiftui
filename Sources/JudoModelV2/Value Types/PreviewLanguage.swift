@@ -58,4 +58,8 @@ public enum PreviewLanguage: String, Codable, CaseIterable, CustomStringConverti
                 return "Chinese (Traditional)"
         }
     }
+
+    public var locale: Locale {
+        Locale(identifier: rawValue)
+    }
 }
