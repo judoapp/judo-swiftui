@@ -47,31 +47,34 @@ public final class ComponentInstance: Layer, Modifiable {
             }
         }
     }
-    
-    public enum OverrideValue: Hashable, ExpressibleByStringLiteral, ExpressibleByFloatLiteral, ExpressibleByBooleanLiteral, ExpressibleByIntegerLiteral {
-        case text(TextValue)
-        case number(CGFloat)
-        case boolean(Bool)
-        case component(ComponentValue)
 
-        public init(stringLiteral value: StringLiteralType) {
-            self = .text(TextValue(stringLiteral: value))
-        }
+    public enum Override {
+        public enum Value: Hashable, ExpressibleByStringLiteral, ExpressibleByFloatLiteral, ExpressibleByBooleanLiteral, ExpressibleByIntegerLiteral {
+            case text(TextValue)
+            case number(CGFloat)
+            case boolean(Bool)
+            case image(ImageValue)
+            case component(ComponentValue)
 
-        public init(floatLiteral value: FloatLiteralType) {
-            self = .number(value)
-        }
+            public init(stringLiteral value: StringLiteralType) {
+                self = .text(TextValue(stringLiteral: value))
+            }
 
-        public init(integerLiteral value: IntegerLiteralType) {
-            self = .number(CGFloat(value))
-        }
+            public init(floatLiteral value: FloatLiteralType) {
+                self = .number(value)
+            }
 
-        public init(booleanLiteral value: BooleanLiteralType) {
-            self = .boolean(value)
+            public init(integerLiteral value: IntegerLiteralType) {
+                self = .number(CGFloat(value))
+            }
+
+            public init(booleanLiteral value: BooleanLiteralType) {
+                self = .boolean(value)
+            }
         }
     }
     
-    public typealias Overrides = Dictionary<String, OverrideValue>
+    public typealias Overrides = Dictionary<String, Override.Value>
     
     @Published public var value: ComponentValue
     @Published public var overrides = Overrides()
@@ -151,6 +154,7 @@ public final class ComponentInstance: Layer, Modifiable {
         case text
         case number
         case boolean
+        case image
         case component
     }
     
@@ -163,6 +167,10 @@ public final class ComponentInstance: Layer, Modifiable {
     }
     
     private enum BooleanCodingKeys: CodingKey {
+        case _0
+    }
+    
+    private enum ImageCodingKeys: CodingKey {
         case _0
     }
     
@@ -239,7 +247,7 @@ public final class ComponentInstance: Layer, Modifiable {
             var allKeys = ArraySlice(container.allKeys)
             guard let onlyKey = allKeys.popFirst(), allKeys.isEmpty else {
                 throw DecodingError.typeMismatch(
-                    ComponentInstance.OverrideValue.self,
+                    ComponentInstance.Override.Value.self,
                     DecodingError.Context(
                         codingPath: container.codingPath,
                         debugDescription: "Invalid number of keys found, expected one.",
@@ -261,6 +269,10 @@ public final class ComponentInstance: Layer, Modifiable {
                 let nestedContainer = try container.nestedContainer(keyedBy: BooleanCodingKeys.self, forKey: .boolean)
                 let value = try nestedContainer.decode(Bool.self, forKey: ._0)
                 partialResult[key.stringValue] = .boolean(value)
+            case .image:
+                let nestedContainer = try container.nestedContainer(keyedBy: ImageCodingKeys.self, forKey: .image)
+                let value = try nestedContainer.decode(ImageValue.self, forKey: ._0)
+                partialResult[key.stringValue] = .image(value)
             case .component:
                 let nestedContainer = try container.nestedContainer(keyedBy: ComponentCodingKeys.self, forKey: .component)
                 
@@ -272,7 +284,7 @@ public final class ComponentInstance: Layer, Modifiable {
                 var allKeys = ArraySlice(container.allKeys)
                 guard let onlyKey = allKeys.popFirst(), allKeys.isEmpty else {
                     throw DecodingError.typeMismatch(
-                        ComponentInstance.OverrideValue.self,
+                        ComponentInstance.Override.Value.self,
                         DecodingError.Context(
                             codingPath: container.codingPath,
                             debugDescription: "Invalid number of keys found, expected one.",
@@ -336,6 +348,9 @@ public final class ComponentInstance: Layer, Modifiable {
                 try nestedContainer.encode(value, forKey: ._0)
             case .boolean(let value):
                 var nestedContainer = container.nestedContainer(keyedBy: BooleanCodingKeys.self, forKey: .boolean)
+                try nestedContainer.encode(value, forKey: ._0)
+            case .image(let value):
+                var nestedContainer = container.nestedContainer(keyedBy: ImageCodingKeys.self, forKey: .image)
                 try nestedContainer.encode(value, forKey: ._0)
             case .component(let value):
                 var nestedContainer = container.nestedContainer(keyedBy: ComponentCodingKeys.self, forKey: .component)

@@ -88,7 +88,7 @@ public struct ImageSet: Codable {
         }
 
         /// The targeted display scale for the image
-        public enum Scale: CaseIterable, Comparable, CustomStringConvertible, Codable, Identifiable {
+        public enum Scale: CaseIterable, Comparable, CustomStringConvertible, ExpressibleByIntegerLiteral, Codable, Identifiable {
             /// Targeted for unscaled displays.
             case one
             /// Targeted for Retina displays.
@@ -96,6 +96,18 @@ public struct ImageSet: Codable {
             ///  Targeted for Retina displays with higher density such as those on the iPhone 6 Plus.
             case three
 
+            public init(integerLiteral value: IntegerLiteralType) {
+                switch value {
+                case 1:
+                    self = .one
+                case 2:
+                    self = .two
+                case 3:
+                    self = .three
+                default:
+                    fatalError("Invalid value")
+                }
+            }
             public var description: String {
                 switch self {
                 case .one:

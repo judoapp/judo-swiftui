@@ -13,28 +13,31 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import JudoModel
-import SwiftUI
+import Foundation
 
-struct ScrollViewView: SwiftUI.View {
-    @ObservedObject var scrollView: JudoModel.ScrollView
-    
-    var body: some SwiftUI.View {
-        SwiftUI.ScrollView(axis, showsIndicators: scrollView.showsIndicators) {
-            ForEach(scrollView.children.allOf(type: Layer.self)) {
-                LayerView(layer: $0)
-            }
-        }
+public struct CustomActionIdentifier: Hashable, Codable, CustomStringConvertible, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+    public let rawValue: String
+
+    public init(stringLiteral value: StringLiteralType) {
+        self.rawValue = value
     }
-    
-    private var axis: SwiftUI.Axis.Set {
-        switch scrollView.axes {
-        case .horizontal:
-            return .horizontal
-        case .vertical:
-            return .vertical
-        default:
-            return [.vertical, .horizontal]
-        }
+
+    public init(_ rawValue: String) {
+        self.rawValue = rawValue
     }
+
+    public var description: String {
+        rawValue
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(rawValue)
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        self.rawValue = try container.decode(String.self)
+    }
+
 }

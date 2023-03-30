@@ -1,5 +1,19 @@
 // Generated using Sourcery 1.9.0 — https://github.com/krzysztofzablocki/Sourcery
 // DO NOT EDIT
+// Copyright (c) 2023-present, Rover Labs, Inc. All rights reserved.
+// You are hereby granted a non-exclusive, worldwide, royalty-free license to use,
+// copy, modify, and distribute this software in source code or binary form for use
+// in connection with the web services and APIs provided by Rover.
+//
+// This copyright notice shall be included in all copies or substantial portions of
+// the software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+// FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+// COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+// IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+// CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 // Current model target is JudoModelV2
 
@@ -19,11 +33,12 @@ public typealias AccessibilityHiddenModifier = JudoModelV2.AccessibilityHiddenMo
 public typealias AccessibilityLabelModifier = JudoModelV2.AccessibilityLabelModifier
 public typealias AccessibilitySortPriorityModifier = JudoModelV2.AccessibilitySortPriorityModifier
 public typealias AccessibilityTraits = JudoModelV2.AccessibilityTraits
-public typealias Action = JudoModelV2.Action
+public typealias ActionHandler = JudoModelV2.ActionHandler
 public typealias Alignment = JudoModelV2.Alignment
 public typealias ApplicableActions = JudoModelV2.ApplicableActions
 public typealias AspectRatioModifier = JudoModelV2.AspectRatioModifier
 public typealias Assets = JudoModelV2.Assets
+public typealias AsyncImage = JudoModelV2.AsyncImage
 public typealias Axes = JudoModelV2.Axes
 public typealias BackButtonStyle = JudoModelV2.BackButtonStyle
 public typealias BackgroundModifier = JudoModelV2.BackgroundModifier
@@ -46,6 +61,7 @@ public typealias Conditional = JudoModelV2.Conditional
 public typealias Container = JudoModelV2.Container
 public typealias ContentMode = JudoModelV2.ContentMode
 public typealias ContentSizeCategory = JudoModelV2.ContentSizeCategory
+public typealias CustomActionIdentifier = JudoModelV2.CustomActionIdentifier
 public typealias DataContext = JudoModelV2.DataContext
 public typealias DataSource = JudoModelV2.DataSource
 public typealias DecodingCoordinator = JudoModelV2.DecodingCoordinator
@@ -76,6 +92,8 @@ public typealias HStack = JudoModelV2.HStack
 public typealias HashableURLRequest = JudoModelV2.HashableURLRequest
 public typealias HorizontalAlignment = JudoModelV2.HorizontalAlignment
 public typealias Image = JudoModelV2.Image
+public typealias ImageReference = JudoModelV2.ImageReference
+public typealias ImageValue = JudoModelV2.ImageValue
 public typealias IndexViewStyle = JudoModelV2.IndexViewStyle
 public typealias IndexViewStyleModifier = JudoModelV2.IndexViewStyleModifier
 public typealias ItalicModifier = JudoModelV2.ItalicModifier
@@ -104,11 +122,14 @@ public typealias OverlayModifier = JudoModelV2.OverlayModifier
 public typealias Padding = JudoModelV2.Padding
 public typealias PaddingModifier = JudoModelV2.PaddingModifier
 public typealias PreviewLanguage = JudoModelV2.PreviewLanguage
+public typealias Property = JudoModelV2.Property
 public typealias RasterizationStyle = JudoModelV2.RasterizationStyle
 public typealias Rectangle = JudoModelV2.Rectangle
 public typealias ResizingMode = JudoModelV2.ResizingMode
 public typealias RoundedCornerStyle = JudoModelV2.RoundedCornerStyle
 public typealias RoundedRectangle = JudoModelV2.RoundedRectangle
+public typealias ScaledToFillModifier = JudoModelV2.ScaledToFillModifier
+public typealias ScaledToFitModifier = JudoModelV2.ScaledToFitModifier
 public typealias ScrollView = JudoModelV2.ScrollView
 public typealias Shadow = JudoModelV2.Shadow
 public typealias ShadowModifier = JudoModelV2.ShadowModifier

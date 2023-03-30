@@ -39,7 +39,7 @@ extension JSONSerialization {
                 partialResult[element.key] = value
             case .boolean(let value):
                 partialResult[element.key] = value
-            case .component:
+            case .image, .component:
                 break
             }
         })

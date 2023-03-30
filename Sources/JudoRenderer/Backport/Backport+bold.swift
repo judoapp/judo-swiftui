@@ -13,28 +13,24 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import JudoModel
 import SwiftUI
+import Backport
 
-struct ScrollViewView: SwiftUI.View {
-    @ObservedObject var scrollView: JudoModel.ScrollView
+extension Backport where Wrapped: SwiftUI.View {
     
-    var body: some SwiftUI.View {
-        SwiftUI.ScrollView(axis, showsIndicators: scrollView.showsIndicators) {
-            ForEach(scrollView.children.allOf(type: Layer.self)) {
-                LayerView(layer: $0)
-            }
+    /// In iOS 16+ the .bold() modifier can be applied to any SwiftUI View. Prior to iOS 16 it can only be applied to a SwiftUI.Text view.
+    ///
+    /// To get around this the BoldViewModifier checks the current OS version and applies different behaviours:
+    /// - If we're running iOS 16, it applies the .bold() modifier to the content as normal.
+    /// - Prior to 16, it simply sets an environment value that will be handled by the TextView.
+    @ViewBuilder
+    func bold(_ isActive: Bool = true) -> some SwiftUI.View {
+        if #available(iOS 16, macOS 13, *) {
+            wrapped.bold(isActive)
+        } else {
+            wrapped
+                .environment(\.isBold, isActive)
         }
     }
     
-    private var axis: SwiftUI.Axis.Set {
-        switch scrollView.axes {
-        case .horizontal:
-            return .horizontal
-        case .vertical:
-            return .vertical
-        default:
-            return [.vertical, .horizontal]
-        }
-    }
 }

@@ -24,24 +24,40 @@ public extension Judo {
         struct Setup {
             var viewData: ViewData
             var component: MainComponent
+            var properties: MainComponent.Properties
+        }
+
+        private struct ElementView: SwiftUI.View {
+            @ObservedObject var element: Element
+
+            var body: some SwiftUI.View {
+                if let component = element as? MainComponent {
+                    MainComponentView(component: component)
+                } else if let layer = element as? Layer {
+                    LayerView(layer: layer)
+                }
+            }
         }
 
         private var viewSetup: Setup?
 
-        public init(_ fileName: String, bundle: Bundle = .main, component componentName: String? = nil, properties: MainComponent.Properties = [:]) {
+        public init(_ fileName: String, bundle: Bundle = .main, component componentName: String? = nil, properties: [String: Any] = [:]) {
             let resourceName = (fileName as NSString).deletingPathExtension
-            var resourceExtension = (fileName as NSString).pathExtension
+            var resourceExtension = (fileName as NSString).pathExtension.lowercased()
 
-            // Search for a filename with and without ".judo" filename extension
-            var resourcePath = bundle.path(forResource: resourceName, ofType: resourceExtension)
-            if resourcePath == nil, resourceExtension.isEmpty {
+
+            // Ensure that we are only looking to open Judo files
+            if !resourceExtension.isEmpty, resourceExtension != "judo" {
+                logger.error("Tried to load unsupported file format \(resourceExtension)")
+                return
+            } else if resourceExtension.isEmpty {
                 resourceExtension = "judo"
-                resourcePath = bundle.path(forResource: resourceName, ofType: resourceExtension)
             }
+
+            let resourcePath = bundle.path(forResource: resourceName, ofType: resourceExtension)
 
             guard let resourcePath = resourcePath else {
                 logger.error("Unable to find Judo view file to load \"\(resourceName).\(resourceExtension)\" in bundle \(bundle.bundleIdentifier!)")
-                assertionFailure("Can't find requested Judo View file to load in bundle \(bundle.bundleIdentifier!)")
                 return
             }
 
@@ -60,21 +76,21 @@ public extension Judo {
 
                 guard let foundComponent = foundComponent else {
                     logger.error("Can't find Judo Component to load")
-                    assertionFailure("Can't find Judo Component to load")
                     return
                 }
 
-                foundComponent.properties = foundComponent.properties.merging(properties, uniquingKeysWith: {(_, new) in new })
-
-                viewSetup = Setup(viewData: viewData, component: foundComponent)
+                viewSetup = Setup(
+                    viewData: viewData,
+                    component: foundComponent,
+                    properties: convert(properties)
+                )
             } catch {
                 logger.error("Failed to load View from \(fileName)")
-                assertionFailure("Failed to load View from \(fileName)")
             }
 
         }
 
-        public init(fileURL: URL, component componentName: String? = nil, properties: MainComponent.Properties = [:]) {
+        public init(fileURL: URL, component componentName: String? = nil, properties: [String: Any] = [:]) {
             let resourcePath = fileURL.path
             do {
                 let viewData = try Loader.loadViewData(at: resourcePath)
@@ -92,16 +108,16 @@ public extension Judo {
 
                 guard let foundComponent = foundComponent else {
                     logger.error("Can't find Judo Component to load")
-                    assertionFailure("Can't find Judo Component to load")
                     return
                 }
 
-                foundComponent.properties = foundComponent.properties.merging(properties, uniquingKeysWith: {(_, new) in new })
-
-                viewSetup = Setup(viewData: viewData, component: foundComponent)
+                viewSetup = Setup(
+                    viewData: viewData,
+                    component: foundComponent,
+                    properties: convert(properties)
+                )
             } catch {
                 logger.error("Failed to load View from \(fileURL)")
-                assertionFailure("Failed to load View from \(fileURL)")
             }
         }
 
@@ -112,22 +128,97 @@ public extension Judo {
                     .environmentObject(viewSetup.viewData.importedFonts)
                     .environmentObject(viewSetup.viewData.documentData)
                     .environmentObject(viewSetup.viewData.assets)
+                    .transformEnvironment(\.properties) { properties in
+                        properties.merge(viewSetup.properties, uniquingKeysWith: {(_, new) in new })
+                    }
             } else {
-                EmptyView()
+                NotFoundView()
             }
+        }
+
+        struct NotFoundView: SwiftUI.View {
+            @Environment(\.colorScheme) private var colorScheme
+            @Environment(\.displayScale) private var displayScale
+
+            var body: some SwiftUI.View {
+                SwiftUI.Image(packageResource: assetName, ofType: "png")
+            }
+
+            private var assetName: String {
+                var name = "404"
+                if colorScheme == .dark {
+                    name += "-dark"
+                }
+                if displayScale > 1 {
+                    name += "@2x"
+                }
+                return name
+            }
+        }
+    }
+}
+
+// MARK: - Custom Actions
+
+public extension Judo {
+    typealias CustomActionIdentifier = JudoModel.CustomActionIdentifier
+}
+
+public extension Judo.View {
+
+    func on(_ identifier: CustomActionIdentifier, handler: @escaping (UserInfo) -> Void) -> some SwiftUI.View {
+        modifier(
+            ActionViewModifier(
+                identifier: identifier,
+                handler: ActionHandler(handler: handler)
+            )
+        )
+    }
+
+    private struct ActionViewModifier: ViewModifier {
+        @Environment(\.customActions) private var customActions
+        private let identifier: CustomActionIdentifier
+        private let handler: ActionHandler<UserInfo>
+
+        init(identifier: CustomActionIdentifier, handler: ActionHandler<UserInfo>) {
+            self.identifier = identifier
+            self.handler = handler
+        }
+
+        func body(content: Content) -> some View {
+            content.environment(
+                \.customActions,
+                 customActions.merging([identifier: handler], uniquingKeysWith: {(_, new) in new })
+            )
         }
     }
 
 }
 
-private struct ElementView: SwiftUI.View {
-    @ObservedObject var element: Element
 
-    var body: some SwiftUI.View {
-        if let component = element as? MainComponent {
-            MainComponentView(component: component)
-        } else if let layer = element as? Layer {
-            LayerView(layer: layer)
+private func convert(_ properties: [String: Any]) -> MainComponent.Properties {
+    var result: MainComponent.Properties = [:]
+
+    for (key, anyValue) in properties {
+        switch anyValue {
+        case let value as IntegerLiteralType:
+            result[key] = Property.Value(integerLiteral: value)
+        case let value as FloatLiteralType:
+            result[key] = Property.Value(floatLiteral: value)
+        case let value as BooleanLiteralType:
+            result[key] = Property.Value(booleanLiteral: value)
+        case let value as StringLiteralType:
+            result[key] = Property.Value(stringLiteral: value)
+        case let value as SwiftUI.Image:
+            result[key] = Property.Value.image(.inline(image: value))
+        case let value as UIImage:
+            let image = SwiftUI.Image(uiImage: value)
+            result[key] = Property.Value.image(.inline(image: image))
+        default:
+            logger.warning("Invalid value for property \"\(key)\". Property unused.")
+            break
         }
     }
+
+    return result
 }

@@ -18,48 +18,39 @@ import os.log
 
 /// A layer that displays an image.
 public final class Image: Layer, Modifiable, AssetProvider {
-
-    public enum Kind: Codable, Hashable {
-
-        /// System Image (SF Symbols)
-        case system(name: String, renderingMode: SymbolRenderingMode)
-
-        /// Content Image (Assets)
-        case content(named: String, resizing: ResizingMode, renderingMode: TemplateRenderingMode)
-
-        /// Decorative image
-        case decorative(named: String, resizing: ResizingMode, renderingMode: TemplateRenderingMode)
-
-        public static let defaultSystem = Kind.system(name: "globe", renderingMode: .monochrome)
-        public static let defaultContent = Kind.content(named: "", resizing: .none, renderingMode: .original)
-        public static let defaultDecorative = Kind.decorative(named: "", resizing: .none, renderingMode: .original)
-        
-    }
-
-    @Published public var kind: Kind
+    @Published public var value: ImageValue
     @Published public var label: TextValue = ""
+    @Published public var isDecorative: Bool = false
+    @Published public var resizing: ResizingMode = .none
+    @Published public var renderingMode: TemplateRenderingMode = .original
+    @Published public var symbolRenderingMode: SymbolRenderingMode = .monochrome
 
     public var assetNames: [String] {
-        switch kind {
-        case .content(let name, _, _), .decorative(let name, _, _):
-            return [name]
-        case .system:
+        switch value {
+        case .reference(let imageReference):
+            switch imageReference {
+            case .document(let imageName):
+                return [imageName]
+            default:
+                return []
+            }
+        default:
             return []
         }
     }
 
-    /// Returns the image object associated with the specified name.
-    /// - Parameters:
-    ///   - name: The name associated with the desired image. This is the name of an image asset in assets catalog.
-    ///   - resizing: The resizing mode for the image.
-    ///   - renderingMode: A setting that determines how the app renders an image.
-    public init(named name: String, resizing: ResizingMode, renderingMode: TemplateRenderingMode) {
-        kind = .content(named: name, resizing: resizing, renderingMode: renderingMode)
+    public init(_ name: String?) {
+        if let name {
+            value = .reference(imageReference: .document(imageName: name))
+        } else {
+            value = .default
+        }
+        
         super.init()
     }
 
     required public init() {
-        kind = .defaultSystem
+        value = .default
         super.init()
     }
     
@@ -72,11 +63,7 @@ public final class Image: Layer, Modifiable, AssetProvider {
         
         return super.description
     }
-    
-    override public class var keyPathsAffectingDescription: Set<String> {
-        ["originalFileName"]
-    }
-    
+        
     // MARK: Traits
     
     override public var traits: Traits {
@@ -99,28 +86,75 @@ public final class Image: Layer, Modifiable, AssetProvider {
     // MARK: NSCopying
     
     override public func copy(with zone: NSZone? = nil) -> Any {
-        let image = super.copy(with: zone) as! Image
-        image.kind = kind
+        let image = super.copy(with: zone) as! Self
+        image.value = value
+        image.label = label
+        image.isDecorative = isDecorative
+        image.resizing = resizing
+        image.renderingMode = renderingMode
+        image.symbolRenderingMode = symbolRenderingMode
         return image
     }
     
     // MARK: Codable
     
     private enum CodingKeys: String, CodingKey {
-        case originalFileName
+        case value
+        case label
+        case isDecorative
+        case resizing
+        case renderingMode
+        case symbolRenderingMode
+        
+        // Beta 1 & 2
         case imageKind
     }
     
     required public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        kind = try container.decode(Image.Kind.self, forKey: .imageKind)
+        
+        enum ImageKind: Codable {
+            case system(name: String, renderingMode: SymbolRenderingMode)
+            case content(named: String, resizing: ResizingMode, renderingMode: TemplateRenderingMode)
+            case decorative(named: String, resizing: ResizingMode, renderingMode: TemplateRenderingMode)
+        }
+        
+        // Beta 1 & 2
+        if let kind = try? container.decode(ImageKind.self, forKey: .imageKind) {
+            switch kind {
+            case .system(let imageName, let symbolRenderingMode):
+                self.value = .reference(imageReference: .system(imageName: imageName))
+                self.symbolRenderingMode = symbolRenderingMode
+            case .content(let imageName, let resizing, let renderingMode):
+                self.value = .reference(imageReference: .document(imageName: imageName))
+                self.resizing = resizing
+                self.renderingMode = renderingMode
+            case .decorative(let imageName, let resizing, let renderingMode):
+                self.value = .reference(imageReference: .document(imageName: imageName))
+                self.isDecorative = true
+                self.resizing = resizing
+                self.renderingMode = renderingMode
+            }
+        } else {
+            value = try container.decode(ImageValue.self, forKey: .value)
+            label = try container.decode(TextValue.self, forKey: .label)
+            isDecorative = try container.decode(Bool.self, forKey: .isDecorative)
+            resizing = try container.decode(ResizingMode.self, forKey: .resizing)
+            renderingMode = try container.decode(TemplateRenderingMode.self, forKey: .renderingMode)
+            symbolRenderingMode = try container.decode(SymbolRenderingMode.self, forKey: .symbolRenderingMode)
+        }
+        
         try super.init(from: decoder)
     }
 
     override public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(kind, forKey: .imageKind)
+        try container.encode(value, forKey: .value)
+        try container.encode(label, forKey: .label)
+        try container.encode(isDecorative, forKey: .isDecorative)
+        try container.encode(resizing, forKey: .resizing)
+        try container.encode(renderingMode, forKey: .renderingMode)
+        try container.encode(symbolRenderingMode, forKey: .symbolRenderingMode)
         try super.encode(to: encoder)
     }
-
 }

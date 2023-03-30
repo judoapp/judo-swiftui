@@ -8,6 +8,7 @@ let package = Package(
     products: [
         .library(name: "Judo", type: .static, targets: ["Judo"]),
         .library(name: "JudoModel", type: .static, targets: ["JudoModel"]),
+        .library(name: "JudoBackport", type: .static, targets: ["Backport"])
     ],
     dependencies: [
         .package(url: "https://github.com/weichsel/ZIPFoundation.git", .upToNextMajor(from: "0.9.16")),
@@ -25,8 +26,15 @@ let package = Package(
             name: "JudoRenderer",
             dependencies: [
                 .target(name: "JudoModel"),
+                .target(name: "Backport"),
                 .target(name: "XCAssetsKit"),
                 .product(name: "Introspect", package: "SwiftUI-Introspect")
+            ],
+            resources: [
+                .copy("Assets/404-dark.png"),
+                .copy("Assets/404-dark@2x.png"),
+                .copy("Assets/404.png"),
+                .copy("Assets/404@2x.png")
             ]
         ),
         .target(
@@ -34,7 +42,7 @@ let package = Package(
             dependencies: [
                 "JudoModelV2"
             ],
-            exclude: ["CurrentModel.stencil"]
+            exclude: ["CurrentModel.stencil", "README.md"]
         ),
         .target(
             name: "JudoModelV1",
@@ -51,6 +59,9 @@ let package = Package(
                 .target(name: "XCAssetsKit"),
                 .product(name: "Collections", package: "swift-collections")
             ]
+        ),
+        .target(
+            name: "Backport"
         ),
         .target(
             name: "XCAssetsKit"

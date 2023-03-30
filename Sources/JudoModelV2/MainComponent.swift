@@ -29,31 +29,8 @@ public final class MainComponent: Element {
         case fixed(width: CGFloat, height: CGFloat)
         case sizeThatFits
     }
-
-    public enum PropertyValue: Codable, Hashable, ExpressibleByStringLiteral, ExpressibleByFloatLiteral, ExpressibleByBooleanLiteral, ExpressibleByIntegerLiteral {
-        case text(String)
-        case number(CGFloat)
-        case boolean(Bool)
-        case component(MainComponent)
-
-        public init(stringLiteral value: StringLiteralType) {
-            self = .text(value)
-        }
-
-        public init(floatLiteral value: FloatLiteralType) {
-            self = .number(value)
-        }
-
-        public init(integerLiteral value: IntegerLiteralType) {
-            self = .number(CGFloat(value))
-        }
-
-        public init(booleanLiteral value: BooleanLiteralType) {
-            self = .boolean(value)
-        }
-    }
     
-    public typealias Properties = OrderedDictionary<String, PropertyValue>
+    public typealias Properties = OrderedDictionary<String, Property.Value>
 
     @Published public var properties = Properties()
     @Published public var artboardSize = ArtboardSize.device
@@ -116,6 +93,7 @@ public final class MainComponent: Element {
         case text
         case number
         case boolean
+        case image
         case component
     }
     
@@ -128,6 +106,10 @@ public final class MainComponent: Element {
     }
     
     private enum BooleanCodingKeys: CodingKey {
+        case _0
+    }
+    
+    private enum ImageCodingKeys: CodingKey {
         case _0
     }
     
@@ -163,7 +145,7 @@ public final class MainComponent: Element {
             var allKeys = ArraySlice(container.allKeys)
             guard let onlyKey = allKeys.popFirst(), allKeys.isEmpty else {
                 throw DecodingError.typeMismatch(
-                    PropertyValue.self,
+                    Property.Value.self,
                     DecodingError.Context(
                         codingPath: container.codingPath,
                         debugDescription: "Invalid number of keys found, expected one.",
@@ -196,6 +178,14 @@ public final class MainComponent: Element {
                 
                 let boolean = try nestedContainer.decode(Bool.self, forKey: ._0)
                 partialResult[key.stringValue] = .boolean(boolean)
+            case .image:
+                let nestedContainer = try container.nestedContainer(
+                    keyedBy: ImageCodingKeys.self,
+                    forKey: .image
+                )
+                
+                let imageName = try nestedContainer.decode(ImageReference.self, forKey: ._0)
+                partialResult[key.stringValue] = .image(imageName)
             case .component:
                 let nestedContainer = try container.nestedContainer(
                     keyedBy: ComponentCodingKeys.self,
@@ -270,6 +260,13 @@ public final class MainComponent: Element {
                 )
                 
                 try nestedContainer.encode(boolean, forKey: ._0)
+            case .image(let imageName):
+                var nestedContainer = container.nestedContainer(
+                    keyedBy: ImageCodingKeys.self,
+                    forKey: .image
+                )
+                
+                try nestedContainer.encode(imageName, forKey: ._0)
             case .component(let component):
                 var nestedContainer = container.nestedContainer(
                     keyedBy: ComponentCodingKeys.self,

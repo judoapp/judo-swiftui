@@ -14,45 +14,15 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import SwiftUI
-import Introspect
+import Backport
 
-extension Backport where Content: SwiftUI.View {
-    
-    @ViewBuilder
-    func bold(_ isActive: Bool = true) -> some SwiftUI.View {
-        if #available(iOS 16, *) {
-            content.bold(isActive)
-        } else {
-            content
-                .environment(\.isBold, isActive)
-        }
-    }
-    
-    @ViewBuilder
-    func italic(_ isActive: Bool = true) -> some SwiftUI.View {
-        if #available(iOS 16, *) {
-            content.italic(isActive)
-        } else {
-            content
-                .environment(\.isItalic, isActive)
-        }
-    }
-    
-    @ViewBuilder
-    func tint(_ tint: Color?) -> some SwiftUI.View {
-        if #available(iOS 15, *) {
-            content.tint(tint)
-        } else {
-            content.accentColor(tint)
-        }
-    }
-    
+extension Backport where Wrapped: SwiftUI.View {    
     @ViewBuilder
     func badge(_ count: Int) -> some SwiftUI.View {
-        if #available(iOS 15, *) {
-            content.badge(count)
+        if #available(iOS 15, macOS 12, *) {
+            wrapped.badge(count)
         } else {
-            content
+            wrapped
         }
     }
 }

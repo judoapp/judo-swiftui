@@ -65,6 +65,8 @@ private struct NodeWrapper: Decodable {
             node = try HStack(from: decoder)
         case Image.typeName:
             node = try Image(from: decoder)
+        case AsyncImage.typeName:
+            node = try AsyncImage(from: decoder)
         case NavigationLink.typeName:
             node = try NavigationLink(from: decoder)
         case NavigationStack.typeName:
@@ -143,6 +145,10 @@ private struct NodeWrapper: Decodable {
             node = try OverlayModifier(from: decoder)
         case PaddingModifier.typeName:
             node = try PaddingModifier(from: decoder)
+        case ScaledToFillModifier.typeName:
+            node = try ScaledToFillModifier(from: decoder)
+        case ScaledToFitModifier.typeName:
+            node = try ScaledToFitModifier(from: decoder)
         case ShadowModifier.typeName:
             node = try ShadowModifier(from: decoder)
         case TabItemModifier.typeName:

@@ -32,10 +32,26 @@ struct TextView: SwiftUI.View {
     var body: some SwiftUI.View {
         RealizeText(text.value) { textString in
             if let textValue = try? textString.evaluatingExpressions(data: data, properties: properties) {
-                SwiftUI.Text(textValue)
-                    .backport.bold(isBold)
-                    .backport.italic(isItalic)
+                textContent(textValue: textValue)
                     .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+    }
+    
+    @ViewBuilder
+    func textContent(textValue: String) -> some View {
+        /// Apply the .bold() and .italic() modifiers if running less than iOS 16, as outlined in Backport+bold and Backport+italic.
+        if #available(iOS 16, macOS 13, *) {
+            SwiftUI.Text(textValue)
+        } else {
+            if isBold && isItalic {
+                SwiftUI.Text(textValue).bold().italic()
+            } else if isBold {
+                SwiftUI.Text(textValue).bold()
+            } else if isItalic {
+                SwiftUI.Text(textValue).italic()
+            } else {
+                SwiftUI.Text(textValue)
             }
         }
     }

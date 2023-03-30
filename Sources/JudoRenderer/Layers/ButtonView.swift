@@ -43,6 +43,7 @@ struct ButtonView: SwiftUI.View {
 
 private struct ButtonWithoutRole<Content: SwiftUI.View>: SwiftUI.View {
     @Environment(\.openURL) private var openURL
+    @Environment(\.customActions) private var customActions
     @Environment(\.presentationMode) private var presentationMode
 
     let action: ButtonAction
@@ -67,9 +68,8 @@ private struct ButtonWithoutRole<Content: SwiftUI.View>: SwiftUI.View {
                 assertionFailure("Refresh is unavailable on iOS 14")
                 break
 
-            case .custom:
-                // TODO: Handle custom actions with Name and UserInfo
-                break
+            case .custom(let name, let userInfo):
+                customActions[name]?(userInfo)
             }
         } label: {
             content
@@ -80,6 +80,7 @@ private struct ButtonWithoutRole<Content: SwiftUI.View>: SwiftUI.View {
 @available(iOS 15.0, *)
 private struct ButtonWithRole<Content: SwiftUI.View>: SwiftUI.View {
     @Environment(\.openURL) private var openURL
+    @Environment(\.customActions) private var customActions
     @Environment(\.dismiss) private var dismiss // Only available in iOS 15+
     @Environment(\.refresh) private var refresh // Only available in iOS 15+
 
@@ -106,9 +107,8 @@ private struct ButtonWithRole<Content: SwiftUI.View>: SwiftUI.View {
                     await refresh?()
                 }
 
-            case .custom:
-                // TODO: Handle custom actions with Name and UserInfo
-                break
+            case .custom(let name, let userInfo):
+                customActions[name]?(userInfo)
             }
         } label: {
             content

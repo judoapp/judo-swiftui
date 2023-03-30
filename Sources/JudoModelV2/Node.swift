@@ -75,7 +75,7 @@ import OrderedCollections
     public func canAcceptChild<T: Node>(ofType type: T.Type) -> Bool {
         false
     }
-    
+
     // MARK: KVO
 
     override public class func keyPathsForValuesAffectingValue(forKey key: String) -> Set<String> {

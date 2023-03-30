@@ -177,7 +177,6 @@ import SwiftUI
     // MARK: Codable
     
     private enum CodingKeys: String, CodingKey {
-        case typeName = "__typeName"
         case isLocked
         case modifiers
     }

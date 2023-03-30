@@ -1207,7 +1207,7 @@ public enum ButtonAction: Codable, Hashable {
     case dismiss
     case openURL(TextValue)
     case refresh
-    case custom(String, UserInfo)
+    case custom(CustomActionIdentifier, UserInfo)
 }
 
 // MARK: - ButtonRole
@@ -1391,15 +1391,6 @@ public enum TemplateRenderingMode: Identifiable, CaseIterable, Codable, CustomSt
             return "Original"
         case .template:
             return "Template"
-        }
-    }
-
-    public var swiftUIValue: SwiftUI.Image.TemplateRenderingMode {
-        switch self {
-        case .original:
-            return .original
-        case .template:
-            return .template
         }
     }
 }

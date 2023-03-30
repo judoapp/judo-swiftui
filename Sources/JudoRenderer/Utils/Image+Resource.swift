@@ -13,28 +13,16 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import JudoModel
 import SwiftUI
+import UIKit
 
-struct ScrollViewView: SwiftUI.View {
-    @ObservedObject var scrollView: JudoModel.ScrollView
-    
-    var body: some SwiftUI.View {
-        SwiftUI.ScrollView(axis, showsIndicators: scrollView.showsIndicators) {
-            ForEach(scrollView.children.allOf(type: Layer.self)) {
-                LayerView(layer: $0)
-            }
+extension SwiftUI.Image {
+    init(packageResource name: String, ofType type: String) {
+        guard let path = Bundle.module.path(forResource: name, ofType: type),
+              let image = UIImage(contentsOfFile: path) else {
+            self.init(name)
+            return
         }
-    }
-    
-    private var axis: SwiftUI.Axis.Set {
-        switch scrollView.axes {
-        case .horizontal:
-            return .horizontal
-        case .vertical:
-            return .vertical
-        default:
-            return [.vertical, .horizontal]
-        }
+        self.init(uiImage: image)
     }
 }

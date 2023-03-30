@@ -54,6 +54,8 @@ struct LayerView: SwiftUI.View {
             HStackView(stack: stack)
         case let image as JudoModel.Image:
             ImageView(image: image)
+        case let image as JudoModel.AsyncImage:
+            AsyncImageView(image: image)
         case let navigationLink as JudoModel.NavigationLink:
             NavigationLinkView(navigationLink: navigationLink)
         case let navigationStack as JudoModel.NavigationStack:

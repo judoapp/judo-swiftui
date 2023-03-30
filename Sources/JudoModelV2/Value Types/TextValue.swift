@@ -103,7 +103,7 @@ extension TextValue {
                 } else {
                     return "\(value)"
                 }
-            case .boolean, .component, .none:
+            case .boolean, .image, .component, .none:
                 return ""
             }
         case .data(let keyPath):

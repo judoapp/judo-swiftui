@@ -21,12 +21,9 @@ import os.log
 
 /// A SwiftUI view for rendering a `MainComponent`.
 struct MainComponentView: SwiftUI.View {
-    @ObservedObject private var component: MainComponent
-    
-    init(component: MainComponent) {
-        self.component = component
-    }
-    
+    @Environment(\.properties) private var properties
+    @ObservedObject var component: MainComponent
+        
     var body: some SwiftUI.View {
         ForEach(orderedLayers) { layer in
             LayerView(layer: layer)
@@ -39,7 +36,7 @@ struct MainComponentView: SwiftUI.View {
             ZStackContentIfNeededModifier(for: orderedLayers)
         )
         .frame(width: fixedSize?.width, height: fixedSize?.height)
-        .environment(\.properties, component.properties)
+        .environment(\.properties, component.properties.merging(properties, uniquingKeysWith: {(_, new) in new }))
     }
     
     private var orderedLayers: [Layer] {

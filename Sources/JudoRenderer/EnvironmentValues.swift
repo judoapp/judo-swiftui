@@ -24,21 +24,16 @@ private struct ComponentPropertiesKey: EnvironmentKey {
     static var defaultValue = MainComponent.Properties()
 }
 
+private struct CustomActionsKey: EnvironmentKey {
+    static var defaultValue: [CustomActionIdentifier: ActionHandler<UserInfo>] = [:]
+}
+
 private struct DataKey: EnvironmentKey {
     static var defaultValue: Any?
 }
 
-extension BackportNamespace {
-
-    // @available(iOS, deprecated: 15.0, message: "We should update the BoldModifier so that it now longer uses this workaround")
-    fileprivate struct BoldModifierEnvironmentKey: EnvironmentKey {
-        static var defaultValue: Bool = false
-    }
-
-    // @available(iOS, deprecated: 15.0, message: "We should update the ItalicModifier so that it now longer uses this workaround")
-    fileprivate struct ItalicModifierEnvironmentKey: EnvironmentKey {
-        static var defaultValue: Bool = false
-    }
+private struct FetchedImageKey: EnvironmentKey {
+    static var defaultValue: SwiftUI.Image?
 }
 
 extension EnvironmentValues {
@@ -48,35 +43,24 @@ extension EnvironmentValues {
         set { self[ComponentPropertiesKey.self] = newValue }
     }
 
-    public var data: Any? {
+    var customActions: [CustomActionIdentifier: ActionHandler<UserInfo>] {
+        get { self[CustomActionsKey.self] }
+        set { self[CustomActionsKey.self] = newValue }
+    }
+
+    var data: Any? {
         get { self[DataKey.self] }
         set { self[DataKey.self] = newValue }
     }
-
-    /// isBold is used as part of the modifier chain.
-    ///
-    /// `.bold()` can only be applied to `SwiftUI.Text`s on macOS 12 or less.
-    /// Where as on macOS 13+ it can be applied to a `SwiftUI.View`.
-    /// This work around ensures that we can apply bold.
-    // @available(iOS, deprecated: 15.0, message: "We should update the BoldModifier so that it no longer uses this workaround")
-    var isBold: Bool {
-        get { self[BackportNamespace.BoldModifierEnvironmentKey.self] }
-        set { self[BackportNamespace.BoldModifierEnvironmentKey.self] = newValue }
-    }
-
-    /// isItalic is used as part of the modifier chain.
-    ///
-    /// `.italic()` can only be applied to `SwiftUI.Text`s on macOS 12 or less.
-    /// Where as on macOS 13+ it can be applied to a `SwiftUI.View`.
-    /// This work around ensures that we can apply italic.
-    // @available(iOS, deprecated: 15.0, message: "We should update the ItalicModifier so that it now longer uses this workaround")
-    var isItalic: Bool {
-        get { self[BackportNamespace.ItalicModifierEnvironmentKey.self] }
-        set { self[BackportNamespace.ItalicModifierEnvironmentKey.self] = newValue }
+    
+    var fetchedImage: SwiftUI.Image? {
+        get { self[FetchedImageKey.self] }
+        set { self[FetchedImageKey.self] = newValue }
     }
 
     var navigationController: UINavigationController? {
         get { self[NavigationControllerEnvironmentKey.self] }
         set { self[NavigationControllerEnvironmentKey.self] = newValue }
     }
+
 }

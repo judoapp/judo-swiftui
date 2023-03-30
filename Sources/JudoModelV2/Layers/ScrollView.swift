@@ -22,7 +22,7 @@ public final class ScrollView: Layer, Modifiable {
     }
 
     @Published public var axes = Axes.vertical
-    @Published public var disableScrollBar = false
+    @Published public var showsIndicators = true
 
     required public init() {
         super.init()
@@ -66,7 +66,7 @@ public final class ScrollView: Layer, Modifiable {
     override public func copy(with zone: NSZone? = nil) -> Any {
         let scrollView = super.copy(with: zone) as! ScrollView
         scrollView.axes = axes
-        scrollView.disableScrollBar = disableScrollBar
+        scrollView.showsIndicators = showsIndicators
         return scrollView
     }
     
@@ -74,20 +74,30 @@ public final class ScrollView: Layer, Modifiable {
     
     private enum CodingKeys: String, CodingKey {
         case axes
+        case showsIndicators
+        
+        // Beta 1 & 2
         case disableScrollBar
     }
     
     required public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         axes = try container.decode(Axes.self, forKey: .axes)
-        disableScrollBar = try container.decode(Bool.self, forKey: .disableScrollBar)
+        
+        // Beta 1 & 2
+        if let disableScrollBar = try container.decodeIfPresent(Bool.self, forKey: .disableScrollBar) {
+            self.showsIndicators = !disableScrollBar
+        } else {
+            self.showsIndicators = try container.decode(Bool.self, forKey: .showsIndicators)
+        }
+        
         try super.init(from: decoder)
     }
     
     override public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(axes, forKey: .axes)
-        try container.encode(disableScrollBar, forKey: .disableScrollBar)
+        try container.encode(showsIndicators, forKey: .showsIndicators)
         try super.encode(to: encoder)
     }
 }

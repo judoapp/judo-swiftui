@@ -43,6 +43,7 @@ struct ComponentInstanceView: SwiftUI.View {
 private struct ContentView: SwiftUI.View {
     @EnvironmentObject private var localizations: DocumentLocalizations
     @Environment(\.data) private var data
+    @Environment(\.fetchedImage) private var fetchedImage
     @Environment(\.properties) private var properties
 
     @ObservedObject var mainComponent: MainComponent
@@ -80,6 +81,13 @@ private struct ContentView: SwiftUI.View {
                 result[key] = .number(value)
             case (.boolean, .boolean(let value)):
                 result[key] = .boolean(value)
+            case (.image(let defaultValue), .image(let value)):
+                let resolvedValue = value.resolve(
+                    properties: properties,
+                    fetchedImage: fetchedImage
+                )
+                
+                result[key] = .image(resolvedValue ?? defaultValue)
             case (.component(let defaultValue), .component(let value)):
                 let resolvedValue = value.resolve(
                     properties: properties

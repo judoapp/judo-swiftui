@@ -23,7 +23,7 @@ public final class Assets: ObservableObject {
 
     private let assets: XCAssets
 
-    public init(assets: XCAssets = XCAssets()) {
+    public init(assets: XCAssets) {
         self.assets = assets
     }
 
