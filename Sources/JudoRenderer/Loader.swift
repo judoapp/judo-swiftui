@@ -19,9 +19,9 @@ import JudoModel
 
 struct Loader {
 
-    static func loadViewData(at path: String) throws -> ViewData {
+    static func loadViewData(at path: String, skipCache: Bool) throws -> ViewData {
 
-        if let cachedViewData = ViewCache.shared.value(for: path) {
+        if !skipCache, let cachedViewData = ViewCache.shared.value(for: path) {
              return cachedViewData
         }
 

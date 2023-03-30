@@ -41,7 +41,7 @@ public extension Judo {
 
         private var viewSetup: Setup?
 
-        public init(_ fileName: String, bundle: Bundle = .main, component componentName: String? = nil, properties: [String: Any] = [:]) {
+        public init(_ fileName: String, bundle: Bundle = .main, component componentName: String? = nil, properties: [String: Any] = [:], skipCache: Bool = false) {
             let resourceName = (fileName as NSString).deletingPathExtension
             var resourceExtension = (fileName as NSString).pathExtension.lowercased()
 
@@ -62,7 +62,7 @@ public extension Judo {
             }
 
             do {
-                let viewData = try Loader.loadViewData(at: resourcePath)
+                let viewData = try Loader.loadViewData(at: resourcePath, skipCache: skipCache)
 
                 let viewComponents = viewData.documentData.nodes.compactMap { $0 as? MainComponent}
                 let foundComponent: MainComponent?
@@ -90,10 +90,10 @@ public extension Judo {
 
         }
 
-        public init(fileURL: URL, component componentName: String? = nil, properties: [String: Any] = [:]) {
+        public init(fileURL: URL, component componentName: String? = nil, properties: [String: Any] = [:], skipCache: Bool = false) {
             let resourcePath = fileURL.path
             do {
-                let viewData = try Loader.loadViewData(at: resourcePath)
+                let viewData = try Loader.loadViewData(at: resourcePath, skipCache: skipCache)
 
                 let viewComponents = viewData.documentData.nodes.compactMap { $0 as? MainComponent}
 
