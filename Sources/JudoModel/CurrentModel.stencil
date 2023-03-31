@@ -22,7 +22,7 @@
 // 3. run `sourcery --config .sourcery.yml`
 
 import Foundation
-import {{ modelName }}
+@_exported import {{ modelName }}
 
 {% for type in types.all where type.accessLevel == "public" and not type.parent %}
 {{ type.accessLevel }} typealias {{type.name}} = {{ modelName }}.{{type.globalName}}

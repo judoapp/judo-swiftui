@@ -23,7 +23,7 @@
 // 3. run `sourcery --config .sourcery.yml`
 
 import Foundation
-import JudoModelV2
+@_exported import JudoModelV2
 
 public typealias Accessibility = JudoModelV2.Accessibility
 public typealias AccessibilityAddTraitsModifier = JudoModelV2.AccessibilityAddTraitsModifier
