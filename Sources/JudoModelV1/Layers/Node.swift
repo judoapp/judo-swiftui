@@ -65,7 +65,7 @@ import SwiftUI
     }
 
     override public var debugDescription: String {
-        return "\(description) (\(id))"
+        return "\(type(of: self)) \(description) (\(id))"
     }
 
     public class var keyPathsAffectingDescription: Set<String> {

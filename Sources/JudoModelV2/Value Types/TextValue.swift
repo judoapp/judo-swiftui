@@ -142,10 +142,18 @@ extension TextValue {
             return translation
         }
 
-        if  let languageCode = Locale(identifier: localeIdentifier).languageCode,
-            let matchedLocale = localizations.fuzzyMatch(key: languageCode),
-            let translation = matchedLocale[key] {
-            return translation
+        if #available(iOS 16, *) {
+            if  let languageCode = Locale(identifier: localeIdentifier).language.languageCode?.identifier,
+                let matchedLocale = localizations.fuzzyMatch(key: languageCode),
+                let translation = matchedLocale[key] {
+                return translation
+            }
+        } else {
+            if  let languageCode = Locale(identifier: localeIdentifier).languageCode,
+                let matchedLocale = localizations.fuzzyMatch(key: languageCode),
+                let translation = matchedLocale[key] {
+                return translation
+            }
         }
 
         return key

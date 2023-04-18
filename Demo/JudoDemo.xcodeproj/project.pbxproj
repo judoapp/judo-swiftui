@@ -21,7 +21,7 @@
 		7546EE86296D793200CD5597 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		7546EE88296D793300CD5597 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		7546EE8B296D793300CD5597 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
-		755FCA1C296D79E7003681DF /* JudoSwiftUI */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = JudoSwiftUI; path = ..; sourceTree = "<group>"; };
+		755FCA1C296D79E7003681DF /* judo-swiftui */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = judo-swiftui; path = ..; sourceTree = "<group>"; };
 		755FCA24296D880F003681DF /* Main.judo */ = {isa = PBXFileReference; lastKnownFileType = file; path = Main.judo; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -40,7 +40,7 @@
 		7546EE78296D793200CD5597 = {
 			isa = PBXGroup;
 			children = (
-				755FCA1C296D79E7003681DF /* JudoSwiftUI */,
+				755FCA1C296D79E7003681DF /* judo-swiftui */,
 				7546EE83296D793200CD5597 /* Demo */,
 				7546EE82296D793200CD5597 /* Products */,
 				755FCA1D296D7A2C003681DF /* Frameworks */,

@@ -88,13 +88,13 @@ public struct ImageSet: Codable {
         }
 
         /// The targeted display scale for the image
-        public enum Scale: CaseIterable, Comparable, CustomStringConvertible, ExpressibleByIntegerLiteral, Codable, Identifiable {
+        public enum Scale: String, CaseIterable, CustomStringConvertible, ExpressibleByIntegerLiteral, Codable, Identifiable {
             /// Targeted for unscaled displays.
-            case one
+            case one = "1x"
             /// Targeted for Retina displays.
-            case two
+            case two = "2x"
             ///  Targeted for Retina displays with higher density such as those on the iPhone 6 Plus.
-            case three
+            case three = "3x"
 
             public init(integerLiteral value: IntegerLiteralType) {
                 switch value {
@@ -108,15 +108,9 @@ public struct ImageSet: Codable {
                     fatalError("Invalid value")
                 }
             }
+
             public var description: String {
-                switch self {
-                case .one:
-                    return "1x"
-                case .two:
-                    return "2x"
-                case .three:
-                    return "3x"
-                }
+                rawValue
             }
 
             public var scale: CGFloat {
@@ -130,8 +124,59 @@ public struct ImageSet: Codable {
                 }
             }
 
+            public static func scale(from filename: String) -> Self {
+                let suffix = filename.suffix(3)
+                switch suffix {
+                case "@1x":
+                    return .one
+                case "@2x":
+                    return .two
+                case "@3x":
+                    return .three
+                default:
+                    return .one
+                }
+            }
+
             public var id: Self {
                 self
+            }
+
+            public init(from decoder: Decoder) throws {
+
+                enum LegacyCodingKeys: CodingKey {
+                    case one
+                    case two
+                    case three
+                }
+
+                if let container = try? decoder.container(keyedBy: LegacyCodingKeys.self) {
+                    // Due to error in early 2.0-beta, Scale was encoded as keyed container.
+                    // This routine exists only to read these files and convert to fixed format
+                    var allKeys = container.allKeys[...]
+                    guard let onlyKey = allKeys.popFirst(), allKeys.isEmpty else {
+                        throw DecodingError.typeMismatch(Self.self, DecodingError.Context(codingPath: container.codingPath, debugDescription: "Invalid number of keys found, expected one.", underlyingError: nil))
+                    }
+
+                    switch onlyKey {
+                    case .one:
+                        self = .one
+                    case .two:
+                        self = .two
+                    case .three:
+                        self = .three
+                    }
+                } else if let container = try? decoder.singleValueContainer() {
+                    let rawValue = try container.decode(RawValue.self)
+                    self = Scale(rawValue: rawValue)!
+                } else {
+                    throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: [], debugDescription: "Invalid format"))
+                }
+            }
+
+            public func encode(to encoder: Encoder) throws {
+                var container = encoder.singleValueContainer()
+                try container.encode(rawValue)
             }
         }
 

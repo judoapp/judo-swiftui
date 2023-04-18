@@ -17,7 +17,7 @@ import JudoModel
 import SwiftUI
 
 struct ScaledToFillViewModifier: SwiftUI.ViewModifier {
-    @ObservedObject var modifier: ScaledToFitModifier
+    @ObservedObject var modifier: ScaledToFillModifier
 
     func body(content: Content) -> some SwiftUI.View {
         content.scaledToFill()

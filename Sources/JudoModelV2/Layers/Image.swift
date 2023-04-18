@@ -25,20 +25,6 @@ public final class Image: Layer, Modifiable, AssetProvider {
     @Published public var renderingMode: TemplateRenderingMode = .original
     @Published public var symbolRenderingMode: SymbolRenderingMode = .monochrome
 
-    public var assetNames: [String] {
-        switch value {
-        case .reference(let imageReference):
-            switch imageReference {
-            case .document(let imageName):
-                return [imageName]
-            default:
-                return []
-            }
-        default:
-            return []
-        }
-    }
-
     public init(_ name: String?) {
         if let name {
             value = .reference(imageReference: .document(imageName: name))
@@ -62,6 +48,18 @@ public final class Image: Layer, Modifiable, AssetProvider {
         }
         
         return super.description
+    }
+
+    // MARK: AssetProvider
+
+    public var assetNames: [String] {
+        let imageReference = value.resolve(properties: enclosingComponent?.properties ?? [:], fetchedImage: nil)
+        switch imageReference {
+        case .document(let imageName):
+            return [imageName]
+        default:
+            return []
+        }
     }
         
     // MARK: Traits

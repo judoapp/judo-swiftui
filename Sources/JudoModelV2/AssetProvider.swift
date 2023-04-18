@@ -16,11 +16,12 @@
 import Foundation
 
 public protocol AssetProvider {
-    var assetNames: [String] { get }
+    typealias AssetName = String
+    var assetNames: [AssetName] { get }
 }
 
 extension AssetProvider {
-    var assetNames: [String] {
+    var assetNames: [AssetName] {
         []
     }
 }

@@ -15,7 +15,7 @@
 
 import Foundation
 
-public final class ComponentInstance: Layer, Modifiable {
+public final class ComponentInstance: Layer, Modifiable, AssetProvider {
     public class override var humanName: String {
         "Component"
     }
@@ -94,7 +94,36 @@ public final class ComponentInstance: Layer, Modifiable {
         value = .reference(mainComponent: .dummyComponent)
         super.init()
     }
-    
+
+    // MARK: AssetProvider
+
+    public var assetNames: [AssetName] {
+        var images: Set<ImageValue> = []
+        let properties = enclosingComponent?.properties ?? MainComponent.Properties()
+        if let mainComponent = value.resolve(properties: properties) {
+            let properties = mainComponent.properties
+            for (key, value) in properties {
+                switch value {
+                case .image(let imageReference):
+                    if case .image(let overrideImageValue) = overrides[key] {
+                        images.insert(overrideImageValue)
+                    } else {
+                        images.insert(ImageValue.reference(imageReference: imageReference))
+                    }
+                default:
+                    break
+                }
+            }
+        }
+
+        return images.compactMap { imageValue in
+            if case .reference(let reference) = imageValue, case .document(let imageName) = reference {
+                return imageName
+            }
+            return nil
+        }
+    }
+
     // MARK: Description
     
     public override var description: String {

@@ -1134,6 +1134,20 @@ public struct Axes: OptionSet, Codable, Hashable {
     public init(rawValue: Int) {
         self.rawValue = rawValue
     }
+    
+    public var swiftUIValue: SwiftUI.Axis.Set {
+        var result = SwiftUI.Axis.Set()
+        
+        if self.contains(.vertical) {
+            result.insert(.vertical)
+        }
+        
+        if self.contains(.horizontal) {
+            result.insert(.horizontal)
+        }
+        
+        return result
+    }
 }
 
 // MARK: - ToolbarItemPlacement

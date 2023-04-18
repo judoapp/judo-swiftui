@@ -4,7 +4,7 @@ import PackageDescription
 
 let package = Package(
     name: "Judo",
-    platforms: [.iOS(.v14), .macOS(.v11)],
+    platforms: [.iOS(.v14), .macOS(.v13)],
     products: [
         .library(name: "Judo", type: .static, targets: ["Judo"]),
         .library(name: "JudoModel", type: .static, targets: ["JudoModel"]),

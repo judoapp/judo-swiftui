@@ -194,6 +194,12 @@ private struct JudoViewModifier: SwiftUI.ViewModifier {
         case let modifier as PaddingModifier:
             content.modifier(PaddingViewModifier(modifier: modifier))
 
+        case let modifier as ScaledToFillModifier:
+            content.modifier(ScaledToFillViewModifier(modifier: modifier))
+
+        case let modifier as ScaledToFitModifier:
+            content.modifier(ScaledToFitViewModifier(modifier: modifier))
+
         case let modifier as ShadowModifier:
             content.modifier(ShadowViewModifier(modifier: modifier))
 

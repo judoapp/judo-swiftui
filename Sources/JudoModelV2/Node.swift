@@ -309,32 +309,36 @@ extension Sequence where Element: Node {
             )
             
             if let mainComponent, !partialResult.contains(mainComponent) {
-                partialResult.insert(mainComponent)
-                
-                for property in mainComponent.properties.values {
-                    switch property {
-                    case .component(let mainComponent):
-                        partialResult.insert(mainComponent)
-                    default:
-                        break
-                    }
-                }
-                
-                let layers = mainComponent.children.compactMap { element -> Layer? in
-                    guard let layer = element as? Layer else {
-                        assertionFailure("All children must be layers")
-                        return nil
-                    }
-                    
-                    return layer
-                }
-                
-                extractComponents(
-                    from: layers,
-                    enclosingMainComponent: mainComponent,
-                    into: &partialResult
-                )
+                extractComponents(from: mainComponent, into: &partialResult)
             }
+        }
+        
+        func extractComponents(from mainComponent: MainComponent, into partialResult: inout Set<MainComponent>) {
+            partialResult.insert(mainComponent)
+            
+            for property in mainComponent.properties.values {
+                switch property {
+                case .component(let mainComponent):
+                    extractComponents(from: mainComponent, into: &partialResult)
+                default:
+                    break
+                }
+            }
+            
+            let layers = mainComponent.children.compactMap { element -> Layer? in
+                guard let layer = element as? Layer else {
+                    assertionFailure("All children must be layers")
+                    return nil
+                }
+                
+                return layer
+            }
+            
+            extractComponents(
+                from: layers,
+                enclosingMainComponent: mainComponent,
+                into: &partialResult
+            )
         }
         
         var referencedComponents = Set<MainComponent>()

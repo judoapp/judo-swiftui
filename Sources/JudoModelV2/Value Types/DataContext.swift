@@ -59,7 +59,8 @@ public struct DataContext: Hashable {
         
         func publisher(for request: Request, data: Any?) -> AnyPublisher<Result<Any?, Error>, Never> {
             guard let urlString = try? request.url.evaluatingExpressions(data: data, properties: properties),
-                  let url = URL(string: urlString) else {
+                  let encodedURLString = urlString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+                  let url = URL(string: encodedURLString) else {
                 return Just(.success(nil)).eraseToAnyPublisher()
             }
             
