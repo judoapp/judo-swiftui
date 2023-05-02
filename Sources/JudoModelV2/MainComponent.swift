@@ -22,19 +22,11 @@ public final class MainComponent: Element {
         "Component"
     }
     
-    public enum ArtboardSize: Codable, Hashable {
-        public static let defaultLength: CGFloat = 100
-        
-        case device
-        case fixed(width: CGFloat, height: CGFloat)
-        case sizeThatFits
-    }
-    
     public typealias Properties = OrderedDictionary<String, Property.Value>
 
     @Published public var properties = Properties()
-    @Published public var artboardSize = ArtboardSize.device
     @Published public var showInMenu: Bool = true
+    @Published public var canvasPreview = CanvasPreview(layout: .device)
 
     public required init() {
         super.init()
@@ -54,6 +46,19 @@ public final class MainComponent: Element {
             return false
         }
     }
+
+    // MARK: Assets
+
+    public override func strings() -> [String] {
+        let strings = super.strings()
+
+        let result: [String] = properties.values
+            .compactMap {
+                guard case let .text(text) = $0 else { return nil }
+                return text
+            }
+        return strings + result
+    }
     
     // MARK: NSCopying
 
@@ -61,7 +66,7 @@ public final class MainComponent: Element {
         let component = super.copy(with: zone) as! MainComponent
         component.properties = properties
         component.showInMenu = showInMenu
-        component.artboardSize = artboardSize
+        component.canvasPreview = canvasPreview
         return component
     }
 
@@ -70,6 +75,9 @@ public final class MainComponent: Element {
     private enum CodingKeys: String, CodingKey {
         case properties
         case showInMenu
+        case canvasPreview
+        
+        // Beta 1-4
         case artboardSize
     }
     
@@ -123,7 +131,32 @@ public final class MainComponent: Element {
         let coordinator = decoder.userInfo[.decodingCoordinator] as! DecodingCoordinator
         let container = try decoder.container(keyedBy: CodingKeys.self)
         
-        artboardSize = try container.decode(ArtboardSize.self, forKey: .artboardSize)
+        // Beta 1-4
+        if container.contains(.artboardSize) {
+            enum ArtboardSize: Decodable {
+                case device
+                case fixed(width: CGFloat, height: CGFloat)
+                case sizeThatFits
+            }
+            
+            let artboardSize = try container.decode(ArtboardSize.self, forKey: .artboardSize)
+            
+            switch artboardSize {
+            case .device:
+                canvasPreview = CanvasPreview(layout: .device)
+            case .fixed(let width, let height):
+                canvasPreview = CanvasPreview(
+                    width: width,
+                    height: height,
+                    simulateDevice: false
+                )
+            case .sizeThatFits:
+                canvasPreview = CanvasPreview(layout: .vertical)
+            }
+        } else {
+            canvasPreview = try container.decode(CanvasPreview.self, forKey: .canvasPreview)
+        }
+        
         showInMenu = try container.decode(Bool.self, forKey: .showInMenu)
         
         // Properties
@@ -219,7 +252,7 @@ public final class MainComponent: Element {
     public override func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(showInMenu, forKey: .showInMenu)
-        try container.encode(artboardSize, forKey: .artboardSize)
+        try container.encode(canvasPreview, forKey: .canvasPreview)
         
         // Properties
         //

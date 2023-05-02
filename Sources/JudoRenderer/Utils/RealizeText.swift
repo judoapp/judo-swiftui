@@ -13,20 +13,31 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+import JudoModel
 import SwiftUI
 
-struct IntrospectNavigationControllerModifier: SwiftUI.ViewModifier {
-    @State private var navigationController: UINavigationController?
+struct RealizeText<Content>: SwiftUI.View where Content: SwiftUI.View {
+    @EnvironmentObject private var localizations: DocumentLocalizations
+    @Environment(\.properties) private var properties
+    @Environment(\.data) private var data
 
-    func body(content: Content) -> some SwiftUI.View {
-        content
-            .introspectNavigationController { navigationController = $0 }
-            .environment(\.navigationController, navigationController)
-    }
-}
+    private var text: TextValue
+    private var content: (String) -> Content
 
-extension SwiftUI.View {
-    func introspectNavigationController() -> some SwiftUI.View {
-        self.modifier(IntrospectNavigationControllerModifier())
+    init(_ text: TextValue, @ViewBuilder content: @escaping (String) -> Content) {
+        self.text = text
+        self.content = content
     }
+
+    var body: some View {
+        content(
+            text.resolve(
+                data: data,
+                properties: properties,
+                locale: Locale.preferredLocale,
+                localizations: localizations
+            )
+        )
+    }
+
 }

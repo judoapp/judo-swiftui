@@ -68,8 +68,8 @@ private struct ButtonWithoutRole<Content: SwiftUI.View>: SwiftUI.View {
                 assertionFailure("Refresh is unavailable on iOS 14")
                 break
 
-            case .custom(let name, let userInfo):
-                customActions[name]?(userInfo)
+            case .custom(let name, let parameters):
+                customActions[name]?(parameters)
             }
         } label: {
             content
@@ -107,8 +107,8 @@ private struct ButtonWithRole<Content: SwiftUI.View>: SwiftUI.View {
                     await refresh?()
                 }
 
-            case .custom(let name, let userInfo):
-                customActions[name]?(userInfo)
+            case .custom(let name, let parameters):
+                customActions[name]?(parameters)
             }
         } label: {
             content

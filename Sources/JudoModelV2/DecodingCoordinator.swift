@@ -21,11 +21,11 @@ final public class DecodingCoordinator {
     private var pendingRelationships = [PendingRelationship]()
     public var documentVersion: Int
     var compatibilityVersion: Int
-    public private(set) var xcassets: XCAssets
+    public private(set) var xcassets: XCAssetCatalog
     var fonts: Set<FontValue>
     public var localizations: DocumentLocalizations
 
-    public init(documentVersion: Int, compatibilityVersion: Int, xcassets: XCAssets, fonts: Set<FontValue>, localizations: DocumentLocalizations) {
+    public init(documentVersion: Int, compatibilityVersion: Int, xcassets: XCAssetCatalog, fonts: Set<FontValue>, localizations: DocumentLocalizations) {
         self.documentVersion = documentVersion
         self.compatibilityVersion = compatibilityVersion
         self.xcassets = xcassets

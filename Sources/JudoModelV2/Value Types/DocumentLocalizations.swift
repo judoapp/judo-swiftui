@@ -40,7 +40,7 @@ public final class DocumentLocalizations: ObservableObject, Codable {
     
     public func fuzzyMatch(key: String) -> StringsTable? {
         return entries.first { (localeIdentifier, _) in
-            localeIdentifier == key || localeIdentifier.starts(with: "\(key)-") || localeIdentifier.starts(with: "\(key)_")
+            localeIdentifier == key || localeIdentifier.starts(with: "\(key)-") || localeIdentifier.starts(with: "\(key)_") || localeIdentifier.starts(with: "\(key).")
         }?.value
     }
     

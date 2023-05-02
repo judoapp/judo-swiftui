@@ -15,13 +15,10 @@
 
 import Foundation
 
-public enum JSON: Hashable {
+public enum JSON: Codable, Hashable {
     case string(String)
     case double(CGFloat)
     case bool(Bool)
-}
-
-extension JSON: Decodable {
 
     struct DecodingError: Error {}
 
@@ -37,9 +34,7 @@ extension JSON: Decodable {
             throw DecodingError()
         }
     }
-}
 
-extension JSON: Encodable {
     public func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
         switch self {

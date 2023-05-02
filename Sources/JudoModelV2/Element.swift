@@ -22,6 +22,13 @@ import Foundation
     public required init() {
         super.init()
     }
+
+    // MARK: Assets
+
+    /// Returns any text strings used by this Element
+    public func strings() -> [String] {
+        return []
+    }
     
     // MARK: NSCopying
 

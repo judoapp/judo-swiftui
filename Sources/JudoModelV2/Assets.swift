@@ -21,7 +21,7 @@ public final class Assets: ObservableObject {
     public typealias Scale = XCAssetsKit.ImageSet.Image.Scale
     public typealias Appearances = XCAssetsKit.ImageSet.Image.Appearances
 
-    private let assets: XCAssets
+    private let assetCatalog: XCAssetCatalog
     private let trashURL: URL
 
     class CacheData {
@@ -36,9 +36,9 @@ public final class Assets: ObservableObject {
 
     private let cache = NSCache<NSString, CacheData>()
 
-    public init(assets: XCAssets) {
-        self.assets = assets
-        self.trashURL = FileManager.default.temporaryDirectory.appendingPathComponent(assets.id + ".trash")
+    public init(assetCatalog: XCAssetCatalog) {
+        self.assetCatalog = assetCatalog
+        self.trashURL = FileManager.default.temporaryDirectory.appendingPathComponent(assetCatalog.id + ".trash")
         try! FileManager.default.createDirectory(at: trashURL, withIntermediateDirectories: true)
     }
 
@@ -47,11 +47,11 @@ public final class Assets: ObservableObject {
     }
 
     public func write(to path: String) throws {
-        try assets.write(to: path)
+        try assetCatalog.write(to: path)
     }
 
     public func image(named imageSetName: String, appearance: Appearances?, scale: Scale, strictAppearanceMatch: Bool, searchOtherScale: Bool) -> (data: Data, scale: CGFloat)? {
-        if let result = assets.image(imageSet: imageSetName, appearance: appearance, scale: scale, strictAppearanceMatch: strictAppearanceMatch, searchOtherScale: searchOtherScale) {
+        if let result = assetCatalog.image(imageSet: imageSetName, appearance: appearance, scale: scale, strictAppearanceMatch: strictAppearanceMatch, searchOtherScale: searchOtherScale) {
             let cacheKey = "\(imageSetName)\(String(describing: result.appearances))\(result.scale)\(strictAppearanceMatch)\(searchOtherScale)" as NSString
             if let cacheData = cache.object(forKey: cacheKey) {
                 return (data: cacheData.data, scale: cacheData.scale)
@@ -68,19 +68,14 @@ public final class Assets: ObservableObject {
         return nil
     }
 
-    /// Returns array of image assets names
-    public func allImageSetNames() -> [String] {
-        assets.allNames(.imageSet)
-    }
-
-    public func countImages(imageSet imageSetName: String) -> Int {
-        assets.images(imageSet: imageSetName).count
+    public func availableAssets(_ kind: AssetKind? = nil) -> [(name: String, asset: any Asset)] {
+        assetCatalog.availableAssets(kind)
     }
 
     public func uniqueAssetName(proposedName name: String) -> String {
         var finalName = name
         var i = 1
-        while allImageSetNames().contains(finalName) {
+        while availableAssets().map(\.name).contains(finalName) {
             finalName = name + " (\(i))"
             i += 1
         }
@@ -100,12 +95,12 @@ public final class Assets: ObservableObject {
     public func addImage(_ data: Data, imageSet imageSetName: String, appearance: Appearances?, scale: Scale, undoManager: UndoManager?) throws {
         cache.removeAllObjects()
 
-        let imageExists = !assets.images(imageSet: imageSetName, appearance: appearance, scale: scale).isEmpty
+        let imageExists = !assetCatalog.images(imageSet: imageSetName, appearance: appearance, scale: scale).isEmpty
         guard !imageExists else {
             return
         }
 
-        try assets.addImage(
+        try assetCatalog.addImage(
             imageSet: imageSetName,
             data: data,
             appearance: appearance,
@@ -139,10 +134,10 @@ public final class Assets: ObservableObject {
         cache.removeAllObjects()
 
         if let undoManager = undoManager {
-            let imageAssetURL = assets.storageSetURL(kind: .imageSet, name: imageSetName)
+            let imageAssetURL = assetCatalog.storageSetURL(kind: .imageSet, name: imageSetName)
             let imageSetTrashURL = trashURL.appendingPathComponent(UUID().uuidString)
 
-            undoManager.registerUndo(withTarget: assets) { [weak self] assets in
+            undoManager.registerUndo(withTarget: assetCatalog) { [weak self] assets in
                 guard let self = self else { return }
                 let imageSetURL = assets.storageSetURL(kind: .imageSet, name: imageSetName)
                 try? FileManager.default.moveItem(at: imageSetTrashURL, to: imageSetURL)
@@ -162,7 +157,7 @@ public final class Assets: ObservableObject {
 
             try FileManager.default.moveItem(at: imageAssetURL, to: imageSetTrashURL)
         } else {
-            try assets.removeImageSet(name: imageSetName)
+            try assetCatalog.removeImageSet(name: imageSetName)
         }
 
         Task { @MainActor in
@@ -174,19 +169,19 @@ public final class Assets: ObservableObject {
         cache.removeAllObjects()
         
         if let undoManager = undoManager {
-            let imagesToRemove = assets.images(imageSet: imageSetName, appearance: appearance, scale: scale)
+            let imagesToRemove = assetCatalog.images(imageSet: imageSetName, appearance: appearance, scale: scale)
 
             var trashedImages: [URL] = []
             // Copy to trash and remove
             for img in imagesToRemove {
-                let fromURL = assets.storageSetURL(kind: .imageSet, name: imageSetName).appendingPathComponent(img.filename)
+                let fromURL = assetCatalog.storageSetURL(kind: .imageSet, name: imageSetName).appendingPathComponent(img.filename)
                 let toTrashURL = trashURL.appendingPathComponent(UUID().uuidString)
                 try FileManager.default.copyItem(at: fromURL, to: toTrashURL)
-                try assets.removeImage(imageSet: imageSetName, filename: img.filename)
+                try assetCatalog.removeImage(imageSet: imageSetName, filename: img.filename)
                 trashedImages.append(toTrashURL)
             }
 
-            undoManager.registerUndo(withTarget: assets) { [weak self] assets in
+            undoManager.registerUndo(withTarget: assetCatalog) { [weak self] assets in
                 guard let self = self else { return }
 
                 // Re-add image file
@@ -218,7 +213,7 @@ public final class Assets: ObservableObject {
                 }
             }
         } else {
-            try assets.removeImage(imageSet: imageSetName, appearance: appearance, scale: scale)
+            try assetCatalog.removeImage(imageSet: imageSetName, appearance: appearance, scale: scale)
         }
 
         Task { @MainActor in

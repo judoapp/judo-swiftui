@@ -1214,15 +1214,6 @@ public enum ToolbarItemPlacement: Codable, CaseIterable, CustomStringConvertible
     }
 }
 
-// MARK: - ButtonAction
-
-public enum ButtonAction: Codable, Hashable {
-    case `none`
-    case dismiss
-    case openURL(TextValue)
-    case refresh
-    case custom(CustomActionIdentifier, UserInfo)
-}
 
 // MARK: - ButtonRole
 

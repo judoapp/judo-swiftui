@@ -33,7 +33,6 @@ struct TextView: SwiftUI.View {
         RealizeText(text.value) { textString in
             if let textValue = try? textString.evaluatingExpressions(data: data, properties: properties) {
                 textContent(textValue: textValue)
-                    .fixedSize(horizontal: false, vertical: true)
             }
         }
     }
@@ -55,30 +54,4 @@ struct TextView: SwiftUI.View {
             }
         }
     }
-}
-
-private struct RealizeText<Content>: SwiftUI.View where Content: SwiftUI.View {
-    @EnvironmentObject private var localizations: DocumentLocalizations
-    @Environment(\.properties) private var properties
-    @Environment(\.data) private var data
-
-    private var text: TextValue
-    private var content: (String) -> Content
-
-    init(_ text: TextValue, @ViewBuilder content: @escaping (String) -> Content) {
-        self.text = text
-        self.content = content
-    }
-
-    var body: some View {
-        content(
-            text.resolve(
-                data: data,
-                properties: properties,
-                locale: Locale.preferredLocale,
-                localizations: localizations
-            )
-        )
-    }
-
 }

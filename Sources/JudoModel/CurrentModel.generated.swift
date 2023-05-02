@@ -1,4 +1,4 @@
-// Generated using Sourcery 1.9.0 — https://github.com/krzysztofzablocki/Sourcery
+// Generated using Sourcery 2.0.1 — https://github.com/krzysztofzablocki/Sourcery
 // DO NOT EDIT
 // Copyright (c) 2023-present, Rover Labs, Inc. All rights reserved.
 // You are hereby granted a non-exclusive, worldwide, royalty-free license to use,
@@ -49,6 +49,7 @@ public typealias ButtonAction = JudoModelV2.ButtonAction
 public typealias ButtonRole = JudoModelV2.ButtonRole
 public typealias ButtonStyle = JudoModelV2.ButtonStyle
 public typealias ButtonStyleModifier = JudoModelV2.ButtonStyleModifier
+public typealias CanvasPreview = JudoModelV2.CanvasPreview
 public typealias Capsule = JudoModelV2.Capsule
 public typealias Circle = JudoModelV2.Circle
 public typealias CollectionLayer = JudoModelV2.CollectionLayer

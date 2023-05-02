@@ -18,18 +18,7 @@ import CryptoKit
 import CoreImage
 import UniformTypeIdentifiers
 
-public final class XCAssets: Identifiable {
-
-    public enum Kind: String, CaseIterable {
-        case imageSet
-
-        public var folderExtension: String {
-            switch self {
-            case .imageSet:
-                return "imageset"
-            }
-        }
-    }
+public final class XCAssetCatalog: Identifiable {
 
     public let id: String = UUID().uuidString
 
@@ -55,7 +44,43 @@ public final class XCAssets: Identifiable {
         }
     }
 
-    public func addImageSet(name imageSetName: String) throws {
+    public func asset(kind: AssetKind, name: String) -> (any Asset)? {
+        availableAssets(kind).first(where: { $0.name == name })?.asset
+    }
+
+    public func availableAssets(_ kind: AssetKind? = nil) -> [(name: String, asset: any Asset)] {
+        guard let allObjects = FileManager.default.enumerator(atPath: storageURL.path)?.allObjects as? [String] else {
+            return []
+        }
+
+        return allObjects.compactMap { path in
+            let assetDirectoryURL = storageURL.appendingPathComponent(path)
+
+            var isDirectory: ObjCBool = false
+            guard FileManager.default.fileExists(atPath: assetDirectoryURL.path, isDirectory: &isDirectory), isDirectory.boolValue == true else {
+                return nil
+            }
+
+            let directoryName = (path as NSString).lastPathComponent
+            let assetName = (directoryName as NSString).deletingPathExtension
+            let directoryPathExtension = (directoryName as NSString).pathExtension
+
+            switch AssetKind(folderExtension: directoryPathExtension) {
+            case .imageSet where kind == .imageSet || kind == nil:
+                let contentsURL = assetDirectoryURL.appendingPathComponent("Contents.json")
+                if let imageSet = try? JSONDecoder().decode(ImageSet.self, from: Data(contentsOf: contentsURL)) {
+                    return (name: assetName, asset: imageSet)
+                }
+            default:
+                assertionFailure("Not supported")
+                return nil
+            }
+
+            return nil
+        }
+    }
+
+    public func addImageSet(name imageSetName: String, sortingIndex: Double) throws {
         let imageSetURL = storageSetURL(kind: .imageSet, name: imageSetName)
         if FileManager.default.fileExists(atPath: imageSetURL.path) {
             return
@@ -63,9 +88,8 @@ public final class XCAssets: Identifiable {
 
         do {
             try FileManager.default.createDirectory(at: imageSetURL, withIntermediateDirectories: true)
-            let contents = try JSONEncoder().encode(ImageSet(images: []))
-            let contentsURL = imageSetURL.appendingPathComponent("Contents.json")
-            try contents.write(to: contentsURL, options: .atomic)
+            let imageSet = ImageSet(sortingIndex: sortingIndex)
+            try save(asset: imageSet, name: imageSetName)
         } catch {
             try? FileManager.default.removeItem(at: imageSetURL)
             throw error
@@ -82,7 +106,7 @@ public final class XCAssets: Identifiable {
     public func addImage(imageSet imageSetName: String, data: Data, appearance: ImageSet.Image.Appearances?, scale: ImageSet.Image.Scale) throws {
         let imageSetURL = storageSetURL(kind: .imageSet, name: imageSetName)
         if !FileManager.default.fileExists(atPath: imageSetURL.path) {
-            try addImageSet(name: imageSetName)
+            try addImageSet(name: imageSetName, sortingIndex: Date.timeIntervalSinceReferenceDate)
         }
 
         var filename = data.sha256String + "@\(scale.description)"
@@ -98,42 +122,40 @@ public final class XCAssets: Identifiable {
         do {
             let contentsURL = imageSetURL.appendingPathComponent("Contents.json")
             var imageSet = try JSONDecoder().decode(ImageSet.self, from: Data(contentsOf: contentsURL, options: .mappedIfSafe))
-
-            do {
-                // Delete image from the slot that exactly match inserting image
-                // Don't use ImageSet.image(named:appearance:scale) as it find the closest match
-                let foundImage = imageSet.images.first { image in
-                    if appearance == nil, image.appearances == nil, image.scale == scale {
-                        return true
-                    } else if let appearance = appearance, image.appearances?.contains(appearance) == true, image.scale == scale {
-                        return true
-                    }
-
-                    return false
+            // Delete image from the slot that exactly match inserting image
+            // Don't use ImageSet.image(named:appearance:scale) as it find the closest match
+            let foundImage = imageSet.images.first { image in
+                if appearance == nil, image.appearances == nil, image.scale == scale {
+                    return true
+                } else if let appearance = appearance, image.appearances?.contains(appearance) == true, image.scale == scale {
+                    return true
                 }
-                if let foundImage {
-                    try removeImage(imageSet: imageSetName, filename: foundImage.filename)
-                    imageSet = try JSONDecoder().decode(ImageSet.self, from: Data(contentsOf: contentsURL, options: .mappedIfSafe))
-                }
+
+                return false
+            }
+
+            if let foundImage {
+                try removeImage(imageSet: imageSetName, filename: foundImage.filename)
+
+                // refresh asset from storage
+                imageSet = try JSONDecoder().decode(ImageSet.self, from: Data(contentsOf: contentsURL, options: .mappedIfSafe))
             }
 
             // Update Contents.json
-            imageSet.images += [
+            imageSet.images.append(
                 ImageSet.Image(
                     appearances: appearance == nil ? nil : [appearance!],
                     filename: filename,
                     scale: scale
                 )
-            ]
-
-            try JSONEncoder().encode(imageSet).write(to: contentsURL, options: .atomic)
+            )
+            try save(asset: imageSet, name: imageSetName)
 
             // Overwrite file content
             if FileManager.default.fileExists(atPath: fileURL.path) {
                 try FileManager.default.removeItem(at: fileURL)
             }
             try data.write(to: fileURL, options: .atomic)
-
         } catch {
             try? FileManager.default.removeItem(at: fileURL)
             throw error
@@ -141,54 +163,52 @@ public final class XCAssets: Identifiable {
     }
 
     public func removeImage(imageSet imageSetName: String, filename: String) throws {
-        let imageSetURL = storageSetURL(kind: .imageSet, name: imageSetName)
-        if !FileManager.default.fileExists(atPath: imageSetURL.path) {
+        guard var imageSet = asset(kind: .imageSet, name: imageSetName) as? ImageSet else {
             return
         }
 
-        let contentsURL = imageSetURL.appendingPathComponent("Contents.json")
-        var imageSet = try JSONDecoder().decode(ImageSet.self, from: Data(contentsOf: contentsURL, options: .mappedIfSafe))
         imageSet.images.removeAll { imageContents in
             imageContents.filename == filename
         }
-        try JSONEncoder().encode(imageSet).write(to: contentsURL, options: .atomic)
+
+        let imageSetURL = storageSetURL(kind: .imageSet, name: imageSetName)
         try FileManager.default.removeItem(at: imageSetURL.appendingPathComponent(filename))
+
+        try save(asset: imageSet, name: imageSetName)
     }
 
     public func removeImage(imageSet imageSetName: String, ofScale scale: ImageSet.Image.Scale) throws {
-        let imageSetURL = storageSetURL(kind: .imageSet, name: imageSetName)
-        if !FileManager.default.fileExists(atPath: imageSetURL.path) {
+        guard var imageSet = asset(kind: .imageSet, name: imageSetName) as? ImageSet else {
             return
         }
 
-        let contentsURL = imageSetURL.appendingPathComponent("Contents.json")
-        var imageSet = try JSONDecoder().decode(ImageSet.self, from: Data(contentsOf: contentsURL, options: .mappedIfSafe))
         let toRemove = imageSet.images.filter { $0.scale == scale }
         imageSet.images.removeAll { imageContents in
             imageContents.scale == scale
         }
-        try JSONEncoder().encode(imageSet).write(to: contentsURL, options: .atomic)
+
+        try save(asset: imageSet, name: imageSetName)
+
+        let imageSetURL = storageSetURL(kind: .imageSet, name: imageSetName)
         for item in toRemove {
             try FileManager.default.removeItem(at: imageSetURL.appendingPathComponent(item.filename))
         }
     }
 
     public func removeImage(imageSet imageSetName: String, appearance: ImageSet.Image.Appearances?, scale: ImageSet.Image.Scale) throws {
-        let imageSetURL = storageSetURL(kind: .imageSet, name: imageSetName)
-        if !FileManager.default.fileExists(atPath: imageSetURL.path) {
+        guard var imageSet = asset(kind: .imageSet, name: imageSetName) as? ImageSet else {
             return
         }
 
-        let contentsURL = imageSetURL.appendingPathComponent("Contents.json")
-        var imageSet = try JSONDecoder().decode(ImageSet.self, from: Data(contentsOf: contentsURL, options: .mappedIfSafe))
-        let toRemove = images(imageSet: imageSetName, appearance: appearance, scale: scale)
+        let toRemove = imageSet.images(appearance: appearance, scale: scale)
         imageSet.images.removeAll { image in
             toRemove.contains(where: { $0.scale == image.scale && $0.appearances == image.appearances })
         }
 
         // Update imageSet
-        try JSONEncoder().encode(imageSet).write(to: contentsURL, options: .atomic)
+        try save(asset: imageSet, name: imageSetName)
 
+        let imageSetURL = storageSetURL(kind: .imageSet, name: imageSetName)
         for item in toRemove where !imageSet.images.contains(where: { $0.filename == item.filename }) {
             // Ensure we only remove the file if it is not being used by another image
             try FileManager.default.removeItem(at: imageSetURL.appendingPathComponent(item.filename))
@@ -196,33 +216,11 @@ public final class XCAssets: Identifiable {
     }
 
     public func images(imageSet imageSetName: String, appearance: ImageSet.Image.Appearances?, scale: ImageSet.Image.Scale) -> [ImageSet.Image] {
-        let imageSetURL = storageSetURL(kind: .imageSet, name: imageSetName)
-        if !FileManager.default.fileExists(atPath: imageSetURL.path) {
+        guard let imageSet = asset(kind: .imageSet, name: imageSetName) as? ImageSet else {
             return []
         }
 
-        let contentsURL = imageSetURL.appendingPathComponent("Contents.json")
-        guard let imageSet = try? JSONDecoder().decode(ImageSet.self, from: Data(contentsOf: contentsURL, options: .mappedIfSafe)) else {
-            return []
-        }
-
-        return imageSet.images
-            .filter {
-                // find all with matching scale
-                $0.scale == scale
-            }
-            .filter {
-                // find all with matching appearances
-                // If we have no appearances on the ImageSet
-                if $0.appearances == nil && appearance == nil {
-                    return true
-                }
-
-                if let appearances = $0.appearances, let appearance {
-                    return appearances.contains(appearance)
-                }
-                return false
-            }
+        return imageSet.images(appearance: appearance, scale: scale)
     }
 
     /// All images
@@ -272,36 +270,16 @@ public final class XCAssets: Identifiable {
         try FileManager.default.copyItem(at: storageURL, to: URL(fileURLWithPath: path))
     }
 
-    public func storageSetURL(kind: Kind, name: String) -> URL {
+    public func storageSetURL(kind: AssetKind, name: String) -> URL {
         storageURL.appendingPathComponent(name + "." + kind.folderExtension)
     }
 
-    public func allNames(_ kind: Kind) -> [String] {
-        var result: [String] = []
-        do {
-            for item in try FileManager.default.contentsOfDirectory(atPath: storageURL.path) {
-                if item.hasSuffix("." + kind.folderExtension) {
-                    result.append((item as NSString).deletingPathExtension)
-                }
-            }
-        } catch {
-            assertionFailure()
-            return []
-        }
-
-        return result
+    private func save(asset: any Asset, name: String) throws {
+        let imageSetURL = storageSetURL(kind: .imageSet, name: name)
+        let contentsURL = imageSetURL.appendingPathComponent("Contents.json")
+        try JSONEncoder().encode(asset).write(to: contentsURL, options: .atomic)
     }
 
-    public func enumerate(_ element: (_ kind: Kind, _ name: String) -> Void) throws {
-        for kind in Kind.allCases {
-            for pathItem in try FileManager.default.contentsOfDirectory(atPath: storageURL.path) {
-                if pathItem.hasSuffix("." + kind.folderExtension) {
-                    let name = (pathItem as NSString).deletingPathExtension
-                    element(kind, name)
-                }
-            }
-        }
-    }
 }
 
 private extension Data {

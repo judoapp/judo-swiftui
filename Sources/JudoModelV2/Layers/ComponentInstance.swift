@@ -133,6 +133,32 @@ public final class ComponentInstance: Layer, Modifiable, AssetProvider {
         
         return value.description
     }
+
+    // MARK: Assets
+
+    override public func strings() -> [String] {
+        let strings = super.strings()
+
+        let result: [String] = overrides.values
+            .compactMap {
+                guard case let .text(textValue) = $0 else { return nil }
+                switch textValue {
+                case let .literal(key: key):
+                    return key
+                case .verbatim:
+                    break
+                case let .property(name: name, localize: localize):
+                    if localize {
+                        return name
+                    }
+                case .data:
+                    break
+                }
+                return nil
+            }
+
+        return strings + result
+    }
     
     // MARK: NSCopying
 

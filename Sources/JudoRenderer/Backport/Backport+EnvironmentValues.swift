@@ -27,6 +27,7 @@ fileprivate extension BackportNamespace {
     struct ItalicModifierEnvironmentKey: EnvironmentKey {
         static var defaultValue: Bool = false
     }
+
 }
 
 extension EnvironmentValues {

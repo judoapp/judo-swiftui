@@ -166,7 +166,7 @@ public extension Judo {
 
 public extension Judo.View {
 
-    func on(_ identifier: CustomActionIdentifier, handler: @escaping (UserInfo) -> Void) -> some SwiftUI.View {
+    func on(_ identifier: CustomActionIdentifier, handler: @escaping (ButtonAction.Parameters) -> Void) -> some SwiftUI.View {
         modifier(
             ActionViewModifier(
                 identifier: identifier,
@@ -178,9 +178,9 @@ public extension Judo.View {
     private struct ActionViewModifier: ViewModifier {
         @Environment(\.customActions) private var customActions
         private let identifier: CustomActionIdentifier
-        private let handler: ActionHandler<UserInfo>
+        private let handler: ActionHandler<ButtonAction.Parameters>
 
-        init(identifier: CustomActionIdentifier, handler: ActionHandler<UserInfo>) {
+        init(identifier: CustomActionIdentifier, handler: ActionHandler<ButtonAction.Parameters>) {
             self.identifier = identifier
             self.handler = handler
         }

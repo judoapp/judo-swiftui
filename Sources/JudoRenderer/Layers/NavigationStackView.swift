@@ -29,6 +29,5 @@ struct NavigationStackView: SwiftUI.View {
             }
         }
         .navigationViewStyle(.stack)
-        .introspectNavigationController()
     }
 }

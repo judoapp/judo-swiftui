@@ -16,7 +16,7 @@
 import Foundation
 
 /// The graphical image files for a named image asset used for instances of UIImage and NSImage.
-public struct ImageSet: Codable {
+public struct ImageSet: Asset, Codable {
     /// Properties for the image set.
     public struct Properties: Codable {
         /// The on-demand resource tags for the image set.
@@ -229,7 +229,6 @@ public struct ImageSet: Codable {
         // screen-width
         public let widthClass: SizeClass? //width-class
         public let heightClass: SizeClass? //height-class
-        // alignment-insets
 
         public init(appearances: Set<Appearances>?, colorSpace: ColorSpace? = nil, compressionType: CompressionType? = nil, displayGamut: DisplayGamut? = nil, filename: String, idiom: Idiom? = .universal, scale: Scale? = nil, widthClass: SizeClass? = nil, heightClass: SizeClass? = nil) {
             self.colorSpace = colorSpace
@@ -253,12 +252,18 @@ public struct ImageSet: Codable {
     /// The images in the image set.
     public internal(set) var images: [ImageSet.Image]
 
-    public init(info: Info = Info(), properties: Properties = Properties(), images: [ImageSet.Image]) {
+    // Optional. Custom extension.
+    public internal(set) var sortingIndex: Double?
+
+    public init(info: Info = Info(), properties: Properties = Properties(), images: [ImageSet.Image] = [], sortingIndex: Double? = 0) {
         self.info = info
         self.properties = properties
         self.images = images
+        self.sortingIndex = sortingIndex
     }
+}
 
+extension ImageSet {
     /// Find the best (closest) match for provided appearance and scale
     ///
     /// - Parameters:
@@ -269,7 +274,7 @@ public struct ImageSet: Codable {
     /// - Returns: Image instance if found
     public func image(for appearances: Image.Appearances?, scale: Image.Scale, strictAppearanceMatch: Bool, searchOtherScale: Bool) -> Image? {
         // Sort from most detailed to least detailed
-        let sortedImages = images.filter({ $0.scale == scale }).sorted { lhs, rhs -> Bool in
+        let imagesSortedByAppearances = images.filter({ $0.scale == scale }).sorted { lhs, rhs -> Bool in
             (lhs.appearances?.count ?? 0) > (rhs.appearances?.count ?? 0)
         }
 
@@ -277,7 +282,7 @@ public struct ImageSet: Codable {
         if strictAppearanceMatch {
 
             if let appearances = appearances {
-                match = sortedImages.first { image in
+                match = imagesSortedByAppearances.first { image in
                     if let imageAppearances = image.appearances,
                        !imageAppearances.intersection([appearances]).isEmpty
                     {
@@ -288,7 +293,7 @@ public struct ImageSet: Codable {
                 }
             } else {
                 // Any
-                match = sortedImages.first { image in
+                match = imagesSortedByAppearances.first { image in
                     if image.appearances == nil {
                         return true
                     }
@@ -299,7 +304,7 @@ public struct ImageSet: Codable {
         } else {
             if let appearances = appearances {
                 // Search for the first match from the most detailed to least detailed image
-                match = sortedImages.first { image in
+                match = imagesSortedByAppearances.first { image in
 
                     // Light, Dark
                     if let imageAppearances = image.appearances,
@@ -327,7 +332,7 @@ public struct ImageSet: Codable {
             } else {
 
                 // Search Any appearance
-                match = sortedImages.reversed().first { image in
+                match = imagesSortedByAppearances.reversed().first { image in
 
                     // Any
                     if image.appearances == nil {
@@ -358,5 +363,30 @@ public struct ImageSet: Codable {
 
         return match
     }
-}
 
+    public func images(appearance: ImageSet.Image.Appearances?, scale: ImageSet.Image.Scale) -> [ImageSet.Image] {
+        images
+            .filter {
+                // find all with matching scale
+                $0.scale == scale
+            }
+            .filter {
+                // find all with matching appearances
+                // If we have no appearances on the ImageSet
+                if $0.appearances == nil && appearance == nil {
+                    return true
+                }
+
+                if let appearances = $0.appearances, let appearance {
+                    return appearances.contains(appearance)
+                }
+                return false
+            }
+    }
+
+    public func save(_ assetCatalogStorageURL: URL, name: String) throws {
+        let assetStorageURL = assetCatalogStorageURL.appendingPathComponent(name + "." + AssetKind.imageSet.folderExtension)
+        let contentsURL = assetStorageURL.appendingPathComponent("Contents.json")
+        try JSONEncoder().encode(self).write(to: contentsURL, options: .atomic)
+    }
+}

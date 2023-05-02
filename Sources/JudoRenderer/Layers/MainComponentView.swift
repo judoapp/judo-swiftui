@@ -35,22 +35,10 @@ struct MainComponentView: SwiftUI.View {
             /// more than one layer on the root of the component
             ZStackContentIfNeededModifier(for: orderedLayers)
         )
-        .frame(width: fixedSize?.width, height: fixedSize?.height)
         .environment(\.properties, component.properties.merging(properties, uniquingKeysWith: {(_, new) in new }))
     }
     
     private var orderedLayers: [Layer] {
         component.children.allOf(type: Layer.self).reversed()
-    }
-    
-    private var fixedSize: CGSize? {
-        switch component.artboardSize {
-        case .sizeThatFits:
-            return nil
-        case .fixed(let width, let height):
-            return CGSize(width: width, height: height)
-        case .device:
-            return nil
-        }
     }
 }

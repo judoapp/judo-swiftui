@@ -18,7 +18,7 @@ import SwiftUI
 
 struct ToolbarItemViewModifier: SwiftUI.ViewModifier {
     @Environment(\.openURL) private var openURL
-    @Environment(\.navigationController) private var navigationController
+    @Environment(\.presentationMode) private var presentationMode
 
     @ObservedObject var modifier: ToolbarItemModifier
 
@@ -32,11 +32,12 @@ struct ToolbarItemViewModifier: SwiftUI.ViewModifier {
                         LabelView(item: item)
 
                     case .dismiss:
+
                         if #available(iOS 15.0, *) {
                             DismissToolbarItemButtonView(item: item)
                         } else {
                             ToolbarItemButtonView(item: item) {
-                                navigationController?.dismiss(animated: true)
+                                presentationMode.wrappedValue.dismiss()
                             }
                         }
 

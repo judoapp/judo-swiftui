@@ -17,6 +17,7 @@ import Foundation
 
 /// Versioning information for the asset catalog.
 public struct Info: Codable {
+
     public let author: String
     public let version: Int
 

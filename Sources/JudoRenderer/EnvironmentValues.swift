@@ -16,16 +16,12 @@
 import SwiftUI
 import JudoModel
 
-private struct NavigationControllerEnvironmentKey: EnvironmentKey {
-    static var defaultValue: UINavigationController?
-}
-
 private struct ComponentPropertiesKey: EnvironmentKey {
     static var defaultValue = MainComponent.Properties()
 }
 
 private struct CustomActionsKey: EnvironmentKey {
-    static var defaultValue: [CustomActionIdentifier: ActionHandler<UserInfo>] = [:]
+    static var defaultValue: [CustomActionIdentifier: ActionHandler<ButtonAction.Parameters>] = [:]
 }
 
 private struct DataKey: EnvironmentKey {
@@ -43,7 +39,7 @@ extension EnvironmentValues {
         set { self[ComponentPropertiesKey.self] = newValue }
     }
 
-    var customActions: [CustomActionIdentifier: ActionHandler<UserInfo>] {
+    var customActions: [CustomActionIdentifier: ActionHandler<ButtonAction.Parameters>] {
         get { self[CustomActionsKey.self] }
         set { self[CustomActionsKey.self] = newValue }
     }
@@ -56,11 +52,6 @@ extension EnvironmentValues {
     var fetchedImage: SwiftUI.Image? {
         get { self[FetchedImageKey.self] }
         set { self[FetchedImageKey.self] = newValue }
-    }
-
-    var navigationController: UINavigationController? {
-        get { self[NavigationControllerEnvironmentKey.self] }
-        set { self[NavigationControllerEnvironmentKey.self] = newValue }
     }
 
 }

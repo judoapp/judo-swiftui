@@ -58,14 +58,14 @@ struct Loader {
         }
 
         // assets
-        let xcassets = archive.extractXCAssets()
+        let assetCatalog = archive.extractXCAssets()
         let fonts = try archive.extractFonts()
         let localizations = try archive.extractLocalizations()
 
         let decodingCoordinator = DecodingCoordinator(
             documentVersion: meta.version,
             compatibilityVersion: meta.compatibilityVersion,
-            xcassets: xcassets,
+            xcassets: assetCatalog,
             fonts: fonts,
             localizations: localizations
         )
@@ -100,7 +100,7 @@ struct Loader {
         let viewData = ViewData(
             meta: meta,
             documentData: documentData,
-            assets: Assets(assets: xcassets),
+            assets: Assets(assetCatalog: assetCatalog),
             importedFonts: importedFonts,
             fonts: fonts,
             localizations: localizations

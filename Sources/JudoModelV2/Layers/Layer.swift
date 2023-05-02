@@ -155,11 +155,6 @@ import SwiftUI
         }
     }
     
-    /// Returns any text strings (keys) used by this layer.
-    public func strings() -> [String] {
-        return []
-    }
-    
     // MARK: NSCopying
     
     override public func copy(with zone: NSZone? = nil) -> Any {
@@ -196,6 +191,10 @@ import SwiftUI
 
 // MARK: Sequence
 
+// Required so that the extension on Sequence doesn't
+// get confused by its own definition of Element
+private typealias JudoElement = Element
+
 extension Sequence where Element: Node {
     
     public func gatherColorReferences() -> [Binding<ColorReference>] {
@@ -222,7 +221,7 @@ extension Sequence where Element: Node {
     public func gatherStrings() -> [String] {
         flatten()
             .compactMap {
-                $0 as? Layer
+                $0 as? JudoElement
             }
             .flatMap {
                 $0.strings()

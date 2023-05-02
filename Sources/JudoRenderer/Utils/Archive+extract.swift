@@ -45,10 +45,10 @@ extension Archive {
         return buffer
     }
 
-    func extractXCAssets(_ folderName: String = "Assets.xcassets") -> XCAssets {
+    func extractXCAssets(_ folderName: String = "Assets.xcassets") -> XCAssetCatalog {
         let xcassetEntries = filter({ $0.path.hasPrefix(folderName + "/") })
         if xcassetEntries.isEmpty {
-            return XCAssets()
+            return XCAssetCatalog()
         }
 
         do {
@@ -58,10 +58,10 @@ extension Archive {
                 _ = try extract(entry, to: temporaryDirectoryURL.appendingPathComponent("/" + entry.path))
             }
             let xcassetsPath = temporaryDirectoryURL.appendingPathComponent(folderName)
-            return XCAssets(at: xcassetsPath)
+            return XCAssetCatalog(at: xcassetsPath)
         } catch {
             assertionFailure("Missing Assets Catalog")
-            return XCAssets()
+            return XCAssetCatalog()
         }
     }
 
