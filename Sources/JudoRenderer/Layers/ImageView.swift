@@ -141,7 +141,7 @@ private struct DocumentImageView: View {
     
     private var imageMeta: (data: Data, scale: CGFloat)? {
         if colorScheme == .light {
-            return assets.image(named: name, appearance: nil, scale: .two, strictAppearanceMatch: false, searchOtherScale: true)
+            return assets.image(named: name, appearance: nil, scale: .two, strictAppearanceMatch: true, searchOtherScale: true)
         } else {
             return assets.image(named: name, appearance: .dark, scale: .two, strictAppearanceMatch: false, searchOtherScale: true)
         }

@@ -160,32 +160,37 @@ public extension Judo {
 
 // MARK: - Custom Actions
 
-public extension Judo {
-    typealias CustomActionIdentifier = JudoModel.CustomActionIdentifier
+extension Judo {
+    public typealias CustomActionIdentifier = JudoModel.CustomActionIdentifier
 }
 
-public extension Judo.View {
-
-    func on(_ identifier: CustomActionIdentifier, handler: @escaping (ButtonAction.Parameters) -> Void) -> some SwiftUI.View {
-        modifier(
-            ActionViewModifier(
-                identifier: identifier,
-                handler: ActionHandler(handler: handler)
-            )
-        )
+extension Judo.View {
+    public func on(_ identifier: CustomActionIdentifier, handler: @escaping (ButtonAction.Parameters) -> Void) -> Judo.ActionModifiedContent<Self> {
+        Judo.ActionModifiedContent(identifier: identifier, handler: ActionHandler(handler: handler), content: self)
     }
+}
 
-    private struct ActionViewModifier: ViewModifier {
+extension Judo.ActionModifiedContent {
+    public func on(_ identifier: CustomActionIdentifier, handler: @escaping (ButtonAction.Parameters) -> Void) -> Judo.ActionModifiedContent<Self> {
+        Judo.ActionModifiedContent(identifier: identifier, handler: ActionHandler(handler: handler), content: self)
+    }
+}
+
+extension Judo {
+
+    public struct ActionModifiedContent<Content: SwiftUI.View>: SwiftUI.View {
         @Environment(\.customActions) private var customActions
         private let identifier: CustomActionIdentifier
         private let handler: ActionHandler<ButtonAction.Parameters>
+        private let content: Content
 
-        init(identifier: CustomActionIdentifier, handler: ActionHandler<ButtonAction.Parameters>) {
+        init(identifier: CustomActionIdentifier, handler: ActionHandler<ButtonAction.Parameters>, content: Content) {
             self.identifier = identifier
             self.handler = handler
+            self.content = content
         }
 
-        func body(content: Content) -> some View {
+        public var body: some SwiftUI.View {
             content.environment(
                 \.customActions,
                  customActions.merging([identifier: handler], uniquingKeysWith: {(_, new) in new })
@@ -194,7 +199,6 @@ public extension Judo.View {
     }
 
 }
-
 
 private func convert(_ properties: [String: Any]) -> MainComponent.Properties {
     var result: MainComponent.Properties = [:]

@@ -1310,7 +1310,8 @@ public enum SymbolRenderingMode: Identifiable, CaseIterable, Codable, CustomStri
     case hierarchical
     case monochrome
     case multicolor
-    case palette
+    // Commented out for https://github.com/judoapp/judo-app/issues/2280
+//    case palette
 
     public var id: Self {
         self
@@ -1324,8 +1325,9 @@ public enum SymbolRenderingMode: Identifiable, CaseIterable, Codable, CustomStri
             return "Monochrome"
         case .multicolor:
             return "MultiColor"
-        case .palette:
-            return "Palette"
+        // Commented out for https://github.com/judoapp/judo-app/issues/2280
+//        case .palette:
+//            return "Palette"
         }
     }
 
@@ -1338,8 +1340,9 @@ public enum SymbolRenderingMode: Identifiable, CaseIterable, Codable, CustomStri
             return .monochrome
         case .multicolor:
             return .multicolor
-        case .palette:
-            return .palette
+        // Commented out for https://github.com/judoapp/judo-app/issues/2280
+//        case .palette:
+//            return .palette
         }
     }
 }

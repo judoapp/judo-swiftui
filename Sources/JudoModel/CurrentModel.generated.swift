@@ -105,7 +105,6 @@ public typealias LayoutPriorityModifier = JudoModelV2.LayoutPriorityModifier
 public typealias LineLimitModifier = JudoModelV2.LineLimitModifier
 public typealias MainComponent = JudoModelV2.MainComponent
 public typealias MaskModifier = JudoModelV2.MaskModifier
-public typealias Meta = JudoModelV2.Meta
 public typealias Metadata = JudoModelV2.Metadata
 public typealias ModalPresentationStyle = JudoModelV2.ModalPresentationStyle
 public typealias MultiLineTextAlignmentModifier = JudoModelV2.MultiLineTextAlignmentModifier

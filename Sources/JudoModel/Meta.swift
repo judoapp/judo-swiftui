@@ -41,15 +41,21 @@ public struct Meta: Codable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
         version = try container.decode(Int.self, forKey: .version)
+        appVersion = try container.decode(String.self, forKey: .appVersion)
+        build = try container.decode(String.self, forKey: .build)
 
         if version >= 12 {
             compatibilityVersion = try container.decode(Int.self, forKey: .compatibilityVersion)
+
+            // This is to ensure that experiences created during the Beta period
+            // are updated to have the correct compatibilityVersion
+            if appVersion.hasPrefix("2.") && compatibilityVersion < 13 {
+                compatibilityVersion = 13
+                version = 13
+            }
         } else {
             compatibilityVersion = version
         }
-
-        appVersion = try container.decode(String.self, forKey: .appVersion)
-        build = try container.decode(String.self, forKey: .build)
     }
 
     public func encode(to encoder: Encoder) throws {

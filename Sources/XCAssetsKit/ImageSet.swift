@@ -55,7 +55,6 @@ public struct ImageSet: Asset, Codable {
                 case high  // Appearance: contrast
             }
 
-            public static let `default` = Appearances.light
             public static let light = Appearances(appearance: .luminosity, value: .light)
             public static let dark = Appearances(appearance: .luminosity, value: .dark)
             public static let highContrast = Appearances(appearance: .contrast, value: .high)

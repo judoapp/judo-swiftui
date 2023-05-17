@@ -97,7 +97,7 @@ public final class MainComponent: Element {
         }
     }
     
-    private enum PropertyValueCodingKeys: CodingKey {
+    private enum PropertyValueCodingKeys: String, CodingKey {
         case text
         case number
         case boolean
@@ -163,18 +163,12 @@ public final class MainComponent: Element {
         //
         // Manually decode `properties` so we can reference existing
         // `MainComponent` instances by ID lookup, instead of decoding a copy.
-        
-        let propertiesContainer = try container.nestedContainer(
-            keyedBy: PropertiesCodingKeys.self,
-            forKey: .properties
-        )
-        
-        properties = try propertiesContainer.allKeys.reduce(into: [:]) { partialResult, key in
-            let container = try propertiesContainer.nestedContainer(
-                keyedBy: PropertyValueCodingKeys.self,
-                forKey: key
-            )
-            
+
+        func decodeProperty(
+            propertyKey: String,
+            container: KeyedDecodingContainer<MainComponent.PropertyValueCodingKeys>,
+            into properties: inout Properties
+        ) throws {
             var allKeys = ArraySlice(container.allKeys)
             guard let onlyKey = allKeys.popFirst(), allKeys.isEmpty else {
                 throw DecodingError.typeMismatch(
@@ -186,50 +180,58 @@ public final class MainComponent: Element {
                     )
                 )
             }
-            
+
             switch onlyKey {
             case .text:
                 let nestedContainer = try container.nestedContainer(
                     keyedBy: TextCodingKeys.self,
                     forKey: .text
                 )
-                
+
                 let text = try nestedContainer.decode(String.self, forKey: ._0)
-                partialResult[key.stringValue] = .text(text)
+                properties[propertyKey] = .text(text)
+
             case .number:
                 let nestedContainer = try container.nestedContainer(
                     keyedBy: NumberCodingKeys.self, forKey: .number
                 )
-                
+
                 let number = try nestedContainer.decode(CGFloat.self, forKey: ._0)
-                partialResult[key.stringValue] = .number(number)
+                properties[propertyKey] = .number(number)
+
             case .boolean:
                 let nestedContainer = try container.nestedContainer(
                     keyedBy: BooleanCodingKeys.self,
                     forKey: .boolean
                 )
-                
+
                 let boolean = try nestedContainer.decode(Bool.self, forKey: ._0)
-                partialResult[key.stringValue] = .boolean(boolean)
+                properties[propertyKey] = .boolean(boolean)
+
             case .image:
                 let nestedContainer = try container.nestedContainer(
                     keyedBy: ImageCodingKeys.self,
                     forKey: .image
                 )
-                
+
                 let imageName = try nestedContainer.decode(ImageReference.self, forKey: ._0)
-                partialResult[key.stringValue] = .image(imageName)
+                properties[propertyKey] = .image(imageName)
+
             case .component:
                 let nestedContainer = try container.nestedContainer(
                     keyedBy: ComponentCodingKeys.self,
                     forKey: .component
                 )
-                
+
                 // Decode ID
                 let mainComponentID = try nestedContainer.decode(
                     Node.ID.self,
                     forKey: ._0
                 )
+
+                // Create a temporary place holder for the MainComponent that will be overwritten by the defer
+                // this is to ensure that order is maintained.
+                properties[propertyKey] = .component(.init())
 
                 // Lookup by ID
                 coordinator.defer { [unowned self] in
@@ -242,9 +244,43 @@ public final class MainComponent: Element {
 
                         throw DecodingError.dataCorrupted(context)
                     }
-                    
-                    self.properties[key.stringValue] = .component(mainComponent)
+
+                    self.properties[propertyKey] = .component(mainComponent)
                 }
+            }
+        }
+
+        do {
+            var propertiesContainer = try container.nestedUnkeyedContainer(forKey: .properties)
+            while !propertiesContainer.isAtEnd {
+
+                let key = try propertiesContainer.decode(String.self)
+
+                if properties[key] != nil {
+                    throw DecodingError.dataCorrupted(
+                        DecodingError.Context(
+                            codingPath: propertiesContainer.codingPath,
+                            debugDescription: "Duplicate key: \(key), at offset \(propertiesContainer.currentIndex - 1)"
+                        )
+                    )
+                }
+
+                let nestedContainer = try propertiesContainer.nestedContainer(keyedBy: PropertyValueCodingKeys.self)
+                try decodeProperty(propertyKey: key, container: nestedContainer, into: &properties)
+            }
+        } catch {
+            // Beta 1-5
+            let propertiesContainer = try container.nestedContainer(
+                keyedBy: PropertiesCodingKeys.self,
+                forKey: .properties
+            )
+
+            properties = try propertiesContainer.allKeys.reduce(into: [:]) { partialResult, key in
+                let container = try propertiesContainer.nestedContainer(
+                    keyedBy: PropertyValueCodingKeys.self,
+                    forKey: key
+                )
+                try decodeProperty(propertyKey: key.stringValue, container: container, into: &partialResult)
             }
         }
     }
@@ -258,56 +294,47 @@ public final class MainComponent: Element {
         //
         // Manually encode `properties` so we can encode `MainComponent` IDs
         // instead of the entire object
-        
-        var propertiesContainer = container.nestedContainer(
-            keyedBy: PropertiesCodingKeys.self,
-            forKey: .properties
-        )
-        
+        // Copy the how an OrderedDictionary encodes so that order can be maintained.
+
+        var propertiesContainer = container.nestedUnkeyedContainer(forKey: .properties)
+
         for element in properties {
-            let key = PropertiesCodingKeys(stringValue: element.key)!
-            var container = propertiesContainer.nestedContainer(
-                keyedBy: PropertyValueCodingKeys.self,
-                forKey: key
-            )
-            
+
+            try propertiesContainer.encode(element.key)
+
             switch element.value {
             case .text(let text):
-                var nestedContainer = container.nestedContainer(
-                    keyedBy: TextCodingKeys.self,
-                    forKey: .text
-                )
-                
-                try nestedContainer.encode(text, forKey: ._0)
+                let key = PropertiesCodingKeys(stringValue: PropertyValueCodingKeys.text.rawValue)!
+                var nestedContainer = propertiesContainer.nestedContainer(keyedBy: PropertiesCodingKeys.self)
+                var object = nestedContainer.nestedContainer(keyedBy: TextCodingKeys.self, forKey: key)
+                try object.encode(text, forKey: ._0)
+
             case .number(let number):
-                var nestedContainer = container.nestedContainer(
-                    keyedBy: NumberCodingKeys.self,
-                    forKey: .number
-                )
-                
-                try nestedContainer.encode(number, forKey: ._0)
+                let key = PropertiesCodingKeys(stringValue: PropertyValueCodingKeys.number.rawValue)!
+                var nestedContainer = propertiesContainer.nestedContainer(keyedBy: PropertiesCodingKeys.self)
+                var object = nestedContainer.nestedContainer(keyedBy: NumberCodingKeys.self, forKey: key)
+                try object.encode(number, forKey: ._0)
+
             case .boolean(let boolean):
-                var nestedContainer = container.nestedContainer(
-                    keyedBy: BooleanCodingKeys.self,
-                    forKey: .boolean
-                )
-                
-                try nestedContainer.encode(boolean, forKey: ._0)
+                let key = PropertiesCodingKeys(stringValue: PropertyValueCodingKeys.boolean.rawValue)!
+                var nestedContainer = propertiesContainer.nestedContainer(keyedBy: PropertiesCodingKeys.self)
+                var object = nestedContainer.nestedContainer(keyedBy: BooleanCodingKeys.self, forKey: key)
+                try object.encode(boolean, forKey: ._0)
+
             case .image(let imageName):
-                var nestedContainer = container.nestedContainer(
-                    keyedBy: ImageCodingKeys.self,
-                    forKey: .image
-                )
-                
-                try nestedContainer.encode(imageName, forKey: ._0)
+                let key = PropertiesCodingKeys(stringValue: PropertyValueCodingKeys.image.rawValue)!
+                var nestedContainer = propertiesContainer.nestedContainer(keyedBy: PropertiesCodingKeys.self)
+                var object = nestedContainer.nestedContainer(keyedBy: ImageCodingKeys.self, forKey: key)
+                try object.encode(imageName, forKey: ._0)
+
             case .component(let component):
-                var nestedContainer = container.nestedContainer(
-                    keyedBy: ComponentCodingKeys.self,
-                    forKey: .component
-                )
-                
+
+                let key = PropertiesCodingKeys(stringValue: PropertyValueCodingKeys.component.rawValue)!
+                var nestedContainer = propertiesContainer.nestedContainer(keyedBy: PropertiesCodingKeys.self)
+                var object = nestedContainer.nestedContainer(keyedBy: ComponentCodingKeys.self, forKey: key)
+
                 // Encode ID
-                try nestedContainer.encode(component.id, forKey: ._0)
+                try object.encode(component.id, forKey: ._0)
             }
         }
         

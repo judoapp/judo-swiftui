@@ -14,19 +14,16 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import Foundation
+import OSLog
 
 extension KeyedDecodingContainer {
-    public func decodeNode(forKey key: K) throws -> Node {
-        try decode(NodeWrapper.self, forKey: key).node
-    }
-    
     public func decodeNodes(forKey key: K) throws -> [Node] {
-        try decode([NodeWrapper].self, forKey: key).map(\.node)
+        try decode([NodeWrapper].self, forKey: key).compactMap(\.node)
     }
 }
 
 private struct NodeWrapper: Decodable {
-    let node: Node
+    let node: Node?
     
     private enum CodingKeys: String, CodingKey {
         case typeName = "__typeName"
@@ -169,11 +166,8 @@ private struct NodeWrapper: Decodable {
             node = try ToolbarItemModifier(from: decoder)
             
         default:
-            throw DecodingError.dataCorruptedError(
-                forKey: .typeName,
-                in: container,
-                debugDescription: "Invalid value: \(typeName)"
-            )
+            node = nil
+            os_log("Unknown %@ found when decoding.", type: .debug, typeName)
         }
     }
 }
