@@ -25,9 +25,9 @@ public class OverlayModifier: JudoModifier {
     public required init() {
         super.init()
         
-        let rectangle = Rectangle()
-        rectangle.parent = self
-        self.children = [rectangle]
+        let roundedRectangle = RoundedRectangle()
+        roundedRectangle.parent = self
+        self.children = [roundedRectangle]
     }
 
     // MARK: Hierarchy

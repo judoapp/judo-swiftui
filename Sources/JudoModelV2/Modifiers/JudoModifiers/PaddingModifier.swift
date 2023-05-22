@@ -17,7 +17,7 @@ import SwiftUI
 
 public class PaddingModifier: JudoModifier {
 
-    @Published public var padding: Padding = Padding(0)
+    @Published public var padding: Padding = Padding(16)
     @Published public var advanced: Bool = false {
         didSet {
             if !advanced {
