@@ -17,15 +17,21 @@ import JudoModel
 import SwiftUI
 
 struct NavigationLinkView: SwiftUI.View {
+    @Environment(\.data) private var data
     @Environment(\.properties) private var properties
-    @ObservedObject var navigationLink: JudoModel.NavigationLink
+    @Environment(\.fetchedImage) private var fetchedImage
+    @EnvironmentObject private var documentState: DocumentData
 
+    @ObservedObject var navigationLink: JudoModel.NavigationLink
     var body: some SwiftUI.View {
         NavigationLink {
             ForEach(navigationLink.destination.children.allOf(type: Layer.self)) {
                 LayerView(layer: $0)
             }
             .environment(\.properties, properties)
+            .environment(\.data, data)
+            .environment(\.fetchedImage, fetchedImage)
+            .environmentObject(documentState)
         } label: {
             ForEach(navigationLink.label.children.allOf(type: Layer.self)) {
                 LayerView(layer: $0)
