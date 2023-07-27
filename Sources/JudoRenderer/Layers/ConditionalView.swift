@@ -18,7 +18,7 @@ import SwiftUI
 
 struct ConditionalView: SwiftUI.View {
     @Environment(\.data) private var data
-    @Environment(\.properties) private var properties
+    @EnvironmentObject private var componentState: ComponentState
     @ObservedObject var conditional: Conditional
 
     var body: some SwiftUI.View {
@@ -35,7 +35,7 @@ struct ConditionalView: SwiftUI.View {
         conditional.conditions.allSatisfy { condition in
             condition.isSatisfied(
                 data: data,
-                properties: properties
+                properties: componentState.properties
             )
         }
     }

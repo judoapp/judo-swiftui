@@ -18,10 +18,18 @@ import SwiftUI
 
 struct OffsetViewModifier: SwiftUI.ViewModifier {
     @ObservedObject var modifier: OffsetModifier
+    @ComponentValue private var width: NumberValue
+    @ComponentValue private var height: NumberValue
+
+    init(modifier: OffsetModifier) {
+        self.modifier = modifier
+        self.width = modifier.width
+        self.height = modifier.height
+    }
 
     func body(content: Content) -> some SwiftUI.View {
         content
-            .offset(modifier.size)
+            .offset(CGSize(width: $width ?? 0, height: $height ?? 0))
     }
 }
 

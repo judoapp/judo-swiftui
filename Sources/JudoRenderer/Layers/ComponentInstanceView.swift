@@ -18,87 +18,43 @@ import SwiftUI
 
 /// A SwiftUI view for rendering a `ComponentInstance`.
 struct ComponentInstanceView: SwiftUI.View {
-    @Environment(\.properties) private var properties
+    @EnvironmentObject private var componentState: ComponentState
     @ObservedObject var componentInstance: ComponentInstance
-    
-    init(componentInstance: ComponentInstance) {
-        self.componentInstance = componentInstance
-    }
-    
-    var body: some SwiftUI.View {
-        if let mainComponent = mainComponent {
-            ContentView(
-                mainComponent: mainComponent,
-                overrides: componentInstance.overrides
-            )
-        }
-    }
 
-    private var mainComponent: MainComponent? {
-        componentInstance.value.resolve(properties: properties)
-    }
-}
-
-// Use a nested view that updates whenever the `MainComponent` changes.
-private struct ContentView: SwiftUI.View {
     @EnvironmentObject private var localizations: DocumentLocalizations
     @Environment(\.data) private var data
     @Environment(\.fetchedImage) private var fetchedImage
-    @Environment(\.properties) private var properties
 
-    @ObservedObject var mainComponent: MainComponent
-    let overrides: ComponentInstance.Overrides
+    init(componentInstance: ComponentInstance) {
+        self.componentInstance = componentInstance
+    }
 
     var body: some SwiftUI.View {
-        ForEach(orderedLayers) {
-            LayerView(layer: $0)
+        if let mainComponent {
+            ForEach(orderedLayers) {
+                LayerView(layer: $0)
+            }
+            .modifier(
+                ZStackContentIfNeededModifier(for: orderedLayers)
+            )
+            .environmentObject(
+                ComponentState(
+                    properties: mainComponent.properties,
+                    overrides: componentInstance.overrides,
+                    localizations: localizations,
+                    data: data,
+                    fetchedImage: fetchedImage,
+                    parentState: componentState
+                )
+            )
         }
-        .modifier(
-            ZStackContentIfNeededModifier(for: orderedLayers)
-        )
-        .environment(\.properties, resolvedProperties)
+    }
+    
+    private var mainComponent: MainComponent? {
+        componentInstance.value.resolve(properties: componentState.properties)
     }
     
     private var orderedLayers: [Layer] {
-        mainComponent.children.allOf(type: Layer.self).reversed()
-    }
-
-    private var resolvedProperties: MainComponent.Properties {
-        var result = mainComponent.properties
-
-        mainComponent.properties.forEach { (key, value) in
-            switch (value, overrides[key]) {
-            case (.text, .text(let value)):
-                let resolvedValue = value.resolve(
-                    data: data,
-                    properties: properties,
-                    locale: Locale.preferredLocale,
-                    localizations: localizations
-                )
-
-                result[key] = .text(resolvedValue)
-            case (.number, .number(let value)):
-                result[key] = .number(value)
-            case (.boolean, .boolean(let value)):
-                result[key] = .boolean(value)
-            case (.image(let defaultValue), .image(let value)):
-                let resolvedValue = value.resolve(
-                    properties: properties,
-                    fetchedImage: fetchedImage
-                )
-                
-                result[key] = .image(resolvedValue ?? defaultValue)
-            case (.component(let defaultValue), .component(let value)):
-                let resolvedValue = value.resolve(
-                    properties: properties
-                )
-
-                result[key] = .component(resolvedValue ?? defaultValue)
-            default:
-                break
-            }
-        }
-
-        return result
+        mainComponent?.children.allOf(type: Layer.self).reversed() ?? []
     }
 }

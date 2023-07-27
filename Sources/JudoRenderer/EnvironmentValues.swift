@@ -16,12 +16,8 @@
 import SwiftUI
 import JudoModel
 
-private struct ComponentPropertiesKey: EnvironmentKey {
-    static var defaultValue = MainComponent.Properties()
-}
-
 private struct CustomActionsKey: EnvironmentKey {
-    static var defaultValue: [CustomActionIdentifier: ActionHandler<ButtonAction.Parameters>] = [:]
+    static var defaultValue: [CustomActionIdentifier: ActionHandler<[String: Any]>] = [:]
 }
 
 private struct DataKey: EnvironmentKey {
@@ -34,12 +30,7 @@ private struct FetchedImageKey: EnvironmentKey {
 
 extension EnvironmentValues {
 
-    var properties: MainComponent.Properties {
-        get { self[ComponentPropertiesKey.self] }
-        set { self[ComponentPropertiesKey.self] = newValue }
-    }
-
-    var customActions: [CustomActionIdentifier: ActionHandler<ButtonAction.Parameters>] {
+    var customActions: [CustomActionIdentifier: ActionHandler<[String: Any]>] {
         get { self[CustomActionsKey.self] }
         set { self[CustomActionsKey.self] = newValue }
     }

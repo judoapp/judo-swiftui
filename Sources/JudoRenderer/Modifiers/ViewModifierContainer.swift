@@ -134,6 +134,12 @@ private struct JudoViewModifier: SwiftUI.ViewModifier {
         case let modifier as JudoModel.AspectRatioModifier:
             content.modifier(AspectRatioViewModifier(modifier: modifier))
 
+        case let modifier as AutocapitalizationModifier:
+            content.modifier(AutocapitalizationViewModifier(modifier: modifier))
+
+        case let modifier as AutocorrectionDisabledModifier:
+            content.modifier(AutocorrectionDisabledViewModifier(modifier: modifier))
+
         case let modifier as BackgroundModifier:
             content.modifier(BackgroundViewModifier(modifier: modifier))
 
@@ -152,11 +158,20 @@ private struct JudoViewModifier: SwiftUI.ViewModifier {
         case let modifier as FrameModifier:
             content.modifier(FrameViewModifier(modifier: modifier))
 
+        case let modifier as IgnoresSafeAreaModifier:
+            content.modifier(IgnoresSafeAreaViewModifier(modifier: modifier))
+            
         case let modifier as IndexViewStyleModifier:
             content.modifier(IndexViewStyleViewModifier(modifier: modifier))
 
         case let modifier as ItalicModifier:
             content.modifier(ItalicViewModifier(modifier: modifier))
+
+        case let modifier as KeyboardTypeModifier:
+            content.modifier(KeyboardTypeViewModifier(modifier: modifier))
+
+        case let modifier as LabelsHiddenModifier:
+            content.modifier(LabelsHiddenViewModifier(modifier: modifier))
 
         case let modifier as LayoutPriorityModifier:
             content.modifier(LayoutPriorityViewModifier(modifier: modifier))
@@ -194,6 +209,9 @@ private struct JudoViewModifier: SwiftUI.ViewModifier {
         case let modifier as PaddingModifier:
             content.modifier(PaddingViewModifier(modifier: modifier))
 
+        case let modifier as PickerStyleModifier:
+            content.modifier(PickerStyleViewModifier(modifier: modifier))
+
         case let modifier as ScaledToFillModifier:
             content.modifier(ScaledToFillViewModifier(modifier: modifier))
 
@@ -202,6 +220,9 @@ private struct JudoViewModifier: SwiftUI.ViewModifier {
 
         case let modifier as ShadowModifier:
             content.modifier(ShadowViewModifier(modifier: modifier))
+
+        case let modifier as SubmitLabelModifier:
+            content.modifier(SubmitLabelViewModifier(modifier: modifier))
 
         case let modifier as TabItemModifier:
             content.modifier(TabItemViewModifier(modifier: modifier))
@@ -212,8 +233,17 @@ private struct JudoViewModifier: SwiftUI.ViewModifier {
         case let modifier as TextCaseModifier:
             content.modifier(TextCaseViewModifier(modifier: modifier))
 
+        case let modifier as TextContentTypeModifier:
+            content.modifier(TextContentTypeViewModifier(modifier: modifier))
+
+        case let modifier as TextFieldStyleModifier:
+            content.modifier(TextFieldStyleViewModifier(modifier: modifier))
+
         case let modifier as TintModifier:
             content.modifier(TintViewModifier(modifier: modifier))
+
+        case let modifier as ToggleStyleModifier:
+            content.modifier(ToggleStyleViewModifier(modifier: modifier))
 
         case let modifier as ToolbarBackgroundColorModifier:
             content.modifier(ToolbarBackgroundColorViewModifier(modifier: modifier))

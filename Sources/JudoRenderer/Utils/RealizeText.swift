@@ -18,7 +18,7 @@ import SwiftUI
 
 struct RealizeText<Content>: SwiftUI.View where Content: SwiftUI.View {
     @EnvironmentObject private var localizations: DocumentLocalizations
-    @Environment(\.properties) private var properties
+    @EnvironmentObject private var componentState: ComponentState
     @Environment(\.data) private var data
 
     private var text: TextValue
@@ -33,7 +33,7 @@ struct RealizeText<Content>: SwiftUI.View where Content: SwiftUI.View {
         content(
             text.resolve(
                 data: data,
-                properties: properties,
+                properties: componentState.properties,
                 locale: Locale.preferredLocale,
                 localizations: localizations
             )

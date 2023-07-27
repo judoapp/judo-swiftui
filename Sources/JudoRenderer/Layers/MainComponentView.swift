@@ -21,8 +21,21 @@ import os.log
 
 /// A SwiftUI view for rendering a `MainComponent`.
 struct MainComponentView: SwiftUI.View {
-    @Environment(\.properties) private var properties
     @ObservedObject var component: MainComponent
+    @StateObject private var componentState: ComponentState
+
+    /// Initialize with MainComponent and user provided bindings (parameters)
+    init(component: MainComponent, userBindings: [String: ComponentBinding]) {
+        self.component = component
+        self._componentState = StateObject(
+            wrappedValue: ComponentState(
+                bindings: component.properties
+                    .mapValues { ComponentBinding(value: $0) }
+                    .merging(userBindings, uniquingKeysWith: { (_, new) in new })
+                    .asDictionary()
+            )
+        )
+    }
         
     var body: some SwiftUI.View {
         ForEach(orderedLayers) { layer in
@@ -35,7 +48,7 @@ struct MainComponentView: SwiftUI.View {
             /// more than one layer on the root of the component
             ZStackContentIfNeededModifier(for: orderedLayers)
         )
-        .environment(\.properties, component.properties.merging(properties, uniquingKeysWith: {(_, new) in new }))
+        .environmentObject(componentState)
     }
     
     private var orderedLayers: [Layer] {

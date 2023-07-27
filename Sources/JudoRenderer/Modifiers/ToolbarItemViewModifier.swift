@@ -17,8 +17,6 @@ import JudoModel
 import SwiftUI
 
 struct ToolbarItemViewModifier: SwiftUI.ViewModifier {
-    @Environment(\.openURL) private var openURL
-    @Environment(\.presentationMode) private var presentationMode
 
     @ObservedObject var modifier: ToolbarItemModifier
 
@@ -26,49 +24,17 @@ struct ToolbarItemViewModifier: SwiftUI.ViewModifier {
         content
             .toolbar {
                 ToolbarItem(placement: placement) {
-                    let item = modifier.toolbarItem
-                    switch item.action {
-                    case .none:
-                        LabelView(item: item)
-
-                    case .dismiss:
-
-                        if #available(iOS 15.0, *) {
-                            DismissToolbarItemButtonView(item: item)
-                        } else {
-                            ToolbarItemButtonView(item: item) {
-                                presentationMode.wrappedValue.dismiss()
-                            }
-                        }
-
-                    case .refresh:
-                        if #available(iOS 15.0, *) {
-                            RefreshableButtonView(item: item)
-                        } else {
-                            ToolbarItemButtonView(item: item) {
-                                logger.info("Refresh is unavailable on iOS 14")
-                                assertionFailure("Refresh is unavailable on iOS 14")
-                            }
-                        }
-
-                    case .openURL(let url):
-                        ToolbarItemButtonView(item: item) {
-                            if let url = URL(string: url.description) {
-                                openURL(url)
-                            }
-                        }
-
-                    case .custom:
-                        ToolbarItemButtonView(item: item) {
-                            // TODO: Handle custom actions with Name and UserInfo
-                        }
+                    if #available(iOS 15.0, *) {
+                        ModernToolbarItemButtonView(modifier: modifier)
+                    } else {
+                        ToolbarItemButtonView(modifier: modifier)
                     }
                 }
             }
     }
 
     var placement: SwiftUI.ToolbarItemPlacement {
-        switch modifier.toolbarItem.placement {
+        switch modifier.placement {
             // Leading Items
         case .leading:
             return .navigationBarLeading
@@ -102,55 +68,204 @@ struct ToolbarItemViewModifier: SwiftUI.ViewModifier {
     }
 }
 
+
 @available(iOS 15.0, *)
-private struct DismissToolbarItemButtonView: SwiftUI.View {
+private struct ModernToolbarItemButtonView: SwiftUI.View {
+    @Environment(\.refresh) private var refresh
     @Environment(\.dismiss) private var dismiss
-    let item: ToolbarItemModifier.ToolbarItem
+    @Environment(\.openURL) private var openURL
+    @Environment(\.customActions) private var customActions
+    @Environment(\.data) private var data
+    @EnvironmentObject private var componentState: ComponentState
+
+    let modifier: ToolbarItemModifier
 
     var body: some SwiftUI.View {
-        ToolbarItemButtonView(item: item) {
-                dismiss()
+        Button {
+            actions(modifier.actions)
+        } label: {
+            LabelView(modifier: modifier)
         }
     }
-}
 
-@available(iOS 15.0, *)
-private struct RefreshableButtonView: SwiftUI.View {
-    @Environment(\.refresh) private var refresh
-    let item: ToolbarItemModifier.ToolbarItem
+    private func actions(_ actions: [JudoModel.Action]) {
+        for action in actions {
+            switch action {
+            case is JudoModel.DismissAction:
+                dismiss()
 
-    var body: some SwiftUI.View {
-        ToolbarItemButtonView(item: item, action: {
-            Task {
-                await refresh?()
+            case let action as JudoModel.OpenURLAction:
+                if let url = URL(string: action.url.description) {
+                    openURL(url)
+                }
+
+            case is JudoModel.RefreshAction:
+                Task {
+                    await refresh?()
+                }
+
+            case let action as CustomAction:
+                guard let resolvedValue = action.identifier.resolve(data: data, componentState: componentState) else {
+                    continue
+                }
+                
+                let identifier = CustomActionIdentifier(resolvedValue)
+                
+                let parameters: [String: Any] = action.parameters.reduce(into: [:], { partialResult, parameter in
+                    if let textValue = parameter.textValue {
+                        let resolvedValue = textValue.resolve(data: data, componentState: componentState)
+                        partialResult[parameter.key] = resolvedValue
+                    } else if let numberValue = parameter.numberValue {
+                        if let resolvedValue = numberValue.resolve(data: data, componentState: componentState) {
+                            partialResult[parameter.key] = resolvedValue
+                        }
+                    } else if let booleanValue = parameter.booleanValue {
+                        let resolvedValue = booleanValue.resolve(data: data, componentState: componentState)
+                        partialResult[parameter.key] = resolvedValue
+                    }
+                })
+                
+                customActions[identifier]?(parameters)
+
+            case let action as PropertyAction:
+                processPropertyAction(action, componentState: componentState, data: data)
+                
+            default:
+                assertionFailure("Unexpected action")
             }
-        })
+        }
     }
 }
 
 private struct ToolbarItemButtonView: SwiftUI.View {
-    let item: ToolbarItemModifier.ToolbarItem
-    let action: () -> Void
+    @Environment(\.presentationMode) private var presentationMode
+    @Environment(\.openURL) private var openURL
+    @Environment(\.customActions) private var customActions
+    @Environment(\.data) private var data
+    @EnvironmentObject private var componentState: ComponentState
+
+    let modifier: ToolbarItemModifier
 
     var body: some SwiftUI.View {
         Button {
-            action()
+            actions(modifier.actions)
         } label: {
-            LabelView(item: item)
+            LabelView(modifier: modifier)
         }
+    }
+
+    private func actions(_ actions: [JudoModel.Action]) {
+        for action in actions {
+            switch action {
+            case is JudoModel.DismissAction:
+                presentationMode.wrappedValue.dismiss()
+
+            case let action as JudoModel.OpenURLAction:
+                if let url = URL(string: action.url.description) {
+                    openURL(url)
+                }
+
+            case is JudoModel.RefreshAction:
+                logger.info("Refresh is unavailable on iOS 14")
+                assertionFailure("Refresh is unavailable on iOS 14")
+                break
+
+            case let action as CustomAction:
+                guard let resolvedValue = action.identifier.resolve(data: data, componentState: componentState) else {
+                    continue
+                }
+                
+                let identifier = CustomActionIdentifier(resolvedValue)
+                
+                let parameters: [String: Any] = action.parameters.reduce(into: [:], { partialResult, parameter in
+                    if let textValue = parameter.textValue {
+                        let resolvedValue = textValue.resolve(data: data, componentState: componentState)
+                        partialResult[parameter.key] = resolvedValue
+                    } else if let numberValue = parameter.numberValue {
+                        if let resolvedValue = numberValue.resolve(data: data, componentState: componentState) {
+                            partialResult[parameter.key] = resolvedValue
+                        }
+                    } else if let booleanValue = parameter.booleanValue {
+                        let resolvedValue = booleanValue.resolve(data: data, componentState: componentState)
+                        partialResult[parameter.key] = resolvedValue
+                    }
+                })
+                
+                customActions[identifier]?(parameters)
+
+            case let action as PropertyAction:
+                processPropertyAction(action, componentState: componentState, data: data)
+            
+            default:
+                assertionFailure("Unexpected action")
+            }
+        }
+    }
+}
+
+private func processPropertyAction(_ action: JudoModel.PropertyAction, componentState: ComponentState, data: Any?) {
+    guard let propertyName = action.propertyName else {
+        return
+    }
+    
+    switch action {
+    case let action as SetPropertyAction:
+        if let textValue = action.textValue {
+            if let resolvedValue = textValue.resolve(data: data, componentState: componentState) {
+                componentState.bindings[propertyName]?.value = .text(resolvedValue)
+            }
+        } else if let numberValue = action.numberValue {
+            if let resolvedValue = numberValue.resolve(data: data, componentState: componentState) {
+                componentState.bindings[propertyName]?.value = .number(resolvedValue)
+            }
+        } else if let booleanValue = action.booleanValue {
+            if let resolvedValue = booleanValue.resolve(data: data, componentState: componentState) {
+                componentState.bindings[propertyName]?.value = .boolean(resolvedValue)
+            }
+        } else if let imageValue = action.imageValue {
+            if let resolvedValue = imageValue.resolve(data: data, componentState: componentState) {
+                componentState.bindings[propertyName]?.value = .image(resolvedValue)
+            }
+        }
+        
+    case is TogglePropertyAction:
+        if case .boolean(let value) = componentState.bindings[propertyName]?.value {
+            componentState.bindings[propertyName]?.value = .boolean(!value)
+        } else {
+            assertionFailure("Unexpected binding type")
+        }
+        
+    case let action as IncrementPropertyAction:
+        if case .number(let value) = componentState.bindings[propertyName]?.value,
+           let resolvedByValue = action.value.resolve(data: data, componentState: componentState)
+        {
+            componentState.bindings[propertyName]?.value = .number(value + resolvedByValue)
+        } else {
+            assertionFailure("Unexpected binding")
+        }
+    case let action as DecrementPropertyAction:
+        if case .number(let value) = componentState.bindings[propertyName]?.value,
+           let resolvedByValue = action.value.resolve(data: data, componentState: componentState)
+        {
+            componentState.bindings[propertyName]?.value = .number(value - resolvedByValue)
+        } else {
+            assertionFailure("Unexpected binding")
+        }
+    default:
+        assertionFailure("Unexpected action")
     }
 }
 
 private struct LabelView: SwiftUI.View {
     @Environment(\.data) private var data
-    @Environment(\.properties) private var properties
+    @EnvironmentObject private var componentState: ComponentState
 
-    let item: ToolbarItemModifier.ToolbarItem
+    let modifier: ToolbarItemModifier
 
     var body: some SwiftUI.View {
-        if let icon = item.icon, let title = title {
+        if let icon = modifier.icon, let title = title {
             SwiftUI.Label(title, systemImage: icon.symbolName)
-        } else if let icon = item.icon {
+        } else if let icon = modifier.icon {
             SwiftUI.Image(systemName: icon.symbolName)
         } else if let title = title {
             SwiftUI.Text(title)
@@ -158,9 +273,9 @@ private struct LabelView: SwiftUI.View {
     }
 
     private var title: String? {
-        try? item.title?.description.evaluatingExpressions(
+        try? modifier.title?.description.evaluatingExpressions(
             data: data,
-            properties: properties
+            properties: componentState.properties
         )
     }
 }

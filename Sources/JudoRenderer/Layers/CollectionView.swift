@@ -18,7 +18,7 @@ import SwiftUI
 
 struct CollectionView: SwiftUI.View {
     @Environment(\.data) private var data
-    @Environment(\.properties) private var properties
+    @EnvironmentObject private var componentState: ComponentState
     @EnvironmentObject private var documentState: DocumentData
     @ObservedObject var collection: CollectionLayer
 
@@ -41,7 +41,7 @@ struct CollectionView: SwiftUI.View {
     private var items: [Any]? {
         collection.items(
             data: data,
-            properties: properties
+            properties: componentState.properties
         )
     }
 }

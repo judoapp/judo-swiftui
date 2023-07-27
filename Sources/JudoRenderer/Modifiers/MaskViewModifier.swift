@@ -27,7 +27,7 @@ struct MaskViewModifier: SwiftUI.ViewModifier {
                 }
         } else {
             content
-                .mask(self.content) // TODO-bs: fake it
+                .mask(self.content) // TODO: fake it
         }
     }
     

@@ -18,7 +18,7 @@ import SwiftUI
 
 struct TabItemViewModifier: SwiftUI.ViewModifier {
     @Environment(\.data) private var data
-    @Environment(\.properties) private var properties
+    @EnvironmentObject private var componentState: ComponentState
 
     @ObservedObject var modifier: TabItemModifier
 
@@ -41,7 +41,7 @@ struct TabItemViewModifier: SwiftUI.ViewModifier {
     private var title: String? {
         try? modifier.tabItem.title?.description.evaluatingExpressions(
             data: data,
-            properties: properties
+            properties: componentState.properties
         )
     }
 }

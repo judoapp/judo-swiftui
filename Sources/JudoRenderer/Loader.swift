@@ -39,24 +39,7 @@ struct Loader {
             nan: "nan"
         )
 
-        // meta.json
-
-        guard let metaFile = archive["meta.json"], metaFile.type == .file else {
-            logger.error("Unable to read document due to ZIP decoding issue: meta.json is missing.")
-            throw CocoaError(.fileReadUnknown)
-        }
-
-        logger.debug("Read archive from data at \(path)")
-
-        let meta: JudoModel.Meta
-        do {
-            let metaData = try archive.extractEntire(entry: metaFile)
-            meta = try decoder.decode(JudoModel.Meta.self, from: metaData)
-        } catch {
-            logger.error("Unable to read document metadata due to ZIP decoding issue: \(error.debugDescription)")
-            throw CocoaError(.fileReadUnknown)
-        }
-
+        let meta = try archive.extractMeta()
         // assets
         let assetCatalog = archive.extractXCAssets()
         let fonts = try archive.extractFonts()

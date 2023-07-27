@@ -23,18 +23,16 @@ struct ToolbarBackgroundColorViewModifier: SwiftUI.ViewModifier {
     func body(content: Content) -> some SwiftUI.View {
         if #available(iOS 16.0, *) {
             RealizeColor(modifier.color, content: { realizedColor in
-
-                content
-                    .modifierIf(modifier.bars.isEmpty) {
-                        content.toolbarBackground(realizedColor)
-                    }
-                    .modifierIf(modifier.bars.contains(.tabBar)) {
-                        content.toolbarBackground(realizedColor, for: .tabBar)
-                    }
-                    .modifierIf(modifier.bars.contains(.navigationBar)) {
-                        content.toolbarBackground(realizedColor, for: .navigationBar)
-                    }
-
+                switch modifier.bars {
+                case .navigationBar:
+                    content.toolbarBackground(realizedColor, for: .navigationBar)
+                case .tabBar:
+                    content.toolbarBackground(realizedColor, for: .tabBar)
+                case .all:
+                    content.toolbarBackground(realizedColor, for: .navigationBar, .tabBar)
+                default:
+                    content
+                }
             })
         } else {
             RealizeColor(modifier.color, cocoaContent: { realizedColor in

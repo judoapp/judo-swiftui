@@ -22,7 +22,7 @@ struct ImageView: SwiftUI.View {
     @Environment(\.displayScale) private var displayScale
     @Environment(\.data) private var data
     @Environment(\.fetchedImage) private var fetchedImage
-    @Environment(\.properties) private var properties
+    @EnvironmentObject private var componentState: ComponentState
     @EnvironmentObject private var assets: Assets
     
     @ObservedObject private var image: JudoModel.Image
@@ -65,7 +65,7 @@ struct ImageView: SwiftUI.View {
     }
     
     private func resolveImageReference(from propertyName: String) -> ImageReference? {
-        switch properties[propertyName] {
+        switch componentState.properties[propertyName] {
         case .image(let imageName):
             return imageName
         default:
@@ -74,7 +74,7 @@ struct ImageView: SwiftUI.View {
     }
 }
 
-private struct ImageReferenceView: View {
+struct ImageReferenceView: View {
     var imageReference: ImageReference
     var resizing: ResizingMode
     var renderingMode: TemplateRenderingMode

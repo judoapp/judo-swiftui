@@ -17,9 +17,16 @@ import JudoModel
 import SwiftUI
 
 struct SpacerView: SwiftUI.View {
-    @ObservedObject var spacer: JudoModel.Spacer
+    @EnvironmentObject private var componentState: ComponentState
+    @Environment(\.data) private var data
+
+    @OptionalComponentValue private var minLength: NumberValue?
+
+    init(spacer: JudoModel.Spacer) {
+        self.minLength = spacer.minLength
+    }
 
     var body: some SwiftUI.View {
-        SwiftUI.Spacer(minLength: spacer.minLength)
+        SwiftUI.Spacer(minLength: $minLength.map({ CGFloat($0) }))
     }
 }

@@ -24,15 +24,21 @@ public extension Judo {
         struct Setup {
             var viewData: ViewData
             var component: MainComponent
-            var properties: MainComponent.Properties
+            var bindings: [String: ComponentBinding]
         }
 
         private struct ElementView: SwiftUI.View {
             @ObservedObject var element: Element
+            let viewSetup: Setup
+
+            init(element: Element, viewSetup: Setup) {
+                self.element = element
+                self.viewSetup = viewSetup
+            }
 
             var body: some SwiftUI.View {
                 if let component = element as? MainComponent {
-                    MainComponentView(component: component)
+                    MainComponentView(component: component, userBindings: viewSetup.bindings)
                 } else if let layer = element as? Layer {
                     LayerView(layer: layer)
                 }
@@ -82,7 +88,7 @@ public extension Judo {
                 viewSetup = Setup(
                     viewData: viewData,
                     component: foundComponent,
-                    properties: convert(properties)
+                    bindings: convert(properties)
                 )
             } catch {
                 logger.error("Failed to load View from \(fileName)")
@@ -114,7 +120,7 @@ public extension Judo {
                 viewSetup = Setup(
                     viewData: viewData,
                     component: foundComponent,
-                    properties: convert(properties)
+                    bindings: convert(properties)
                 )
             } catch {
                 logger.error("Failed to load View from \(fileURL)")
@@ -123,14 +129,12 @@ public extension Judo {
 
         public var body: some SwiftUI.View {
             if let viewSetup = viewSetup {
-                ElementView(element: viewSetup.component)
+                ElementView(element: viewSetup.component, viewSetup: viewSetup)
                     .environmentObject(viewSetup.viewData.localizations)
                     .environmentObject(viewSetup.viewData.importedFonts)
                     .environmentObject(viewSetup.viewData.documentData)
                     .environmentObject(viewSetup.viewData.assets)
-                    .transformEnvironment(\.properties) { properties in
-                        properties.merge(viewSetup.properties, uniquingKeysWith: {(_, new) in new })
-                    }
+                    .id(viewSetup.bindings.mapValues(\.value))
             } else {
                 NotFoundView()
             }
@@ -160,18 +164,14 @@ public extension Judo {
 
 // MARK: - Custom Actions
 
-extension Judo {
-    public typealias CustomActionIdentifier = JudoModel.CustomActionIdentifier
-}
-
 extension Judo.View {
-    public func on(_ identifier: CustomActionIdentifier, handler: @escaping (ButtonAction.Parameters) -> Void) -> Judo.ActionModifiedContent<Self> {
+    public func on(_ identifier: CustomActionIdentifier, handler: @escaping ([String: Any]) -> Void) -> Judo.ActionModifiedContent<Self> {
         Judo.ActionModifiedContent(identifier: identifier, handler: ActionHandler(handler: handler), content: self)
     }
 }
 
 extension Judo.ActionModifiedContent {
-    public func on(_ identifier: CustomActionIdentifier, handler: @escaping (ButtonAction.Parameters) -> Void) -> Judo.ActionModifiedContent<Self> {
+    public func on(_ identifier: CustomActionIdentifier, handler: @escaping ([String: Any]) -> Void) -> Judo.ActionModifiedContent<Self> {
         Judo.ActionModifiedContent(identifier: identifier, handler: ActionHandler(handler: handler), content: self)
     }
 }
@@ -181,10 +181,10 @@ extension Judo {
     public struct ActionModifiedContent<Content: SwiftUI.View>: SwiftUI.View {
         @Environment(\.customActions) private var customActions
         private let identifier: CustomActionIdentifier
-        private let handler: ActionHandler<ButtonAction.Parameters>
+        private let handler: ActionHandler<[String: Any]>
         private let content: Content
 
-        init(identifier: CustomActionIdentifier, handler: ActionHandler<ButtonAction.Parameters>, content: Content) {
+        init(identifier: CustomActionIdentifier, handler: ActionHandler<[String: Any]>, content: Content) {
             self.identifier = identifier
             self.handler = handler
             self.content = content
@@ -200,24 +200,61 @@ extension Judo {
 
 }
 
-private func convert(_ properties: [String: Any]) -> MainComponent.Properties {
-    var result: MainComponent.Properties = [:]
+/// Convert user provided properties (Any), to corresponding ComponentBinding
+private func convert(_ properties: [String: Any]) -> [String: ComponentBinding] {
+    var result: [String: ComponentBinding] = [:]
 
     for (key, anyValue) in properties {
         switch anyValue {
         case let value as IntegerLiteralType:
-            result[key] = Property.Value(integerLiteral: value)
+            result[key] = ComponentBinding(value: Property.Value(integerLiteral: value))
+        case let bindingValue as Binding<Int>:
+            let propertyValueBinding = Binding {
+                MainComponent.Properties.Value.number(Double(bindingValue.wrappedValue))
+            } set: { newValue in
+                if case .number(let value) = newValue {
+                    bindingValue.wrappedValue = Int(value)
+                }
+            }
+            result[key] = ComponentBinding(binding: propertyValueBinding)
         case let value as FloatLiteralType:
-            result[key] = Property.Value(floatLiteral: value)
+            result[key] = ComponentBinding(value: Property.Value(floatLiteral: value))
+        case let bindingValue as Binding<Double>:
+            let propertyValueBinding = Binding {
+                MainComponent.Properties.Value.number(bindingValue.wrappedValue)
+            } set: { newValue in
+                if case .number(let value) = newValue {
+                    bindingValue.wrappedValue = value
+                }
+            }
+            result[key] = ComponentBinding(binding: propertyValueBinding)
         case let value as BooleanLiteralType:
-            result[key] = Property.Value(booleanLiteral: value)
+            result[key] = ComponentBinding(value: Property.Value(booleanLiteral: value))
+        case let bindingValue as Binding<Bool>:
+            let propertyValueBinding = Binding {
+                MainComponent.Properties.Value.boolean(bindingValue.wrappedValue)
+            } set: { newValue in
+                if case .boolean(let value) = newValue {
+                    bindingValue.wrappedValue = value
+                }
+            }
+            result[key] = ComponentBinding(binding: propertyValueBinding)
         case let value as StringLiteralType:
-            result[key] = Property.Value(stringLiteral: value)
+            result[key] = ComponentBinding(value: Property.Value(stringLiteral: value))
+        case let bindingValue as Binding<String>:
+            let propertyValueBinding = Binding {
+                MainComponent.Properties.Value.text(bindingValue.wrappedValue)
+            } set: { newValue in
+                if case .text(let value) = newValue {
+                    bindingValue.wrappedValue = value
+                }
+            }
+            result[key] = ComponentBinding(binding: propertyValueBinding)
         case let value as SwiftUI.Image:
-            result[key] = Property.Value.image(.inline(image: value))
+            result[key] = ComponentBinding(value: Property.Value.image(.inline(image: value)))
         case let value as UIImage:
             let image = SwiftUI.Image(uiImage: value)
-            result[key] = Property.Value.image(.inline(image: image))
+            result[key] = ComponentBinding(value: Property.Value.image(.inline(image: image)))
         default:
             logger.warning("Invalid value for property \"\(key)\". Property unused.")
             break

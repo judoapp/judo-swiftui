@@ -18,13 +18,13 @@ import SwiftUI
 
 struct NavigationTitleViewModifier: SwiftUI.ViewModifier {
     @Environment(\.data) private var data
-    @Environment(\.properties) private var properties
+    @EnvironmentObject private var componentState: ComponentState
     
     @ObservedObject var modifier: NavigationTitleModifier
 
     func body(content: Content) -> some SwiftUI.View {
         RealizeText(modifier.title) { textString in
-            if let textValue = try? textString.evaluatingExpressions(data: data, properties: properties) {
+            if let textValue = try? textString.evaluatingExpressions(data: data, properties: componentState.properties) {
                 content.navigationTitle(textValue)
             }
         }

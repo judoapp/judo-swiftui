@@ -22,7 +22,7 @@ struct AsyncImageView: SwiftUI.View {
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.displayScale) private var displayScale
     @Environment(\.data) private var data
-    @Environment(\.properties) private var properties
+    @EnvironmentObject private var componentState: ComponentState
 
     @EnvironmentObject private var localizations: DocumentLocalizations
     @ObservedObject private var image: JudoModel.AsyncImage
@@ -74,7 +74,7 @@ struct AsyncImageView: SwiftUI.View {
     private var resolvedURL: String {
         image.url.resolve(
             data: data,
-            properties: properties,
+            properties: componentState.properties,
             locale: Locale.preferredLocale,
             localizations: localizations
         )

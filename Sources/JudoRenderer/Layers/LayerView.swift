@@ -60,18 +60,30 @@ struct LayerView: SwiftUI.View {
             NavigationLinkView(navigationLink: navigationLink)
         case let navigationStack as JudoModel.NavigationStack:
             NavigationStackView(navigationStack: navigationStack)
+        case let picker as JudoModel.Picker:
+            PickerView(picker: picker)
         case let rectangle as JudoModel.Rectangle:
             RectangleView(rectangle: rectangle)
         case let roundedRectangle as JudoModel.RoundedRectangle:
             RoundedRectangleView(roundedRectangle: roundedRectangle)
+        case let secureField as JudoModel.SecureField:
+            SecureFieldView(secureField: secureField)
         case let scrollView as JudoModel.ScrollView:
             ScrollViewView(scrollView: scrollView)
+        case let slider as JudoModel.Slider:
+            SliderView(slider: slider)
         case let spacer as JudoModel.Spacer:
             SpacerView(spacer: spacer)
+        case let stepper as JudoModel.Stepper:
+            StepperView(stepper: stepper)
         case let tabView as JudoModel.TabView:
             TabViewView(tabView: tabView)
         case let text as JudoModel.Text:
             TextView(text: text)
+        case let textField as JudoModel.TextField:
+            TextFieldView(textField: textField)
+        case let toggle as JudoModel.Toggle:
+            ToggleView(toggle: toggle)
         case let stack as JudoModel.VStack:
             VStackView(stack: stack)
         case let stack as JudoModel.ZStack:

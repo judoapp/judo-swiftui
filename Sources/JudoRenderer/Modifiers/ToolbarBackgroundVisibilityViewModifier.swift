@@ -22,16 +22,16 @@ struct ToolbarBackgroundVisibilityViewModifier: SwiftUI.ViewModifier {
 
     func body(content: Content) -> some SwiftUI.View {
         if #available(iOS 16.0, *) {
-            content
-                .modifierIf(modifier.bars.isEmpty) {
-                    content.toolbarBackground(modifier.visibility.swiftUIValue)
-                }
-                .modifierIf(modifier.bars.contains(.tabBar)) {
-                    content.toolbarBackground(modifier.visibility.swiftUIValue, for: .tabBar)
-                }
-                .modifierIf(modifier.bars.contains(.navigationBar)) {
-                    content.toolbarBackground(modifier.visibility.swiftUIValue, for: .navigationBar)
-                }
+            switch modifier.bars {
+            case .navigationBar:
+                content.toolbarBackground(modifier.visibility.swiftUIValue, for: .navigationBar)
+            case .tabBar:
+                content.toolbarBackground(modifier.visibility.swiftUIValue, for: .tabBar)
+            case .all:
+                content.toolbarBackground(modifier.visibility.swiftUIValue, for: .navigationBar, .tabBar)
+            default:
+                content
+            }
         } else {
             content
                 .introspectNavigationController { navigationController in

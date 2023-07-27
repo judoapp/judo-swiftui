@@ -1,5 +1,5 @@
 sources:
-  - Sources/JudoModelV2
+  - Sources/JudoModelV3
 templates:
   - Sources/JudoModel
 output:

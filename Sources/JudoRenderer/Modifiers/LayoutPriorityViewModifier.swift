@@ -18,9 +18,16 @@ import SwiftUI
 
 struct LayoutPriorityViewModifier: SwiftUI.ViewModifier {
     @ObservedObject var modifier: LayoutPriorityModifier
+    @ComponentValue private var priority: NumberValue
+
+    init(modifier: LayoutPriorityModifier) {
+        self.modifier = modifier
+        self.priority = modifier.priority
+    }
 
     func body(content: Content) -> some SwiftUI.View {
         content
-            .layoutPriority(modifier.priority)
+            .layoutPriority($priority ?? 0)
     }
+
 }

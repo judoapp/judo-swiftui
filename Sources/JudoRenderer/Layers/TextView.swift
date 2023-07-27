@@ -19,7 +19,7 @@ import JudoModel
 
 struct TextView: SwiftUI.View {
     @Environment(\.data) private var data
-    @Environment(\.properties) private var properties
+    @EnvironmentObject private var componentState: ComponentState
     @Environment(\.isBold) private var isBold
     @Environment(\.isItalic) private var isItalic
 
@@ -31,7 +31,7 @@ struct TextView: SwiftUI.View {
 
     var body: some SwiftUI.View {
         RealizeText(text.value) { textString in
-            if let textValue = try? textString.evaluatingExpressions(data: data, properties: properties) {
+            if let textValue = try? textString.evaluatingExpressions(data: data, properties: componentState.properties) {
                 textContent(textValue: textValue)
             }
         }

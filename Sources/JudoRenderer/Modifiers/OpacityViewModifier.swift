@@ -17,9 +17,21 @@ import JudoModel
 import SwiftUI
 
 struct OpacityViewModifier: SwiftUI.ViewModifier {
+    @EnvironmentObject private var componentState: ComponentState
+    @Environment(\.data) private var data
+
     @ObservedObject var modifier: JudoModel.OpacityModifier
-    
+
     func body(content: Content) -> some SwiftUI.View {
-        content.opacity(modifier.opacity)
+        content.opacity(opacityValue)
+    }
+
+    private var opacityValue: Double {
+        switch modifier.opacity {
+        case .constant(let value):
+            return value
+        case .property, .data:
+            return (modifier.opacity.resolve(data: data, componentState: componentState) ?? (1 * 100)) / 100
+        }
     }
 }

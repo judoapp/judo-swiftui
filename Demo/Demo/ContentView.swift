@@ -3,12 +3,17 @@ import Judo
 
 struct ContentView: View {
     @State private var counter: Int = 0
+    @State private var toggle: Bool = false
 
     var body: some View {
-        Judo.View("Main", component: "Component 1", properties: ["counter": counter, "image": heart])
-            .on("button.pressed") { _ in
-                counter += 1
-            }
+        VStack {
+            Judo.View("Main", component: "Component 1", properties: ["counter": counter, "toggle": $toggle, "image": heart])
+                .on("button.pressed") { _ in
+                    counter += 1
+                }
+
+            Text("Switch is \(toggle ? "On" : "Off")")
+        }
     }
     
     var heart: SwiftUI.Image {

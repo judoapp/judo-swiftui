@@ -17,10 +17,20 @@ import JudoModel
 import SwiftUI
 
 struct AspectRatioViewModifier: SwiftUI.ViewModifier {
+    @EnvironmentObject private var componentState: ComponentState
+    @Environment(\.data) private var data
+
     @ObservedObject var modifier: AspectRatioModifier
+
+    @OptionalComponentValue private var ratio: NumberValue?
+
+    init(modifier: AspectRatioModifier) {
+        self.modifier = modifier
+        self.ratio = modifier.ratio
+    }
 
     func body(content: Content) -> some SwiftUI.View {
         content
-            .aspectRatio(modifier.ratio, contentMode: modifier.contentMode.swiftUIValue)
+            .aspectRatio($ratio.map({ CGFloat($0) }), contentMode: modifier.contentMode.swiftUIValue)
     }
 }

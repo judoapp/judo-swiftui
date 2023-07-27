@@ -18,9 +18,9 @@ import SwiftUI
 
 struct NavigationLinkView: SwiftUI.View {
     @Environment(\.data) private var data
-    @Environment(\.properties) private var properties
     @Environment(\.fetchedImage) private var fetchedImage
     @EnvironmentObject private var documentState: DocumentData
+    @EnvironmentObject private var componentState: ComponentState
 
     @ObservedObject var navigationLink: JudoModel.NavigationLink
     var body: some SwiftUI.View {
@@ -28,10 +28,10 @@ struct NavigationLinkView: SwiftUI.View {
             ForEach(navigationLink.destination.children.allOf(type: Layer.self)) {
                 LayerView(layer: $0)
             }
-            .environment(\.properties, properties)
             .environment(\.data, data)
             .environment(\.fetchedImage, fetchedImage)
             .environmentObject(documentState)
+            .environmentObject(componentState)
         } label: {
             ForEach(navigationLink.label.children.allOf(type: Layer.self)) {
                 LayerView(layer: $0)
