@@ -16,7 +16,9 @@
 import SwiftUI
 
 public class LineLimitModifier: JudoModifier {
-    @Published public var numberOfLines: Int? = 1
+    @Published public var min: NumberValue? = nil
+    @Published public var max: NumberValue? = 1
+
 
     public required init() {
         super.init()
@@ -26,25 +28,64 @@ public class LineLimitModifier: JudoModifier {
 
     public override func copy(with zone: NSZone? = nil) -> Any {
         let modifier = super.copy(with: zone) as! LineLimitModifier
-        modifier.numberOfLines = numberOfLines
+        modifier.min = min
+        modifier.max = max
         return modifier
     }
 
     // MARK: Codable
 
     private enum CodingKeys: String, CodingKey {
+        case min
+        case max
+
+        // ..<16
         case numberOfLines
     }
 
     public required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        numberOfLines = try container.decode(Int.self, forKey: .numberOfLines)
+        let coordinator = decoder.userInfo[.decodingCoordinator] as! DecodingCoordinator
+
+        switch coordinator.documentVersion {
+        case ..<16:
+            if let intValue = try container.decode(Int?.self, forKey: .numberOfLines) {
+                max = NumberValue(intValue)
+            }
+        default:
+            min = try container.decode(NumberValue?.self, forKey: .min)
+            max = try container.decode(NumberValue?.self, forKey: .max)
+        }
+
         try super.init(from: decoder)
     }
 
     public override func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(numberOfLines, forKey: .numberOfLines)
+        try container.encode(min, forKey: .min)
+        try container.encode(max, forKey: .max)
         try super.encode(to: encoder)
     }
+}
+
+extension LineLimitModifier {
+
+    /// Apply logic to output final range based on min, max values
+    public func effectiveRange(minValue: Int?, maxValue: Int?) -> ClosedRange<Int>? {
+        switch (minValue, maxValue) {
+        case (.some(let minValue), nil):
+            return minValue...Int.max
+        case (.some(let minValue), .some(let maxValue)):
+            if minValue <= maxValue {
+                return minValue...maxValue
+            } else {
+                return nil // invalid range
+            }
+        case (nil, .some(let maxValue)):
+            return 0...maxValue
+        case (nil, nil):
+            return nil
+        }
+    }
+
 }

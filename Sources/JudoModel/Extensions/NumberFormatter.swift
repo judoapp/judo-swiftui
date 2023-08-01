@@ -13,22 +13,15 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import CoreGraphics
+import Foundation
 
-public struct Padding: Codable, Equatable {
-    public var top: CGFloat
-    public var leading: CGFloat
-    public var bottom: CGFloat
-    public var trailing: CGFloat
-
-    public init(_ top: CGFloat, _ leading: CGFloat, _ bottom: CGFloat, _ trailing: CGFloat) {
-        self.top = top
-        self.leading = leading
-        self.bottom = bottom
-        self.trailing = trailing
-    }
-
-    public init(_ value: CGFloat = 16) {
-        self.init(value, value, value, value)
-    }
+extension NumberFormatter {
+    public static let allowsFloatsNumberFormatter: NumberFormatter = {
+        let formatter = NumberFormatter()
+        formatter.allowsFloats = true
+        formatter.numberStyle = .decimal // This allows the TextField to accept numbers with decimal points
+        formatter.usesGroupingSeparator = false // We need to set this to false so that we do not end up displaying numbers as 1,000.23 instead of 1000.23
+        formatter.maximumFractionDigits = 10 // We need to allow a maximum number of decimal places otherwise it will only allow 3.
+        return formatter
+    }()
 }

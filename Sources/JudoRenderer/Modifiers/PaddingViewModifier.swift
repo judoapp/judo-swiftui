@@ -17,14 +17,64 @@ import JudoModel
 import SwiftUI
 
 struct PaddingViewModifier: SwiftUI.ViewModifier {
+    @Environment(\.data) private var data
+    @EnvironmentObject private var componentState: ComponentState
+    
     @ObservedObject var modifier: JudoModel.PaddingModifier
     
-    func body(content: Content) -> some SwiftUI.View {
-        content
-            .padding(.top, modifier.padding.top)
-            .padding(.bottom, modifier.padding.bottom)
-            .padding(.leading, modifier.padding.leading)
-            .padding(.trailing, modifier.padding.trailing)
+    func body(content: Content) -> some View {
+        if let edges {
+            content.padding(edges, length)
+        } else if let insets {
+            content.padding(insets)
+        } else {
+            content
+        }
+    }
+    
+    private var edges: SwiftUI.Edge.Set? {
+        guard let edges = modifier.edges else {
+            return nil
+        }
+        
+        var result = SwiftUI.Edge.Set()
+        
+        for edge in edges {
+            switch edge {
+            case .leading:
+                result.insert(.leading)
+            case .trailing:
+                result.insert(.trailing)
+            case .top:
+                result.insert(.top)
+            case .bottom:
+                result.insert(.bottom)
+            }
+        }
+        
+        return result
+    }
+    
+    private var length: CGFloat? {
+        modifier.length?.resolve(data: data, componentState: componentState).map {
+            CGFloat($0)
+        }
+    }
+    
+    private var insets: EdgeInsets? {
+        guard let leading = modifier.leadingInset,
+              let trailing = modifier.trailingInset,
+              let top = modifier.topInset,
+              let bottom = modifier.bottomInset else {
+            return nil
+        }
+        
+        return EdgeInsets(
+            top: top.resolve(data: data, componentState: componentState) ?? 0,
+            leading: leading.resolve(data: data, componentState: componentState) ?? 0,
+            bottom: bottom.resolve(data: data, componentState: componentState) ?? 0,
+            trailing: trailing.resolve(data: data, componentState: componentState) ?? 0
+        )
     }
 }
 

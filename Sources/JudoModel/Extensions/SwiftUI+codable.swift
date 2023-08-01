@@ -541,7 +541,7 @@ extension Alignment: Codable {
 
 // MARK: Edge
 
-public enum Edge: String, Codable {
+public enum Edge: String, Codable, Hashable {
     case top
     case leading
     case bottom
@@ -559,6 +559,18 @@ public enum Edge: String, Codable {
             return .trailing
         }
     }
+}
+
+public typealias Edges = Set<Edge>
+
+extension Edges {
+    public static let all: Edges = [.leading, .trailing, .top, .bottom]
+    public static let horizontal: Edges = [.leading, .trailing]
+    public static let vertical: Edges = [.top, .bottom]
+    public static let leading: Edges = [.leading]
+    public static let trailing: Edges = [.trailing]
+    public static let top: Edges = [.top]
+    public static let bottom: Edges = [.bottom]
 }
 
 // MARK: SwiftUI.Font.TextStyle

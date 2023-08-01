@@ -102,7 +102,14 @@ struct SliderView: SwiftUI.View {
             $value ?? 0
         } set: { newValue in
             if case .property(let name) = value {
-                componentState.bindings[name]?.value = .number(newValue)
+                switch componentState.bindings[name]?.value {
+                case .number:
+                    componentState.bindings[name]?.value = .number(newValue)
+                case .text:
+                    componentState.bindings[name]?.value = .text(newValue.description)
+                default:
+                    break
+                }
             }
         }
     }

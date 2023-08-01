@@ -23,13 +23,13 @@ public enum Font: Hashable {
     case dynamic(textStyle: FontTextStyle, design: FontDesign)
 
     /// A system font with a fixed size and weight.
-    case fixed(size: CGFloat, weight: FontWeight, design: FontDesign)
+    case fixed(size: NumberValue, weight: FontWeight, design: FontDesign)
 
     /// A font which uses the `CustomFont` value from a `DocumentFont` matching the `fontFamily` and `textStyle`.
     case document(fontFamily: FontFamily, textStyle: FontTextStyle)
 
     /// A custom font which uses the supplied `FontName` and given `size`.
-    case custom(fontName: FontName, size: CGFloat)
+    case custom(fontName: FontName, size: NumberValue)
 }
 
 // MARK: Convenience Initializers
@@ -66,6 +66,8 @@ extension Font: Codable {
 
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
+        let coordinator = decoder.userInfo[.decodingCoordinator] as! DecodingCoordinator
+
         let caseName = try container.decode(String.self, forKey: .caseName)
         switch caseName {
         case "dynamic":
@@ -73,18 +75,32 @@ extension Font: Codable {
             let design = try container.decode(FontDesign.self, forKey: .design)
             self = .dynamic(textStyle: textStyle, design: design)
         case "fixed":
-            let size = try container.decode(CGFloat.self, forKey: .size)
             let weight = try container.decode(FontWeight.self, forKey: .weight)
             let design = try container.decode(FontDesign.self, forKey: .design)
-            self = .fixed(size: size, weight: weight, design: design)
+
+            switch coordinator.documentVersion {
+            case ..<16:
+                let size = try container.decode(CGFloat.self, forKey: .size)
+                self = .fixed(size: NumberValue(size), weight: weight, design: design)
+            default:
+                let size = try container.decode(NumberValue.self, forKey: .size)
+                self = .fixed(size: size, weight: weight, design: design)
+            }
         case "document":
             let fontFamily = try container.decode(FontFamily.self, forKey: .fontFamily)
             let textStyle = try container.decode(FontTextStyle.self, forKey: .textStyle)
             self = .document(fontFamily: fontFamily, textStyle: textStyle)
         case "custom":
             let fontName = try container.decode(FontName.self, forKey: .fontName)
-            let size = try container.decode(CGFloat.self, forKey: .size)
-            self = .custom(fontName: fontName, size: size)
+            switch coordinator.documentVersion {
+            case ..<16:
+                let size = try container.decode(CGFloat.self, forKey: .size)
+                self = .custom(fontName: fontName, size: NumberValue(size))
+            default:
+                let size = try container.decode(NumberValue.self, forKey: .size)
+                self = .custom(fontName: fontName, size: size)
+            }
+
         default:
             throw DecodingError.dataCorruptedError(
                 forKey: .caseName,

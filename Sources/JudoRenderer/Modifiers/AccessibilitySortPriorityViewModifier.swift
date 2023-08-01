@@ -17,10 +17,22 @@ import JudoModel
 import SwiftUI
 
 struct AccessibilitySortPriorityViewModifier: SwiftUI.ViewModifier {
+    @EnvironmentObject private var componentState: ComponentState
+    @Environment(\.data) private var data
+
     @ObservedObject var modifier: AccessibilitySortPriorityModifier
 
     func body(content: Content) -> some SwiftUI.View {
         content
-            .accessibilitySortPriority(modifier.sortPriority)
+            .accessibilitySortPriority(value)
+    }
+
+    private var value: Double {
+        switch modifier.sortPriority {
+        case .constant(let value):
+            return value
+        case .property, .data:
+            return modifier.sortPriority.resolve(data: data, componentState: componentState) ?? 0
+        }
     }
 }

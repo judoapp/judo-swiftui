@@ -47,26 +47,24 @@ protocol ResolvableComponentValue<T> {
 
 extension TextValue: ResolvableComponentValue {
 
+
     func resolve(data: Any?, componentState: ComponentState) -> String? {
+
         switch self {
         case .literal(let key):
             return key
         case .verbatim(let content):
             return content
         case .property(let name, _):
-            if case .text(let value) = componentState.properties[name] {
+            switch componentState.properties[name] {
+            case .text(let value):
                 return value
+            case .number(let number):
+                return number.description
+            case .boolean, .component, .image, .none:
+                return nil
             }
 
-            if case .number(let number) = componentState.properties[name] {
-                if #available(macOS 12.0, iOS 15.0, *) {
-                    return number.formatted()
-                } else {
-                    return "\(number)"
-                }
-            }
-
-            return nil
         case .data(let keyPath):
             let value = JSONSerialization.value(
                 forKeyPath: keyPath,
@@ -78,11 +76,7 @@ extension TextValue: ResolvableComponentValue {
             case let string as NSString:
                 return string as String
             case let number as NSNumber:
-                if #available(macOS 12.0, iOS 15.0, *) {
-                    return number.doubleValue.formatted()
-                } else {
-                    return "\(number.doubleValue)"
-                }
+                return number.doubleValue.description
             default:
                 return nil
             }

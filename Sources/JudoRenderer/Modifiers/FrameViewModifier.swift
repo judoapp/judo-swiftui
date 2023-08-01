@@ -17,26 +17,64 @@ import JudoModel
 import SwiftUI
 
 struct FrameViewModifier: SwiftUI.ViewModifier {
+    @Environment(\.data) private var data
+    @EnvironmentObject private var componentState: ComponentState
+    
     @ObservedObject var modifier: JudoModel.FrameModifier
 
     func body(content: Content) -> some SwiftUI.View {
-        switch modifier.frame.frameType {
-        case .fixed:
+        if modifier.isFlexible {
             content
                 .frame(
-                    width: modifier.frame.width,
-                    height: modifier.frame.height,
-                    alignment: modifier.frame.alignment.swiftUIValue
+                    minWidth: minWidth,
+                    maxWidth: maxWidth,
+                    minHeight: minHeight,
+                    maxHeight: maxHeight,
+                    alignment: alignment
                 )
-        case .constrained:
+        } else {
             content
-                .frame(
-                    minWidth: modifier.frame.minWidth,
-                    maxWidth: modifier.frame.maxWidth,
-                    minHeight: modifier.frame.minHeight,
-                    maxHeight: modifier.frame.maxHeight,
-                    alignment: modifier.frame.alignment.swiftUIValue
-                )
+                .frame(width: width, height: height, alignment: alignment)
         }
+    }
+    
+    private var width: CGFloat? {
+        modifier.width?
+            .resolve(data: data, componentState: componentState)
+            .map { CGFloat($0) }
+    }
+    
+    private var maxWidth: CGFloat? {
+        modifier.maxWidth?
+            .resolve(data: data, componentState: componentState)
+            .map { CGFloat($0) }
+    }
+    
+    private var minWidth: CGFloat? {
+        modifier.minWidth?
+            .resolve(data: data, componentState: componentState)
+            .map { CGFloat($0) }
+    }
+    
+    private var height: CGFloat? {
+        modifier.height?
+            .resolve(data: data, componentState: componentState)
+            .map { CGFloat($0) }
+    }
+    
+    private var maxHeight: CGFloat? {
+        modifier.maxHeight?
+            .resolve(data: data, componentState: componentState)
+            .map { CGFloat($0) }
+    }
+    
+    private var minHeight: CGFloat? {
+        modifier.minHeight?
+            .resolve(data: data, componentState: componentState)
+            .map { CGFloat($0) }
+    }
+    
+    private var alignment: SwiftUI.Alignment {
+        modifier.alignment.swiftUIValue
     }
 }

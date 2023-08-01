@@ -37,6 +37,10 @@ public enum NumberValue: Codable, CustomStringConvertible, ExpressibleByFloatLit
         self = .constant(value: Double(value))
     }
 
+    public init(_ intValue: Int) {
+        self = .constant(value: Double(intValue))
+    }
+
     public var description: String {
         switch self {
         case .constant(let value):

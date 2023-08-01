@@ -17,9 +17,42 @@ import JudoModel
 import SwiftUI
 
 struct LineLimitViewModifier: SwiftUI.ViewModifier {
+    @EnvironmentObject private var componentState: ComponentState
+    @Environment(\.data) private var data
+
     @ObservedObject var modifier: LineLimitModifier
+    @OptionalComponentValue private var minValue: NumberValue?
+    @OptionalComponentValue private var maxValue: NumberValue?
+
+    init(modifier: LineLimitModifier) {
+        self.modifier = modifier
+        self.minValue = modifier.min
+        self.maxValue = modifier.max
+    }
+
     
     func body(content: Content) -> some SwiftUI.View {
-        content.lineLimit(modifier.numberOfLines)
+        if #available(iOS 16.0, *) {
+            if let range {
+                content
+                    .lineLimit(range)
+            } else {
+                content
+            }
+        } else if let upperBound = range?.upperBound {
+            content
+                .lineLimit(upperBound)
+        } else {
+            content
+        }
+    }
+
+    private var range: ClosedRange<Int>? {
+        modifier.effectiveRange(
+            minValue: $minValue != nil ? Int($minValue!) : nil,
+            maxValue: $maxValue != nil ? Int($maxValue!) : nil
+        )
     }
 }
+
+

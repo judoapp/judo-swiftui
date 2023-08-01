@@ -13,26 +13,11 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import JudoModel
-import SwiftUI
+import Foundation
 
-struct OpacityViewModifier: SwiftUI.ViewModifier {
-    @EnvironmentObject private var componentState: ComponentState
-    @Environment(\.data) private var data
-
-    @ObservedObject var modifier: JudoModel.OpacityModifier
-
-    func body(content: Content) -> some SwiftUI.View {
-        content
-            .opacity(opacityValue)
-    }
-
-    private var opacityValue: Double {
-        switch modifier.opacity {
-        case .constant(let value):
-            return value
-        case .property, .data:
-            return (modifier.opacity.resolve(data: data, componentState: componentState) ?? (1 * 100)) / 100
-        }
-    }
+struct LegacyPadding: Codable {
+    var top: CGFloat
+    var leading: CGFloat
+    var bottom: CGFloat
+    var trailing: CGFloat
 }

@@ -19,6 +19,10 @@ import SwiftUI
 struct FontViewModifier: SwiftUI.ViewModifier {
     @EnvironmentObject private var fontStore: ImportedFonts
     @EnvironmentObject private var documentState: DocumentData
+
+    @EnvironmentObject private var componentState: ComponentState
+    @Environment(\.data) private var data
+
     @Environment(\.sizeCategory) private var sizeCategory
 
     @ObservedObject var modifier: JudoModel.FontModifier
@@ -33,7 +37,7 @@ struct FontViewModifier: SwiftUI.ViewModifier {
         case .dynamic(let textStyle, let design):
             return SwiftUI.Font.system(textStyle.swiftUIValue, design: design.swiftUIValue)
         case .fixed(let size, let weight, let design):
-            return SwiftUI.Font.system(size: size, weight: weight.swiftUIValue, design: design.swiftUIValue)
+            return SwiftUI.Font.system(size: size.resolve(data: data, componentState: componentState) ?? 0, weight: weight.swiftUIValue, design: design.swiftUIValue)
         case .document(let fontFamily, let textStyle):
             guard let documentFont = documentState.fonts.first(where: { $0.fontFamily == fontFamily }) else {
                 assertionFailure("No document found with family name: \(fontFamily)")
@@ -45,7 +49,7 @@ struct FontViewModifier: SwiftUI.ViewModifier {
                 size: documentFont[textStyle].size * accessibilitySizeAdjustmentRatio
             )
         case .custom(let fontName, let size):
-            return getFont(with: fontName, size: size)
+            return getFont(with: fontName, size: size.resolve(data: data, componentState: componentState) ?? 0)
         }
     }
 

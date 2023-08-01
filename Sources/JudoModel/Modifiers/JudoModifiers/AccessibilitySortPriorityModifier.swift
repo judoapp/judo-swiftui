@@ -16,7 +16,7 @@
 import SwiftUI
 
 public class AccessibilitySortPriorityModifier: JudoModifier {
-    @Published public var sortPriority: Double = 1
+    @Published public var sortPriority: NumberValue = 1
 
     public required init() {
         super.init()
@@ -38,7 +38,15 @@ public class AccessibilitySortPriorityModifier: JudoModifier {
 
     public required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        sortPriority = try container.decode(Double.self, forKey: .sortPriority)
+        let coordinator = decoder.userInfo[.decodingCoordinator] as! DecodingCoordinator
+
+        switch coordinator.documentVersion {
+        case ..<16:
+            sortPriority = try NumberValue(container.decode(Double.self, forKey: .sortPriority))
+        default:
+            sortPriority = try container.decode(NumberValue.self, forKey: .sortPriority)
+        }
+
         try super.init(from: decoder)
     }
 

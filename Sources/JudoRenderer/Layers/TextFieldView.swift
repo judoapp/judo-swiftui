@@ -30,7 +30,16 @@ struct TextFieldView: SwiftUI.View {
     }
 
     var body: some SwiftUI.View {
-        SwiftUI.TextField($titleValue ?? "", text: textValueBinding)
+        if case .property(let name, _) = textValue {
+            switch componentState.bindings[name]?.value {
+            case .number:
+                SwiftUI.TextField($titleValue ?? "", value: numberValueBinding, formatter: NumberFormatter.allowsFloatsNumberFormatter)
+            default:
+                SwiftUI.TextField($titleValue ?? "", text: textValueBinding)
+            }
+        } else {
+            SwiftUI.TextField($titleValue ?? "", text: textValueBinding)
+        }
     }
 
     private var textValueBinding: Binding<String> {
@@ -41,9 +50,22 @@ struct TextFieldView: SwiftUI.View {
                 switch componentState.bindings[name]?.value {
                 case .text:
                     componentState.bindings[name]?.value = .text(newValue)
+                default:
+                    break
+                }
+            }
+        }
+    }
+
+    private var numberValueBinding: Binding<Double?> {
+        Binding {
+            Double($textValue ?? "")
+        } set: { newValue in
+            if case .property(let name, _) = textValue {
+                switch componentState.bindings[name]?.value {
                 case .number:
-                    if let doubleValue = Double(newValue) {
-                        componentState.bindings[name]?.value = .number(doubleValue)
+                    if let newValue {
+                        componentState.bindings[name]?.value = .number(newValue)
                     }
                 default:
                     break
