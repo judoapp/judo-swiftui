@@ -71,6 +71,24 @@ public enum DeviceSize: String, CaseIterable, Codable, Equatable {
 
 }
 
+extension DeviceSize {
+    public var deviceWidth: CGFloat {
+        switch self {
+        case .small, .medium: return 390
+        case .large: return 430
+        case .tablet: return 834
+        }
+    }
+
+    public var deviceHeight: CGFloat {
+        switch self {
+        case .small, .medium: return 844
+        case .large: return 932
+        case .tablet: return 1194
+        }
+    }
+}
+
 extension DeviceSize: Comparable {
     public static func < (lhs: DeviceSize, rhs: DeviceSize) -> Bool {
         lhs.height < rhs.height && lhs.width < rhs.width

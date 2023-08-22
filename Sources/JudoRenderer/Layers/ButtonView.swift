@@ -59,7 +59,8 @@ private struct ButtonWithoutRole<Content: SwiftUI.View>: SwiftUI.View {
                     presentationMode.wrappedValue.dismiss()
 
                 case let action as JudoModel.OpenURLAction:
-                    if let url = URL(string: action.url.description) {
+                    if let urlString = action.url.resolve(data: data, componentState: componentState),
+                       let url = URL(string: urlString) {
                         openURL(url)
                     }
 
@@ -169,7 +170,8 @@ private struct ButtonWithRole<Content: SwiftUI.View>: SwiftUI.View {
                     dismiss()
 
                 case let action as JudoModel.OpenURLAction:
-                    if let url = URL(string: action.url.description) {
+                    if let urlString = action.url.resolve(data: data, componentState: componentState),
+                       let url = URL(string: urlString) {
                         openURL(url)
                     }
 

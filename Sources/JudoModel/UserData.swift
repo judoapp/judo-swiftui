@@ -13,69 +13,66 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import Combine
-import CoreGraphics
-import SwiftUI
+import Foundation
 
-public final class UserData: Codable, ObservableObject {
-    public static let maxZoomScale = CGFloat(256)
-    public static let minZoomScale = CGFloat(0.01)
-
-    @Published public var expandedNodeIDs = Set<Node.ID>()
-    @Published public var zoomScale = CGFloat(1.0)
-    @Published public var canvasScroll: CGPoint?
-    @Published public var previewLanguage: PreviewLanguage?
-
-    @Published public var isDarkModeEnabled = false
-    @Published public var isHighContrastModeEnabled = false
-    @Published public var previewOperatingSystem = OperatingSystem.iOS
-    @Published public var deviceSize = DeviceSize.medium
-    @Published public var deviceOrientation = DeviceOrientation.portrait
-    @Published public var contentSizeCategory = ContentSizeCategory.large
-    @Published public var simulateSlowNetwork = false
+public struct UserData: Codable {
+    public var expandedNodeIDs: Set<Node.ID>
+    public var zoomScale: CGFloat
+    public var canvasScroll: CGRect?
+    public var previewLanguage: PreviewLanguage?
+    public var isDarkModeEnabled: Bool
+    public var isHighContrastModeEnabled: Bool
+    public var deviceSize: DeviceSize
+    public var deviceOrientation: DeviceOrientation
+    public var contentSizeCategory: ContentSizeCategory
+    public var simulateSlowNetwork: Bool
     
-    public init() { }
-
-    public enum OperatingSystem: String, Codable {
-        case iOS
+    public init(
+        expandedNodeIDs: Set<Node.ID>,
+        zoomScale: CGFloat,
+        canvasScroll: CGRect?,
+        previewLanguage: PreviewLanguage?,
+        isDarkModeEnabled: Bool,
+        isHighContrastModeEnabled: Bool,
+        deviceSize: DeviceSize,
+        deviceOrientation: DeviceOrientation,
+        contentSizeCategory: ContentSizeCategory,
+        simulateSlowNetwork: Bool
+    ) {
+        self.expandedNodeIDs = expandedNodeIDs
+        self.zoomScale = zoomScale
+        self.canvasScroll = canvasScroll
+        self.previewLanguage = previewLanguage
+        self.isDarkModeEnabled = isDarkModeEnabled
+        self.isHighContrastModeEnabled = isHighContrastModeEnabled
+        self.deviceSize = deviceSize
+        self.deviceOrientation = deviceOrientation
+        self.contentSizeCategory = contentSizeCategory
+        self.simulateSlowNetwork = simulateSlowNetwork
     }
-
-    public enum DeviceOrientation: String, Codable {
-        case portrait
-        case landscape
-
-        public mutating func toggle() {
-            switch self {
-            case .portrait:
-                self = .landscape
-            case .landscape:
-                self = .portrait
-            }
-        }
-    }
-
-    // MARK: Codable
 
     private enum CodingKeys: String, CodingKey {
         case expandedNodeIDs
-        case scrollOffset
         case zoomScale
+        case canvasScroll
         case previewLanguage
-        case previewOperatingSystem
         case isDarkModeEnabled
         case isHighContrastModeEnabled
         case deviceSize
         case deviceOrientation
         case contentSizeCategory
         case simulateSlowNetwork
+        
+        // Legacy
+        case previewOperatingSystem
     }
 
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         expandedNodeIDs = try container.decode(Set<Node.ID>.self, forKey: .expandedNodeIDs)
         zoomScale = try container.decode(CGFloat.self, forKey: .zoomScale)
+        canvasScroll = try container.decodeIfPresent(CGRect.self, forKey: .canvasScroll)
         previewLanguage = try container.decodeIfPresent(PreviewLanguage.self, forKey: .previewLanguage)
-        previewOperatingSystem = try container.decode(OperatingSystem.self, forKey: .previewOperatingSystem)
         isDarkModeEnabled = try container.decode(Bool.self, forKey: .isDarkModeEnabled)
         isHighContrastModeEnabled = try container.decode(Bool.self, forKey: .isHighContrastModeEnabled)
         deviceSize = try container.decode(DeviceSize.self, forKey: .deviceSize)
@@ -88,13 +85,16 @@ public final class UserData: Codable, ObservableObject {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(expandedNodeIDs, forKey: .expandedNodeIDs)
         try container.encode(zoomScale, forKey: .zoomScale)
+        try container.encodeIfPresent(canvasScroll, forKey: .canvasScroll)
         try container.encodeIfPresent(previewLanguage, forKey: .previewLanguage)
-        try container.encode(previewOperatingSystem, forKey: .previewOperatingSystem)
         try container.encode(isDarkModeEnabled, forKey: .isDarkModeEnabled)
         try container.encode(isHighContrastModeEnabled, forKey: .isHighContrastModeEnabled)
         try container.encode(deviceSize, forKey: .deviceSize)
         try container.encode(deviceOrientation, forKey: .deviceOrientation)
         try container.encode(contentSizeCategory, forKey: .contentSizeCategory)
         try container.encode(simulateSlowNetwork, forKey: .simulateSlowNetwork)
+        
+        // Legacy
+        try container.encode("iOS", forKey: .previewOperatingSystem)
     }
 }
