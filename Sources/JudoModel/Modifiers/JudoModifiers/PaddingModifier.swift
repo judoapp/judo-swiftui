@@ -22,18 +22,29 @@ import SwiftUI
 /// The model is expected to be used in one of the two ways above: either the edges are set (and optionally a lenght value) _or_ all four of the inset edges are set. There is no compile-time check for this but any unexpected configurations of the modifier are handled gracefully in the Inspector Panel and renderers. 
 public class PaddingModifier: JudoModifier {
     @Published public var edges: Edges?
-    @Published public var length: NumberValue?
+    @Published public var length: Variable<Double>?
     
-    @Published public var leadingInset: NumberValue?
-    @Published public var trailingInset: NumberValue?
-    @Published public var topInset: NumberValue?
-    @Published public var bottomInset: NumberValue?
+    @Published public var leadingInset: Variable<Double>?
+    @Published public var trailingInset: Variable<Double>?
+    @Published public var topInset: Variable<Double>?
+    @Published public var bottomInset: Variable<Double>?
 
     public required init() {
         edges = .all
         super.init()
     }
 
+    // MARK: Variables
+    
+    public override func updateVariables(properties: MainComponent.Properties, data: Any?, fetchedImage: SwiftUI.Image?, unbind: Bool, undoManager: UndoManager?) {
+        updateVariable(\.length, properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+        updateVariable(\.leadingInset, properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+        updateVariable(\.trailingInset, properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+        updateVariable(\.topInset, properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+        updateVariable(\.bottomInset, properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+        super.updateVariables(properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+    }
+    
     // MARK: NSCopying
 
     public override func copy(with zone: NSZone? = nil) -> Any {
@@ -68,17 +79,39 @@ public class PaddingModifier: JudoModifier {
         switch coordinator.documentVersion {
         case ..<16:
             let padding = try container.decode(LegacyPadding.self, forKey: .padding)
-            leadingInset = .constant(value: padding.leading)
-            trailingInset = .constant(value: padding.trailing)
-            topInset = .constant(value: padding.top)
-            bottomInset = .constant(value: padding.bottom)
+            leadingInset = Variable(.constant(value: padding.leading))
+            trailingInset = Variable(.constant(value: padding.trailing))
+            topInset = Variable(.constant(value: padding.top))
+            bottomInset = Variable(.constant(value: padding.bottom))
+        case ..<17:
+            edges = try container.decode(Edges?.self, forKey: .edges)
+
+            if let value = try container.decode(LegacyNumberValue?.self, forKey: .length) {
+                length = Variable(value)
+            }
+
+            if let value = try container.decode(LegacyNumberValue?.self, forKey: .leadingInset) {
+                leadingInset = Variable(value)
+            }
+
+            if let value = try container.decode(LegacyNumberValue?.self, forKey: .trailingInset) {
+                trailingInset = Variable(value)
+            }
+
+            if let value = try container.decode(LegacyNumberValue?.self, forKey: .topInset) {
+                topInset = Variable(value)
+            }
+
+            if let value = try container.decode(LegacyNumberValue?.self, forKey: .bottomInset) {
+                bottomInset = Variable(value)
+            }
         default:
             edges = try container.decode(Edges?.self, forKey: .edges)
-            length = try container.decode(NumberValue?.self, forKey: .length)
-            leadingInset = try container.decode(NumberValue?.self, forKey: .leadingInset)
-            trailingInset = try container.decode(NumberValue?.self, forKey: .trailingInset)
-            topInset = try container.decode(NumberValue?.self, forKey: .topInset)
-            bottomInset = try container.decode(NumberValue?.self, forKey: .bottomInset)
+            length = try container.decode(Variable<Double>?.self, forKey: .length)
+            leadingInset = try container.decode(Variable<Double>?.self, forKey: .leadingInset)
+            trailingInset = try container.decode(Variable<Double>?.self, forKey: .trailingInset)
+            topInset = try container.decode(Variable<Double>?.self, forKey: .topInset)
+            bottomInset = try container.decode(Variable<Double>?.self, forKey: .bottomInset)
         }
         
         try super.init(from: decoder)

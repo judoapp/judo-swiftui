@@ -16,18 +16,27 @@
 import SwiftUI
 
 public class ShadowModifier: JudoModifier {
-
     @Published public var color: ColorReference = ColorReference(
         customColor: ColorValue(red: 0, green: 0, blue: 0, alpha: 0.3333)
     )
-    @Published public var offsetWidth: NumberValue = 0
-    @Published public var offsetHeight: NumberValue = 0
-    @Published public var radius: NumberValue = 4
+    
+    @Published public var offsetWidth: Variable<Double> = 0
+    @Published public var offsetHeight: Variable<Double> = 0
+    @Published public var radius: Variable<Double> = 4
 
     public required init() {
         super.init()
     }
 
+    // MARK: Variables
+    
+    public override func updateVariables(properties: MainComponent.Properties, data: Any?, fetchedImage: SwiftUI.Image?, unbind: Bool, undoManager: UndoManager?) {
+        updateVariable(\.offsetWidth, properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+        updateVariable(\.offsetHeight, properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+        updateVariable(\.radius, properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+        super.updateVariables(properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+    }
+    
     // MARK: NSCopying
 
     public override func copy(with zone: NSZone? = nil) -> Any {
@@ -59,13 +68,17 @@ public class ShadowModifier: JudoModifier {
         switch coordinator.documentVersion {
         case ..<15:
             let offset = try container.decode(CGSize.self, forKey: .offset)
-            offsetWidth = NumberValue(offset.width)
-            offsetHeight = NumberValue(offset.height)
-            radius = try NumberValue(container.decode(CGFloat.self, forKey: .radius))
+            offsetWidth = Variable(LegacyNumberValue(offset.width))
+            offsetHeight = Variable(LegacyNumberValue(offset.height))
+            radius = try Variable(LegacyNumberValue(container.decode(CGFloat.self, forKey: .radius)))
+        case ..<17:
+            offsetWidth = try Variable(container.decode(LegacyNumberValue.self, forKey: .offsetWidth))
+            offsetHeight = try Variable(container.decode(LegacyNumberValue.self, forKey: .offsetHeight))
+            radius = try Variable(container.decode(LegacyNumberValue.self, forKey: .radius))
         default:
-            offsetWidth = try container.decode(NumberValue.self, forKey: .offsetWidth)
-            offsetHeight = try container.decode(NumberValue.self, forKey: .offsetHeight)
-            radius = try container.decode(NumberValue.self, forKey: .radius)
+            offsetWidth = try container.decode(Variable<Double>.self, forKey: .offsetWidth)
+            offsetHeight = try container.decode(Variable<Double>.self, forKey: .offsetHeight)
+            radius = try container.decode(Variable<Double>.self, forKey: .radius)
         }
 
         try super.init(from: decoder)

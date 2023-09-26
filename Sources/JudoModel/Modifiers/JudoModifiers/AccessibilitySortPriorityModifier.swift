@@ -16,12 +16,19 @@
 import SwiftUI
 
 public class AccessibilitySortPriorityModifier: JudoModifier {
-    @Published public var sortPriority: NumberValue = 1
+    @Published public var sortPriority: Variable<Double> = 1
 
     public required init() {
         super.init()
     }
 
+    // MARK: Variables
+    
+    public override func updateVariables(properties: MainComponent.Properties, data: Any?, fetchedImage: SwiftUI.Image?, unbind: Bool, undoManager: UndoManager?) {
+        updateVariable(\.sortPriority, properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+        super.updateVariables(properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+    }
+    
     // MARK: NSCopying
 
     public override func copy(with zone: NSZone? = nil) -> Any {
@@ -42,9 +49,11 @@ public class AccessibilitySortPriorityModifier: JudoModifier {
 
         switch coordinator.documentVersion {
         case ..<16:
-            sortPriority = try NumberValue(container.decode(Double.self, forKey: .sortPriority))
+            sortPriority = try Variable(LegacyNumberValue(container.decode(Double.self, forKey: .sortPriority)))
+        case ..<17:
+            sortPriority = try Variable(container.decode(LegacyNumberValue.self, forKey: .sortPriority))
         default:
-            sortPriority = try container.decode(NumberValue.self, forKey: .sortPriority)
+            sortPriority = try container.decode(Variable<Double>.self, forKey: .sortPriority)
         }
 
         try super.init(from: decoder)

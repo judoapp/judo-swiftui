@@ -15,6 +15,7 @@
 
 import Foundation
 import OrderedCollections
+import SwiftUI
 
 /// Component element
 public final class MainComponent: Element {
@@ -47,6 +48,60 @@ public final class MainComponent: Element {
         }
     }
 
+    // MARK: Property Resolution
+    
+    public func resolveProperties(properties: MainComponent.Properties, overrides: ComponentInstance.Overrides, data: Any? = nil, fetchedImage: SwiftUI.Image? = nil) -> MainComponent.Properties {
+        var result = self.properties
+        self.properties.forEach { (key, value) in
+            switch (value, overrides[key]) {
+            case (.text(let defaultValue), .text(let value)):
+                let resolvedValue = value.resolve(
+                    properties: properties,
+                    data: data,
+                    fetchedImage: fetchedImage
+                )
+                
+                result[key] = .text(resolvedValue ?? defaultValue)
+            case (.number(let defaultValue), .number(let value)):
+                let resolvedValue = value.resolve(
+                    properties: properties,
+                    data: data,
+                    fetchedImage: fetchedImage
+                )
+                
+                result[key] = .number(resolvedValue ?? defaultValue)
+            case (.boolean(let defaultValue), .boolean(let value)):
+                let resolvedValue = value.resolve(
+                    properties: properties,
+                    data: data,
+                    fetchedImage: fetchedImage
+                )
+
+                result[key] = .boolean(resolvedValue ?? defaultValue)
+            case (.image(let defaultValue), .image(let value)):
+                let resolvedValue = value.resolve(
+                    properties: properties,
+                    data: data,
+                    fetchedImage: fetchedImage
+                )
+
+                result[key] = .image(resolvedValue ?? defaultValue)
+            case (.component(let defaultValue), .component(let value)):
+                let resolvedValue = value.resolve(
+                    properties: properties,
+                    data: data,
+                    fetchedImage: fetchedImage
+                )
+                
+                result[key] = .component(resolvedValue ?? defaultValue)
+            default:
+                break
+            }
+        }
+        
+        return result
+    }
+    
     // MARK: Assets
 
     public override func strings() -> [String] {
@@ -206,7 +261,7 @@ public final class MainComponent: Element {
 
                 // Create a temporary place holder for the MainComponent that will be overwritten by the defer
                 // this is to ensure that order is maintained.
-                properties[propertyKey] = .component(.init())
+                properties[propertyKey] = .component(.dummyComponent)
 
                 // Lookup by ID
                 coordinator.defer { [unowned self] in
@@ -221,6 +276,7 @@ public final class MainComponent: Element {
                     }
 
                     self.properties[propertyKey] = .component(mainComponent)
+                    return true
                 }
             }
         }
@@ -315,4 +371,8 @@ public final class MainComponent: Element {
         
         try super.encode(to: encoder)
     }
+}
+
+extension MainComponent {
+    static let dummyComponent = MainComponent(name: "Dummy")
 }

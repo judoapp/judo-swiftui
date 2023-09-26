@@ -37,7 +37,14 @@ struct FontViewModifier: SwiftUI.ViewModifier {
         case .dynamic(let textStyle, let design):
             return SwiftUI.Font.system(textStyle.swiftUIValue, design: design.swiftUIValue)
         case .fixed(let size, let weight, let design):
-            return SwiftUI.Font.system(size: size.resolve(data: data, componentState: componentState) ?? 0, weight: weight.swiftUIValue, design: design.swiftUIValue)
+            return SwiftUI.Font.system(
+                size: size.forceResolve(
+                    properties: componentState.properties,
+                    data: data
+                ),
+                weight: weight.swiftUIValue,
+                design: design.swiftUIValue
+            )
         case .document(let fontFamily, let textStyle):
             guard let documentFont = documentState.fonts.first(where: { $0.fontFamily == fontFamily }) else {
                 assertionFailure("No document found with family name: \(fontFamily)")
@@ -49,7 +56,13 @@ struct FontViewModifier: SwiftUI.ViewModifier {
                 size: documentFont[textStyle].size * accessibilitySizeAdjustmentRatio
             )
         case .custom(let fontName, let size):
-            return getFont(with: fontName, size: size.resolve(data: data, componentState: componentState) ?? 0)
+            return getFont(
+                with: fontName,
+                size: size.forceResolve(
+                    properties: componentState.properties,
+                    data: data
+                )
+            )
         }
     }
 

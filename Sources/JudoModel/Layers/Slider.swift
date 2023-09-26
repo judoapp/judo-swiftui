@@ -17,18 +17,31 @@ import SwiftUI
 
 public final class Slider: Layer, Modifiable {
 
-    @Published public var label: TextValue = .verbatim(content: Slider.humanName)
-    @Published public var minLabel: TextValue?
-    @Published public var maxLabel: TextValue?
-    @Published public var value: NumberValue = 0.0
-    @Published public var minValue: NumberValue?
-    @Published public var maxValue: NumberValue?
-    @Published public var step: NumberValue?
+    @Published public var label: Variable<String> = Variable(Slider.humanName)
+    @Published public var minLabel: Variable<String>?
+    @Published public var maxLabel: Variable<String>?
+    @Published public var value: Variable<Double> = 0.0
+    @Published public var minValue: Variable<Double>?
+    @Published public var maxValue: Variable<Double>?
+    @Published public var step: Variable<Double>?
 
     required public init() {
         super.init()
     }
 
+    // MARK: Variables
+    
+    public override func updateVariables(properties: MainComponent.Properties, data: Any?, fetchedImage: SwiftUI.Image?, unbind: Bool, undoManager: UndoManager?) {
+        updateVariable(\.label, properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+        updateVariable(\.minLabel, properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+        updateVariable(\.maxLabel, properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+        updateVariable(\.value, properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+        updateVariable(\.minValue, properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+        updateVariable(\.maxValue, properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+        updateVariable(\.step, properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+        super.updateVariables(properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+    }
+    
     // MARK: NSCopying
 
     override public func copy(with zone: NSZone? = nil) -> Any {
@@ -57,13 +70,44 @@ public final class Slider: Layer, Modifiable {
 
     required public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        label = try container.decode(TextValue.self, forKey: .label)
-        minLabel = try container.decode(TextValue?.self, forKey: .minLabel)
-        maxLabel = try container.decode(TextValue?.self, forKey: .maxLabel)
-        value = try container.decode(NumberValue.self, forKey: .value)
-        minValue = try container.decode(NumberValue?.self, forKey: .minValue)
-        maxValue = try container.decode(NumberValue?.self, forKey: .maxValue)
-        step = try container.decode(NumberValue?.self, forKey: .step)
+        let coordinator = decoder.userInfo[.decodingCoordinator] as! DecodingCoordinator
+
+
+        switch coordinator.documentVersion {
+        case ..<17:
+            label = try Variable(container.decode(LegacyTextValue.self, forKey: .label))
+
+            if let minLabel = try container.decode(LegacyTextValue?.self, forKey: .minLabel) {
+                self.minLabel = Variable(minLabel)
+            }
+
+            if let maxLabel = try container.decode(LegacyTextValue?.self, forKey: .maxLabel) {
+                self.maxLabel = Variable(maxLabel)
+            }
+
+            value = try Variable(container.decode(LegacyNumberValue.self, forKey: .value))
+
+            if let numberValue = try container.decode(LegacyNumberValue?.self, forKey: .minValue) {
+                minValue = Variable(numberValue)
+            }
+
+            if let numberValue = try container.decode(LegacyNumberValue?.self, forKey: .maxValue) {
+                maxValue = Variable(numberValue)
+            }
+
+            if let numberValue = try container.decode(LegacyNumberValue?.self, forKey: .step) {
+                step = Variable(numberValue)
+            }
+        default:
+            label = try container.decode(Variable<String>.self, forKey: .label)
+            minLabel = try container.decode(Variable<String>?.self, forKey: .minLabel)
+            maxLabel = try container.decode(Variable<String>?.self, forKey: .maxLabel)
+            value = try container.decode(Variable<Double>.self, forKey: .value)
+            minValue = try container.decode(Variable<Double>?.self, forKey: .minValue)
+            maxValue = try container.decode(Variable<Double>?.self, forKey: .maxValue)
+            step = try container.decode(Variable<Double>?.self, forKey: .step)
+        }
+
         try super.init(from: decoder)
     }
 

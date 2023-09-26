@@ -16,12 +16,19 @@
 import SwiftUI
 
 public class AccessibilityLabelModifier: JudoModifier {
-    @Published public var label: TextValue = ""
+    @Published public var label: Variable<String> = ""
 
     public required init() {
         super.init()
     }
 
+    // MARK: Variables
+    
+    public override func updateVariables(properties: MainComponent.Properties, data: Any?, fetchedImage: SwiftUI.Image?, unbind: Bool, undoManager: UndoManager?) {
+        updateVariable(\.label, properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+        super.updateVariables(properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+    }
+    
     // MARK: NSCopying
 
     public override func copy(with zone: NSZone? = nil) -> Any {
@@ -38,7 +45,15 @@ public class AccessibilityLabelModifier: JudoModifier {
 
     public required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        label = try container.decode(TextValue.self, forKey: .label)
+        let coordinator = decoder.userInfo[.decodingCoordinator] as! DecodingCoordinator
+
+        switch coordinator.documentVersion {
+        case ..<17:
+            label = try Variable(container.decode(LegacyTextValue.self, forKey: .label))
+        default:
+            label = try container.decode(Variable<String>.self, forKey: .label)
+        }
+
         try super.init(from: decoder)
     }
 

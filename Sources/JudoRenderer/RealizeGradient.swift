@@ -62,7 +62,7 @@ private struct ObserveDocumentGradient<Content>: SwiftUI.View where Content: Swi
 }
 
 extension GradientValue {
-    func swiftUIGradient(startPoint: UnitPoint? = nil, endPoint: UnitPoint? = nil) -> LinearGradient {
+    func swiftUIGradient(startPoint: SwiftUI.UnitPoint? = nil, endPoint: SwiftUI.UnitPoint? = nil) -> LinearGradient {
         LinearGradient(
             gradient: Gradient(
                 stops: stops

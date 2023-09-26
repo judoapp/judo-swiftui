@@ -16,11 +16,17 @@
 import SwiftUI
 
 public class OpacityModifier: JudoModifier {
-
-    @Published public var opacity: NumberValue = 1
+    @Published public var opacity: Variable<Double> = 1
 
     public required init() {
         super.init()
+    }
+    
+    // MARK: Variables
+    
+    public override func updateVariables(properties: MainComponent.Properties, data: Any?, fetchedImage: SwiftUI.Image?, unbind: Bool, undoManager: UndoManager?) {
+        updateVariable(\.opacity, properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+        super.updateVariables(properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
     }
 
     // MARK: NSCopying
@@ -44,9 +50,11 @@ public class OpacityModifier: JudoModifier {
         switch coordinator.documentVersion {
         case ..<15:
             let doubleValue = try container.decode(Double.self, forKey: .opacity)
-            opacity = NumberValue(doubleValue)
+            opacity = Variable(LegacyNumberValue(doubleValue))
+        case ..<17:
+            opacity = try Variable(container.decode(LegacyNumberValue.self, forKey: .opacity))
         default:
-            opacity = try container.decode(NumberValue.self, forKey: .opacity)
+            opacity = try container.decode(Variable<Double>.self, forKey: .opacity)
         }
 
         try super.init(from: decoder)

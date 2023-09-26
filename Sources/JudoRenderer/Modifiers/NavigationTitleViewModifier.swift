@@ -16,17 +16,12 @@
 import JudoModel
 import SwiftUI
 
-struct NavigationTitleViewModifier: SwiftUI.ViewModifier {
-    @Environment(\.data) private var data
-    @EnvironmentObject private var componentState: ComponentState
-    
+struct NavigationTitleViewModifier: SwiftUI.ViewModifier {    
     @ObservedObject var modifier: NavigationTitleModifier
 
     func body(content: Content) -> some SwiftUI.View {
-        RealizeText(modifier.title) { textString in
-            if let textValue = try? textString.evaluatingExpressions(data: data, properties: componentState.properties) {
-                content.navigationTitle(textValue)
-            }
+        RealizeText(modifier.title) { title in
+            content.navigationTitle(title)
         }
     }
 }

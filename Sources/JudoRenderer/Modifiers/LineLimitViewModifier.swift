@@ -21,15 +21,6 @@ struct LineLimitViewModifier: SwiftUI.ViewModifier {
     @Environment(\.data) private var data
 
     @ObservedObject var modifier: LineLimitModifier
-    @OptionalComponentValue private var minValue: NumberValue?
-    @OptionalComponentValue private var maxValue: NumberValue?
-
-    init(modifier: LineLimitModifier) {
-        self.modifier = modifier
-        self.minValue = modifier.min
-        self.maxValue = modifier.max
-    }
-
     
     func body(content: Content) -> some SwiftUI.View {
         if #available(iOS 16.0, *) {
@@ -48,10 +39,25 @@ struct LineLimitViewModifier: SwiftUI.ViewModifier {
     }
 
     private var range: ClosedRange<Int>? {
-        modifier.effectiveRange(
-            minValue: $minValue != nil ? Int($minValue!) : nil,
-            maxValue: $maxValue != nil ? Int($maxValue!) : nil
+        modifier.effectiveRange(minValue: minValue, maxValue: maxValue)
+    }
+
+    private var minValue: Int? {
+        let resolvedValue = modifier.min?.forceResolve(
+            properties: componentState.properties,
+            data: data
         )
+        
+        return resolvedValue.map { Int($0) }
+    }
+
+    private var maxValue: Int? {
+        let resolvedValue = modifier.max?.forceResolve(
+            properties: componentState.properties,
+            data: data
+        )
+        
+        return resolvedValue.map { Int($0) }
     }
 }
 

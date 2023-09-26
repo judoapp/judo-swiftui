@@ -20,13 +20,18 @@ struct SpacerView: SwiftUI.View {
     @EnvironmentObject private var componentState: ComponentState
     @Environment(\.data) private var data
 
-    @OptionalComponentValue private var minLength: NumberValue?
-
-    init(spacer: JudoModel.Spacer) {
-        self.minLength = spacer.minLength
-    }
+    @ObservedObject var spacer: JudoModel.Spacer
 
     var body: some SwiftUI.View {
-        SwiftUI.Spacer(minLength: $minLength.map({ CGFloat($0) }))
+        SwiftUI.Spacer(
+            minLength: minLength.map { CGFloat($0) }
+        )
+    }
+    
+    private var minLength: Double? {
+        spacer.minLength?.forceResolve(
+            properties: componentState.properties,
+            data: data
+        )
     }
 }

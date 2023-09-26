@@ -14,11 +14,12 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import Foundation
+import SwiftUI
 
 public final class DecrementPropertyAction: PropertyAction {
-    @Published public var value: NumberValue
+    @Published public var value: Variable<Double>
     
-    public init(propertyName: String, value: NumberValue) {
+    public init(propertyName: String, value: Variable<Double>) {
         self.value = value
         super.init(propertyName: propertyName)
     }
@@ -26,6 +27,13 @@ public final class DecrementPropertyAction: PropertyAction {
     public required init() {
         self.value = 1
         super.init()
+    }
+    
+    // MARK: Variables
+    
+    public override func updateVariables(properties: MainComponent.Properties, data: Any?, fetchedImage: SwiftUI.Image?, unbind: Bool, undoManager: UndoManager?) {
+        updateVariable(\.value, properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+        super.updateVariables(properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
     }
     
     // MARK: NSCopying
@@ -44,7 +52,15 @@ public final class DecrementPropertyAction: PropertyAction {
     
     required public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        value = try container.decode(NumberValue.self, forKey: .value)
+        let coordinator = decoder.userInfo[.decodingCoordinator] as! DecodingCoordinator
+
+        switch coordinator.documentVersion {
+        case ..<17:
+            value = try Variable(container.decode(LegacyNumberValue.self, forKey: .value))
+        default:
+            value = try container.decode(Variable<Double>.self, forKey: .value)
+        }
+
         try super.init(from: decoder)
     }
     

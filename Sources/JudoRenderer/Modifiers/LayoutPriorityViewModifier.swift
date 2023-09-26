@@ -17,17 +17,20 @@ import JudoModel
 import SwiftUI
 
 struct LayoutPriorityViewModifier: SwiftUI.ViewModifier {
-    @ObservedObject var modifier: LayoutPriorityModifier
-    @ComponentValue private var priority: NumberValue
+    @EnvironmentObject private var componentState: ComponentState
+    @Environment(\.data) private var data
 
-    init(modifier: LayoutPriorityModifier) {
-        self.modifier = modifier
-        self.priority = modifier.priority
-    }
+    @ObservedObject var modifier: LayoutPriorityModifier
 
     func body(content: Content) -> some SwiftUI.View {
         content
-            .layoutPriority($priority ?? 0)
+            .layoutPriority(priority)
     }
 
+    private var priority: Double {
+        modifier.priority.forceResolve(
+            properties: componentState.properties,
+            data: data
+        )
+    }
 }

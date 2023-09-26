@@ -18,12 +18,40 @@ import SwiftUI
 public class TabItemModifier: JudoModifier {
 
     public struct TabItem: Codable, Equatable, Hashable {
-        public var title: TextValue?
+        public var title: Variable<String>?
         public var icon: NamedIcon?
 
-        public init(title: TextValue? = nil, icon: NamedIcon? = nil) {
+        public init(title: Variable<String>? = nil, icon: NamedIcon? = nil) {
             self.title = title
             self.icon = icon
+        }
+
+        // MARK: Codable
+
+        private enum CodingKeys: String, CodingKey {
+            case title
+            case icon
+        }
+
+        public init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            let coordinator = decoder.userInfo[.decodingCoordinator] as! DecodingCoordinator
+
+            switch coordinator.documentVersion {
+            case ..<17:
+                title = try Variable(container.decode(LegacyTextValue.self, forKey: .title))
+                icon = try container.decodeIfPresent(NamedIcon.self, forKey: .icon)
+            default:
+                title = try container.decode(Variable<String>.self, forKey: .title)
+                icon = try container.decodeIfPresent(NamedIcon.self, forKey: .icon)
+            }
+
+        }
+
+        public func encode(to encoder: Encoder) throws {
+            var container = encoder.container(keyedBy: CodingKeys.self)
+            try container.encode(title, forKey: .title)
+            try container.encodeIfPresent(icon, forKey: .icon)
         }
     }
 
@@ -33,6 +61,13 @@ public class TabItemModifier: JudoModifier {
         super.init()
     }
 
+    // MARK: Variables
+    
+    public override func updateVariables(properties: MainComponent.Properties, data: Any?, fetchedImage: SwiftUI.Image?, unbind: Bool, undoManager: UndoManager?) {
+        updateVariable(\.tabItem.title, properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+        super.updateVariables(properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+    }
+    
     // MARK: NSCopying
 
     public override func copy(with zone: NSZone? = nil) -> Any {

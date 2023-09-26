@@ -17,28 +17,40 @@ import JudoModel
 import SwiftUI
 
 struct ShadowViewModifier: SwiftUI.ViewModifier {
+    @EnvironmentObject private var componentState: ComponentState
+    @Environment(\.data) private var data
+
     @ObservedObject var modifier: JudoModel.ShadowModifier
-
-    @ComponentValue private var offsetWidth: NumberValue
-    @ComponentValue private var offsetHeight: NumberValue
-    @ComponentValue private var radius: NumberValue
-
-    init(modifier: JudoModel.ShadowModifier) {
-        self.modifier = modifier
-        self.offsetWidth = modifier.offsetWidth
-        self.offsetHeight = modifier.offsetHeight
-        self.radius = modifier.radius
-    }
 
     func body(content: Content) -> some SwiftUI.View {
         RealizeColor(modifier.color) { realizedColor in
             content
                 .shadow(
                     color: realizedColor,
-                    radius: $radius ?? 0,
-                    x: $offsetWidth ?? 0,
-                    y: $offsetHeight ?? 0
+                    radius: radius,
+                    x: offset.width,
+                    y: offset.height
                 )
         }
+    }
+
+    private var offset: CGSize {
+        CGSize(
+            width: modifier.offsetWidth.forceResolve(
+                properties: componentState.properties,
+                data: data
+            ),
+            height: modifier.offsetHeight.forceResolve(
+                properties: componentState.properties,
+                data: data
+            )
+        )
+    }
+
+    private var radius: CGFloat {
+        modifier.radius.forceResolve(
+            properties: componentState.properties,
+            data: data
+        )
     }
 }

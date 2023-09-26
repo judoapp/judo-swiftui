@@ -50,6 +50,8 @@ struct LayerView: SwiftUI.View {
             DividerView(divider: divider)
         case let ellipse as JudoModel.Ellipse:
             EllipseView(ellipse: ellipse)
+        case let form as JudoModel.Form:
+            FormView(form: form)
         case let stack as JudoModel.HStack:
             HStackView(stack: stack)
         case let image as JudoModel.Image:
@@ -68,6 +70,8 @@ struct LayerView: SwiftUI.View {
             RoundedRectangleView(roundedRectangle: roundedRectangle)
         case let secureField as JudoModel.SecureField:
             SecureFieldView(secureField: secureField)
+        case let section as JudoModel.Section:
+            SectionView(section: section)
         case let scrollView as JudoModel.ScrollView:
             ScrollViewView(scrollView: scrollView)
         case let slider as JudoModel.Slider:

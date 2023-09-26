@@ -59,8 +59,12 @@ private struct ButtonWithoutRole<Content: SwiftUI.View>: SwiftUI.View {
                     presentationMode.wrappedValue.dismiss()
 
                 case let action as JudoModel.OpenURLAction:
-                    if let urlString = action.url.resolve(data: data, componentState: componentState),
-                       let url = URL(string: urlString) {
+                    let urlString = action.url.forceResolve(
+                        properties: componentState.properties,
+                        data: data
+                    )
+                    
+                    if let url = URL(string: urlString) {
                         openURL(url)
                     }
 
@@ -70,22 +74,34 @@ private struct ButtonWithoutRole<Content: SwiftUI.View>: SwiftUI.View {
                     break
 
                 case let action as CustomAction:
-                    guard let resolvedValue = action.identifier.resolve(data: data, componentState: componentState) else {
-                        continue
-                    }
+                    let resolvedValue = action.identifier.forceResolve(
+                        properties: componentState.properties,
+                        data: data
+                    )
                     
                     let identifier = CustomActionIdentifier(resolvedValue)
                     
                     let parameters: [String: Any] = action.parameters.reduce(into: [:], { partialResult, parameter in
                         if let textValue = parameter.textValue {
-                            let resolvedValue = textValue.resolve(data: data, componentState: componentState)
+                            let resolvedValue = textValue.forceResolve(
+                                properties: componentState.properties,
+                                data: data
+                            )
+                            
                             partialResult[parameter.key] = resolvedValue
                         } else if let numberValue = parameter.numberValue {
-                            if let resolvedValue = numberValue.resolve(data: data, componentState: componentState) {
-                                partialResult[parameter.key] = resolvedValue
-                            }
+                            let resolvedValue = numberValue.forceResolve(
+                                properties: componentState.properties,
+                                data: data
+                            )
+                            
+                            partialResult[parameter.key] = resolvedValue
                         } else if let booleanValue = parameter.booleanValue {
-                            let resolvedValue = booleanValue.resolve(data: data, componentState: componentState)
+                            let resolvedValue = booleanValue.forceResolve(
+                                properties: componentState.properties,
+                                data: data
+                            )
+                            
                             partialResult[parameter.key] = resolvedValue
                         }
                     })
@@ -97,21 +113,33 @@ private struct ButtonWithoutRole<Content: SwiftUI.View>: SwiftUI.View {
                         switch action {
                         case let action as SetPropertyAction:
                             if let textValue = action.textValue {
-                                if let resolvedValue = textValue.resolve(data: data, componentState: componentState) {
-                                    componentState.bindings[propertyName]?.value = .text(resolvedValue)
-                                }
+                                let resolvedValue = textValue.forceResolve(
+                                    properties: componentState.properties,
+                                    data: data
+                                )
+                                
+                                componentState.bindings[propertyName]?.value = .text(resolvedValue)
                             } else if let numberValue = action.numberValue {
-                                if let resolvedValue = numberValue.resolve(data: data, componentState: componentState) {
-                                    componentState.bindings[propertyName]?.value = .number(resolvedValue)
-                                }
+                                let resolvedValue = numberValue.forceResolve(
+                                    properties: componentState.properties,
+                                    data: data
+                                )
+                                
+                                componentState.bindings[propertyName]?.value = .number(resolvedValue)
                             } else if let booleanValue = action.booleanValue {
-                                if let resolvedValue = booleanValue.resolve(data: data, componentState: componentState) {
-                                    componentState.bindings[propertyName]?.value = .boolean(resolvedValue)
-                                }
+                                let resolvedValue = booleanValue.forceResolve(
+                                    properties: componentState.properties,
+                                    data: data
+                                )
+                                
+                                componentState.bindings[propertyName]?.value = .boolean(resolvedValue)
                             } else if let imageValue = action.imageValue {
-                                if let resolvedValue = imageValue.resolve(data: data, componentState: componentState) {
-                                    componentState.bindings[propertyName]?.value = .image(resolvedValue)
-                                }
+                                let resolvedValue = imageValue.forceResolve(
+                                    properties: componentState.properties,
+                                    data: data
+                                )
+                                
+                                componentState.bindings[propertyName]?.value = .image(resolvedValue)
                             }
                         case is TogglePropertyAction:
                             if case .boolean(let value) = componentState.bindings[propertyName]?.value {
@@ -120,17 +148,23 @@ private struct ButtonWithoutRole<Content: SwiftUI.View>: SwiftUI.View {
                                 assertionFailure("Unexpected binding type")
                             }
                         case let action as IncrementPropertyAction:
-                            if case .number(let value) = componentState.bindings[propertyName]?.value,
-                               let resolvedByValue = action.value.resolve(data: data, componentState: componentState)
-                            {
+                            if case .number(let value) = componentState.bindings[propertyName]?.value {
+                                let resolvedByValue = action.value.forceResolve(
+                                    properties: componentState.properties,
+                                    data: data
+                                )
+                                
                                 componentState.bindings[propertyName]?.value = .number(value + resolvedByValue)
                             } else {
                                 assertionFailure("Unexpected binding")
                             }
                         case let action as DecrementPropertyAction:
-                            if case .number(let value) = componentState.bindings[propertyName]?.value,
-                               let resolvedByValue = action.value.resolve(data: data, componentState: componentState)
-                            {
+                            if case .number(let value) = componentState.bindings[propertyName]?.value {
+                                let resolvedByValue = action.value.forceResolve(
+                                    properties: componentState.properties,
+                                    data: data
+                                )
+                                
                                 componentState.bindings[propertyName]?.value = .number(value - resolvedByValue)
                             } else {
                                 assertionFailure("Unexpected binding")
@@ -170,7 +204,7 @@ private struct ButtonWithRole<Content: SwiftUI.View>: SwiftUI.View {
                     dismiss()
 
                 case let action as JudoModel.OpenURLAction:
-                    if let urlString = action.url.resolve(data: data, componentState: componentState),
+                    if let urlString = action.url.resolve(properties: componentState.properties, data: data),
                        let url = URL(string: urlString) {
                         openURL(url)
                     }
@@ -181,22 +215,34 @@ private struct ButtonWithRole<Content: SwiftUI.View>: SwiftUI.View {
                     }
 
                 case let action as CustomAction:
-                    guard let resolvedValue = action.identifier.resolve(data: data, componentState: componentState) else {
-                        continue
-                    }
+                    let resolvedValue = action.identifier.forceResolve(
+                        properties: componentState.properties,
+                        data: data
+                    )
                     
                     let identifier = CustomActionIdentifier(resolvedValue)
                     
                     let parameters: [String: Any] = action.parameters.reduce(into: [:], { partialResult, parameter in
                         if let textValue = parameter.textValue {
-                            let resolvedValue = textValue.resolve(data: data, componentState: componentState)
+                            let resolvedValue = textValue.forceResolve(
+                                properties: componentState.properties,
+                                data: data
+                            )
+                            
                             partialResult[parameter.key] = resolvedValue
                         } else if let numberValue = parameter.numberValue {
-                            if let resolvedValue = numberValue.resolve(data: data, componentState: componentState) {
-                                partialResult[parameter.key] = resolvedValue
-                            }
+                            let resolvedValue = numberValue.forceResolve(
+                                properties: componentState.properties,
+                                data: data
+                            )
+                            
+                            partialResult[parameter.key] = resolvedValue
                         } else if let booleanValue = parameter.booleanValue {
-                            let resolvedValue = booleanValue.resolve(data: data, componentState: componentState)
+                            let resolvedValue = booleanValue.forceResolve(
+                                properties: componentState.properties,
+                                data: data
+                            )
+                            
                             partialResult[parameter.key] = resolvedValue
                         }
                     })
@@ -207,21 +253,33 @@ private struct ButtonWithRole<Content: SwiftUI.View>: SwiftUI.View {
                         switch action {
                         case let action as SetPropertyAction:
                             if let textValue = action.textValue {
-                                if let resolvedValue = textValue.resolve(data: data, componentState: componentState) {
-                                    componentState.bindings[propertyName]?.value = .text(resolvedValue)
-                                }
+                                let resolvedValue = textValue.forceResolve(
+                                    properties: componentState.properties,
+                                    data: data
+                                )
+                                
+                                componentState.bindings[propertyName]?.value = .text(resolvedValue)
                             } else if let numberValue = action.numberValue {
-                                if let resolvedValue = numberValue.resolve(data: data, componentState: componentState) {
-                                    componentState.bindings[propertyName]?.value = .number(resolvedValue)
-                                }
+                                let resolvedValue = numberValue.forceResolve(
+                                    properties: componentState.properties,
+                                    data: data
+                                )
+                                
+                                componentState.bindings[propertyName]?.value = .number(resolvedValue)
                             } else if let booleanValue = action.booleanValue {
-                                if let resolvedValue = booleanValue.resolve(data: data, componentState: componentState) {
-                                    componentState.bindings[propertyName]?.value = .boolean(resolvedValue)
-                                }
+                                let resolvedValue = booleanValue.forceResolve(
+                                    properties: componentState.properties,
+                                    data: data
+                                )
+                                
+                                componentState.bindings[propertyName]?.value = .boolean(resolvedValue)
                             } else if let imageValue = action.imageValue {
-                                if let resolvedValue = imageValue.resolve(data: data, componentState: componentState) {
-                                    componentState.bindings[propertyName]?.value = .image(resolvedValue)
-                                }
+                                let resolvedValue = imageValue.forceResolve(
+                                    properties: componentState.properties,
+                                    data: data
+                                )
+                                
+                                componentState.bindings[propertyName]?.value = .image(resolvedValue)
                             }
                         case is TogglePropertyAction:
                             if case .boolean(let value) = componentState.bindings[propertyName]?.value {
@@ -230,17 +288,23 @@ private struct ButtonWithRole<Content: SwiftUI.View>: SwiftUI.View {
                                 assertionFailure("Unexpected binding type")
                             }
                         case let action as IncrementPropertyAction:
-                            if case .number(let value) = componentState.bindings[propertyName]?.value,
-                               let resolvedByValue = action.value.resolve(data: data, componentState: componentState)
-                            {
+                            if case .number(let value) = componentState.bindings[propertyName]?.value {
+                                let resolvedByValue = action.value.forceResolve(
+                                    properties: componentState.properties,
+                                    data: data
+                                )
+                                
                                 componentState.bindings[propertyName]?.value = .number(value + resolvedByValue)
                             } else {
                                 assertionFailure("Unexpected binding")
                             }
                         case let action as DecrementPropertyAction:
-                            if case .number(let value) = componentState.bindings[propertyName]?.value,
-                               let resolvedByValue = action.value.resolve(data: data, componentState: componentState)
-                            {
+                            if case .number(let value) = componentState.bindings[propertyName]?.value {
+                                let resolvedByValue = action.value.forceResolve(
+                                    properties: componentState.properties,
+                                    data: data
+                                )
+                                
                                 componentState.bindings[propertyName]?.value = .number(value - resolvedByValue)
                             } else {
                                 assertionFailure("Unexpected binding")

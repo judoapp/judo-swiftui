@@ -14,29 +14,30 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import Foundation
+import SwiftUI
 
 public final class SetPropertyAction: PropertyAction {
-    @Published public var textValue: TextValue?
-    @Published public var numberValue: NumberValue?
-    @Published public var booleanValue: BooleanValue?
-    @Published public var imageValue: ImageValue?
+    @Published public var textValue: Variable<String>?
+    @Published public var numberValue: Variable<Double>?
+    @Published public var booleanValue: Variable<Bool>?
+    @Published public var imageValue: Variable<ImageReference>?
     
-    public init(propertyName: String, textValue: TextValue) {
+    public init(propertyName: String, textValue: Variable<String>) {
         self.textValue = textValue
         super.init(propertyName: propertyName)
     }
     
-    public init(propertyName: String, numberValue: NumberValue) {
+    public init(propertyName: String, numberValue: Variable<Double>) {
         self.numberValue = numberValue
         super.init(propertyName: propertyName)
     }
     
-    public init(propertyName: String, booleanValue: BooleanValue) {
+    public init(propertyName: String, booleanValue: Variable<Bool>) {
         self.booleanValue = booleanValue
         super.init(propertyName: propertyName)
     }
     
-    public init(propertyName: String, imageValue: ImageValue) {
+    public init(propertyName: String, imageValue: Variable<ImageReference>) {
         self.imageValue = imageValue
         super.init(propertyName: propertyName)
     }
@@ -44,6 +45,16 @@ public final class SetPropertyAction: PropertyAction {
     public required init() {
         self.textValue = "Value"
         super.init()
+    }
+    
+    // MARK: Variables
+    
+    public override func updateVariables(properties: MainComponent.Properties, data: Any?, fetchedImage: SwiftUI.Image?, unbind: Bool, undoManager: UndoManager?) {
+        updateVariable(\.textValue, properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+        updateVariable(\.numberValue, properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+        updateVariable(\.booleanValue, properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+        updateVariable(\.imageValue, properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+        super.updateVariables(properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
     }
     
     // MARK: NSCopying
@@ -68,10 +79,32 @@ public final class SetPropertyAction: PropertyAction {
     
     required public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        textValue = try container.decode(TextValue?.self, forKey: .textValue)
-        numberValue = try container.decode(NumberValue?.self, forKey: .numberValue)
-        booleanValue = try container.decode(BooleanValue?.self, forKey: .booleanValue)
-        imageValue = try container.decode(ImageValue?.self, forKey: .imageValue)
+        let coordinator = decoder.userInfo[.decodingCoordinator] as! DecodingCoordinator
+
+        switch coordinator.documentVersion {
+        case ..<17:
+            if let textValue = try container.decode(LegacyTextValue?.self, forKey: .textValue) {
+                self.textValue = Variable(textValue)
+            }
+
+            if let imageValue = try container.decode(LegacyImageValue?.self, forKey: .imageValue) {
+                self.imageValue = Variable(imageValue)
+            }
+
+            if let numberValue = try container.decode(LegacyNumberValue?.self, forKey: .numberValue) {
+                self.numberValue = Variable(numberValue)
+            }
+
+            if let booleanValue = try container.decode(LegacyBooleanValue?.self, forKey: .booleanValue) {
+                self.booleanValue = Variable(booleanValue)
+            }
+        default:
+            textValue = try container.decode(Variable<String>?.self, forKey: .textValue)
+            imageValue = try container.decode(Variable<ImageReference>?.self, forKey: .imageValue)
+            numberValue = try container.decode(Variable<Double>?.self, forKey: .numberValue)
+            booleanValue = try container.decode(Variable<Bool>?.self, forKey: .booleanValue)
+        }
+
         try super.init(from: decoder)
     }
     

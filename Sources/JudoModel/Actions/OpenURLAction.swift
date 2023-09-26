@@ -14,11 +14,12 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import Foundation
+import SwiftUI
 
 public final class OpenURLAction: Action {
-    @Published public var url: TextValue
+    @Published public var url: Variable<String>
     
-    public init(url: TextValue) {
+    public init(url: Variable<String>) {
         self.url = url
         super.init()
     }
@@ -26,6 +27,13 @@ public final class OpenURLAction: Action {
     public required init() {
         self.url = "https://www.judo.app"
         super.init()
+    }
+    
+    // MARK: Variables
+    
+    public override func updateVariables(properties: MainComponent.Properties, data: Any?, fetchedImage: SwiftUI.Image?, unbind: Bool, undoManager: UndoManager?) {
+        updateVariable(\.url, properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+        super.updateVariables(properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
     }
     
     // MARK: NSCopying
@@ -44,7 +52,15 @@ public final class OpenURLAction: Action {
     
     public required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        url = try container.decode(TextValue.self, forKey: .url)
+        let coordinator = decoder.userInfo[.decodingCoordinator] as! DecodingCoordinator
+
+        switch coordinator.documentVersion {
+        case ..<17:
+            url = try Variable(container.decode(LegacyTextValue.self, forKey: .url))
+        default:
+            url = try container.decode(Variable<String>.self, forKey: .url)
+        }
+
         try super.init(from: decoder)
     }
     

@@ -1721,3 +1721,198 @@ public enum PickerStyle: Codable, CaseIterable, CustomStringConvertible, Identif
         }
     }
 }
+
+
+// MARK: - BlendMode
+
+public enum BlendMode: Codable, CaseIterable, CustomStringConvertible, Identifiable {
+
+    case color
+    case colorBurn
+    case colorDodge
+    case darken
+    case destinationOut
+    case destinationOver
+    case difference
+    case exclusion
+    case hardLight
+    case hue
+    case lighten
+    case luminosity
+    case multiply
+    case normal
+    case overlay
+    case plusDarker
+    case plusLighter
+    case saturation
+    case screen
+    case softLight
+    case sourceAtop
+
+    public var id: Self {
+        self
+    }
+
+    public var description: String {
+        switch self {
+        case .color:
+            return "Color"
+        case .colorBurn:
+            return "Color Burn"
+        case .colorDodge:
+            return "Color Dodge"
+        case .darken:
+            return "Darken"
+        case .destinationOut:
+            return "Destination Out"
+        case .destinationOver:
+            return "Destination Over"
+        case .difference:
+            return "Difference"
+        case .exclusion:
+            return "Exclusion"
+        case .hardLight:
+            return "Hard Light"
+        case .hue:
+            return "Hue"
+        case .lighten:
+            return "Lighten"
+        case .luminosity:
+            return "Luminosity"
+        case .multiply:
+            return "Multiply"
+        case .normal:
+            return "Normal"
+        case .overlay:
+            return "Overlay"
+        case .plusDarker:
+            return "Plus Darker"
+        case .plusLighter:
+            return "Plus Lighter"
+        case .saturation:
+            return "Saturation"
+        case .screen:
+            return "Screen"
+        case .softLight:
+            return "Soft Light"
+        case .sourceAtop:
+            return "Source Atop"
+        }
+    }
+
+    public var swiftUIValue: SwiftUI.BlendMode {
+        switch self {
+        case .color:
+            return .color
+        case .colorBurn:
+            return .colorBurn
+        case .colorDodge:
+            return .colorDodge
+        case .darken:
+            return .darken
+        case .destinationOut:
+            return .destinationOut
+        case .destinationOver:
+            return .destinationOver
+        case .difference:
+            return .difference
+        case .exclusion:
+            return .exclusion
+        case .hardLight:
+            return .hardLight
+        case .hue:
+            return .hue
+        case .lighten:
+            return .lighten
+        case .luminosity:
+            return .luminosity
+        case .multiply:
+            return .multiply
+        case .normal:
+            return .normal
+        case .overlay:
+            return .overlay
+        case .plusDarker:
+            return .plusDarker
+        case .plusLighter:
+            return .plusLighter
+        case .saturation:
+            return .saturation
+        case .screen:
+            return .screen
+        case .softLight:
+            return .softLight
+        case .sourceAtop:
+            return .sourceAtop
+        }
+    }
+}
+
+// MARK: - UnitPoint
+
+public enum UnitPoint: Codable, CaseIterable, CustomStringConvertible, Identifiable {
+    case bottom
+    case bottomLeading
+    case bottomTrailing
+    case center
+    case leading
+    case top
+    case topLeading
+    case topTrailing
+    case trailing
+    case zero
+    
+    public var id: Self {
+        self
+    }
+
+    public var description: String {
+        switch self {
+        case .bottom:
+            return "Bottom"
+        case .bottomLeading:
+            return "Bottom Leading"
+        case .bottomTrailing:
+            return "Bottom Trailing"
+        case .center:
+            return "Center"
+        case .leading:
+            return "Leading"
+        case .top:
+            return "Top "
+        case .topLeading:
+            return "Top Leading"
+        case .topTrailing:
+            return "Top Trailing"
+        case .trailing:
+            return "Trailing"
+        case .zero:
+            return "Zero"
+        }
+    }
+
+    public var swiftUIValue: SwiftUI.UnitPoint {
+        switch self {
+        case .bottom:
+            return .bottom
+        case .bottomLeading:
+            return .bottomLeading
+        case .bottomTrailing:
+            return .bottomTrailing
+        case .center:
+            return .center
+        case .leading:
+            return .leading
+        case .top:
+            return .top
+        case .topLeading:
+            return .topLeading
+        case .topTrailing:
+            return .topTrailing
+        case .trailing:
+            return .trailing
+        case .zero:
+            return .zero
+        }
+    }
+}

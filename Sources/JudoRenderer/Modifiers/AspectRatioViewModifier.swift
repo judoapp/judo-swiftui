@@ -22,15 +22,18 @@ struct AspectRatioViewModifier: SwiftUI.ViewModifier {
 
     @ObservedObject var modifier: AspectRatioModifier
 
-    @OptionalComponentValue private var ratio: NumberValue?
-
-    init(modifier: AspectRatioModifier) {
-        self.modifier = modifier
-        self.ratio = modifier.ratio
-    }
-
     func body(content: Content) -> some SwiftUI.View {
         content
-            .aspectRatio($ratio.map({ CGFloat($0) }), contentMode: modifier.contentMode.swiftUIValue)
+            .aspectRatio(
+                ratio.map { CGFloat($0) },
+                contentMode: modifier.contentMode.swiftUIValue
+            )
+    }
+    
+    private var ratio: Double? {
+        modifier.ratio?.forceResolve(
+            properties: componentState.properties,
+            data: data
+        )
     }
 }

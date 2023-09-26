@@ -16,7 +16,7 @@
 import Foundation
 
 struct LegacyToolbarItem: Decodable {
-    var title: TextValue?
+    var title: LegacyTextValue?
     var icon: NamedIcon?
     var placement: ToolbarItemPlacement = .automatic
     var actions: [Action] = []
@@ -37,7 +37,7 @@ struct LegacyToolbarItem: Decodable {
         let coordinator = decoder.userInfo[.decodingCoordinator] as! DecodingCoordinator
         let container = try decoder.container(keyedBy: CodingKeys.self)
         
-        title = try container.decodeIfPresent(TextValue.self, forKey: .title)
+        title = try container.decodeIfPresent(LegacyTextValue.self, forKey: .title)
         icon = try container.decodeIfPresent(NamedIcon.self, forKey: .icon)
         placement = try container.decode(ToolbarItemPlacement.self, forKey: .placement)
         

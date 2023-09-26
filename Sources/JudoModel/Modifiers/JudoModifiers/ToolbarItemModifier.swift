@@ -16,7 +16,7 @@
 import SwiftUI
 
 public class ToolbarItemModifier: JudoModifier {
-    @Published public var title: TextValue?
+    @Published public var title: Variable<String>?
     @Published public var icon: NamedIcon?
     @Published public var placement: ToolbarItemPlacement = .automatic
     @Published @objc public dynamic var actions: [Action] = []
@@ -55,12 +55,19 @@ public class ToolbarItemModifier: JudoModifier {
         switch coordinator.documentVersion {
         case ..<15:
             let legacyToolbarItem = try container.decode(LegacyToolbarItem.self, forKey: .toolbarItem)
-            title = legacyToolbarItem.title
+            if let title = legacyToolbarItem.title {
+                self.title = Variable(title)
+            }
             icon = legacyToolbarItem.icon
             placement = legacyToolbarItem.placement
             actions = legacyToolbarItem.actions
+        case ..<17:
+            title = try Variable(container.decode(LegacyTextValue.self, forKey: .title))
+            icon = try container.decode(NamedIcon?.self, forKey: .icon)
+            placement = try container.decode(ToolbarItemPlacement.self, forKey: .placement)
+            actions = try container.decode([ActionWrapper].self, forKey: .actions).compactMap(\.action)
         default:
-            title = try container.decode(TextValue?.self, forKey: .title)
+            title = try container.decode(Variable<String>?.self, forKey: .title)
             icon = try container.decode(NamedIcon?.self, forKey: .icon)
             placement = try container.decode(ToolbarItemPlacement.self, forKey: .placement)
             actions = try container.decode([ActionWrapper].self, forKey: .actions).compactMap(\.action)

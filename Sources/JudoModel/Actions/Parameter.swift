@@ -14,26 +14,27 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import Foundation
+import SwiftUI
 
 public final class Parameter: JudoObject {
     @Published public var key: String
-    @Published public var textValue: TextValue?
-    @Published public var numberValue: NumberValue?
-    @Published public var booleanValue: BooleanValue?
+    @Published public var textValue: Variable<String>?
+    @Published public var numberValue: Variable<Double>?
+    @Published public var booleanValue: Variable<Bool>?
     
-    public init(key: String, textValue: TextValue) {
+    public init(key: String, textValue: Variable<String>) {
         self.textValue = textValue
         self.key = key
         super.init()
     }
     
-    public init(key: String, numberValue: NumberValue) {
+    public init(key: String, numberValue: Variable<Double>) {
         self.numberValue = numberValue
         self.key = key
         super.init()
     }
     
-    public init(key: String, booleanValue: BooleanValue) {
+    public init(key: String, booleanValue: Variable<Bool>) {
         self.booleanValue = booleanValue
         self.key = key
         super.init()
@@ -43,6 +44,15 @@ public final class Parameter: JudoObject {
         self.key = "Key"
         self.textValue = "Value"
         super.init()
+    }
+    
+    // MARK: Variables
+    
+    public override func updateVariables(properties: MainComponent.Properties, data: Any? = nil, fetchedImage: SwiftUI.Image? = nil, unbind: Bool, undoManager: UndoManager?) {
+        updateVariable(\.textValue, properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+        updateVariable(\.numberValue, properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+        updateVariable(\.booleanValue, properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+        super.updateVariables(properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
     }
     
     // MARK: NSCopying
@@ -67,10 +77,30 @@ public final class Parameter: JudoObject {
     
     required public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
+        let coordinator = decoder.userInfo[.decodingCoordinator] as! DecodingCoordinator
+
         key = try container.decode(String.self, forKey: .key)
-        textValue = try container.decode(TextValue?.self, forKey: .textValue)
-        numberValue = try container.decode(NumberValue?.self, forKey: .numberValue)
-        booleanValue = try container.decode(BooleanValue?.self, forKey: .booleanValue)
+
+        switch coordinator.documentVersion {
+        case ..<17:
+            if let value = try container.decode(LegacyTextValue?.self, forKey: .textValue) {
+                self.textValue = Variable(value)
+            }
+
+            if let value = try container.decode(LegacyNumberValue?.self, forKey: .numberValue) {
+                self.numberValue = Variable(value)
+            }
+
+            if let value = try container.decode(LegacyBooleanValue?.self, forKey: .booleanValue) {
+                self.booleanValue = Variable(value)
+            }
+
+        default:
+            textValue = try container.decode(Variable<String>?.self, forKey: .textValue)
+            numberValue = try container.decode(Variable<Double>?.self, forKey: .numberValue)
+            booleanValue = try container.decode(Variable<Bool>?.self, forKey: .booleanValue)
+        }
+
         try super.init(from: decoder)
     }
     

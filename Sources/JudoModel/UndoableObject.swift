@@ -14,6 +14,7 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import Foundation
+import SwiftUI
 
 public protocol UndoableObject: AnyObject {
     
@@ -27,6 +28,34 @@ extension UndoableObject {
         undoManager?.registerUndo(withTarget: self) { [unowned undoManager] in
             $0.set(keyPath, to: oldValue, undoManager: undoManager)
         }
+    }
+    
+    func updateVariable<Value>(_ keyPath: ReferenceWritableKeyPath<Self, Variable<Value>>, properties: MainComponent.Properties, data: Any?, fetchedImage: SwiftUI.Image?, unbind: Bool, undoManager: UndoManager?) {
+        var updatedVariable = self[keyPath: keyPath].withUpdatedConstant(
+            properties: properties,
+            data: data,
+            fetchedImage: fetchedImage
+        )
+        
+        if unbind {
+            updatedVariable.unbind()
+        }
+        
+        set(keyPath, to: updatedVariable, undoManager: undoManager)
+    }
+    
+    func updateVariable<Value>(_ keyPath: ReferenceWritableKeyPath<Self, Variable<Value>?>, properties: MainComponent.Properties, data: Any?, fetchedImage: SwiftUI.Image?, unbind: Bool, undoManager: UndoManager?) {
+        var updatedVariable = self[keyPath: keyPath]?.withUpdatedConstant(
+            properties: properties,
+            data: data,
+            fetchedImage: fetchedImage
+        )
+        
+        if unbind {
+            updatedVariable?.unbind()
+        }
+        
+        set(keyPath, to: updatedVariable, undoManager: undoManager)
     }
 }
 

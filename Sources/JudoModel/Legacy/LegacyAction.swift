@@ -19,16 +19,16 @@ import OrderedCollections
 enum LegacyAction: Decodable {
     enum LegacyPropertyAction: Decodable {
         enum Value: Decodable {
-            case text(TextValue)
-            case number(NumberValue)
-            case boolean(BooleanValue)
-            case image(ImageValue)
+            case text(LegacyTextValue)
+            case number(LegacyNumberValue)
+            case boolean(LegacyBooleanValue)
+            case image(LegacyImageValue)
         }
 
         case set(property: String, value: Value)
         case toggle(property: String)
-        case increment(property: String, value: NumberValue)
-        case decrement(property: String, value: NumberValue)
+        case increment(property: String, value: LegacyNumberValue)
+        case decrement(property: String, value: LegacyNumberValue)
     }
 
     typealias LegacyParameters = OrderedDictionary<String, LegacyParameterValue>
@@ -49,7 +49,7 @@ enum LegacyAction: Decodable {
     }
 
     case dismiss
-    case openURL(TextValue)
+    case openURL(LegacyTextValue)
     case refresh
     case property(LegacyPropertyAction)
     case custom(LegacyCustomActionIdentifier, LegacyParameters)
@@ -95,7 +95,7 @@ enum LegacyAction: Decodable {
                 forKey: .openURL
             )
 
-            let value = try nestedContainer.decode(TextValue.self, forKey: ._0)
+            let value = try nestedContainer.decode(LegacyTextValue.self, forKey: ._0)
             self = .openURL(value)
         case .refresh:
             self = .refresh
@@ -140,7 +140,7 @@ extension LegacyAction {
         case .dismiss:
             return DismissAction()
         case .openURL(let url):
-            return OpenURLAction(url: url)
+            return OpenURLAction(url: Variable(url))
         case .refresh:
             return RefreshAction()
         case .property(let propertyAction):
@@ -148,34 +148,34 @@ extension LegacyAction {
             case .set(let propertyName, let value):
                 switch value {
                 case .text(let textValue):
-                    return SetPropertyAction(propertyName: propertyName, textValue: textValue)
+                    return SetPropertyAction(propertyName: propertyName, textValue: Variable(textValue))
                 case .number(let numberValue):
-                    return SetPropertyAction(propertyName: propertyName, numberValue: numberValue)
+                    return SetPropertyAction(propertyName: propertyName, numberValue: Variable(numberValue))
                 case .boolean(let booleanValue):
-                    return SetPropertyAction(propertyName: propertyName, booleanValue: booleanValue)
+                    return SetPropertyAction(propertyName: propertyName, booleanValue: Variable(booleanValue))
                 case .image(let imageValue):
-                    return SetPropertyAction(propertyName: propertyName, imageValue: imageValue)
+                    return SetPropertyAction(propertyName: propertyName, imageValue: Variable(imageValue))
                 }
             case .toggle(let propertyName):
                 return TogglePropertyAction(propertyName: propertyName)
             case .increment(let propertyName, let value):
-                return IncrementPropertyAction(propertyName: propertyName, value: value)
+                return IncrementPropertyAction(propertyName: propertyName, value: Variable(value))
             case .decrement(let propertyName, let value):
-                return DecrementPropertyAction(propertyName: propertyName, value: value)
+                return DecrementPropertyAction(propertyName: propertyName, value: Variable(value))
             }
         case .custom(let legacyIdentifier, let legacyParameters):
             let parameters = legacyParameters.map { legacyParameter in
                 switch legacyParameter.value {
                 case .text(let stringValue):
-                    return Parameter(key: legacyParameter.key, textValue: .verbatim(content: stringValue))
+                    return Parameter(key: legacyParameter.key, textValue: Variable(stringValue))
                 case .number(let doubleValue):
-                    return Parameter(key: legacyParameter.key, numberValue: .constant(value: doubleValue))
+                    return Parameter(key: legacyParameter.key, numberValue: Variable(doubleValue))
                 case .boolean(let boolValue):
-                    return Parameter(key: legacyParameter.key, booleanValue: .constant(value: boolValue))
+                    return Parameter(key: legacyParameter.key, booleanValue: Variable(boolValue))
                 }
             }
             
-            let identifier = TextValue.verbatim(content: legacyIdentifier.rawValue)
+            let identifier = Variable(legacyIdentifier.rawValue)
             return CustomAction(identifier: identifier, parameters: parameters)
         }
     }

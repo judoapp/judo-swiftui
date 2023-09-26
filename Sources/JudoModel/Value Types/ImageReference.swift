@@ -1,6 +1,6 @@
 import SwiftUI
 
-public enum ImageReference: Codable, Hashable {
+public enum ImageReference: Codable, Hashable, CustomStringConvertible {
     case document(imageName: String)
     case system(imageName: String)
     case inline(image: SwiftUI.Image)
@@ -14,6 +14,10 @@ public enum ImageReference: Codable, Hashable {
         case .inline:
             return "Image"
         }
+    }
+
+    public var description: String {
+        name
     }
     
     // MARK: Hashable
@@ -49,7 +53,7 @@ public enum ImageReference: Codable, Hashable {
     
     enum InlineCodingKeys: CodingKey {
     }
-    
+
     public init(from decoder: Decoder) throws {
         let container: KeyedDecodingContainer<ImageReference.CodingKeys> = try decoder.container(keyedBy: ImageReference.CodingKeys.self)
         
@@ -100,7 +104,7 @@ public enum ImageReference: Codable, Hashable {
         case .inline:
             
             _ = container.nestedContainer(keyedBy: ImageReference.InlineCodingKeys.self, forKey: ImageReference.CodingKeys.inline)
-            
+            break
         }
     }
 }
@@ -108,5 +112,9 @@ public enum ImageReference: Codable, Hashable {
 extension ImageReference {
     public static var `default`: ImageReference {
         .system(imageName: "globe")
+    }
+    
+    public static var empty: ImageReference {
+        .system(imageName: "square.dashed")
     }
 }

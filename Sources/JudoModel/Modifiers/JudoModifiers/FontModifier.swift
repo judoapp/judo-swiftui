@@ -23,6 +23,43 @@ public class FontModifier: JudoModifier {
         super.init()
     }
 
+    // MARK: Variables
+    
+    public override func updateVariables(properties: MainComponent.Properties, data: Any?, fetchedImage: SwiftUI.Image?, unbind: Bool, undoManager: UndoManager?) {
+        switch font {
+        case .custom(let fontName, let size):
+            var updatedSize = size.withUpdatedConstant(
+                properties: properties,
+                data: data,
+                fetchedImage: fetchedImage
+            )
+            
+            if unbind {
+                updatedSize.unbind()
+            }
+            
+            let newValue = Font.custom(fontName: fontName, size: updatedSize)
+            set(\.font, to: newValue, undoManager: undoManager)
+        case .fixed(let size, let weight, let design):
+            var updatedSize = size.withUpdatedConstant(
+                properties: properties,
+                data: data,
+                fetchedImage: fetchedImage
+            )
+            
+            if unbind {
+                updatedSize.unbind()
+            }
+            
+            let newValue = Font.fixed(size: updatedSize, weight: weight, design: design)
+            set(\.font, to: newValue, undoManager: undoManager)
+        default:
+            break
+        }
+        
+        super.updateVariables(properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+    }
+    
     // MARK: NSCopying
 
     public override func copy(with zone: NSZone? = nil) -> Any {

@@ -16,11 +16,19 @@
 import SwiftUI
 
 public class OffsetModifier: JudoModifier {
-    @Published public var width: NumberValue = 0
-    @Published public var height: NumberValue = 0
+    @Published public var width: Variable<Double> = 0
+    @Published public var height: Variable<Double> = 0
 
     public required init() {
         super.init()
+    }
+    
+    // MARK: Variables
+    
+    public override func updateVariables(properties: MainComponent.Properties, data: Any?, fetchedImage: SwiftUI.Image?, unbind: Bool, undoManager: UndoManager?) {
+        updateVariable(\.width, properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+        updateVariable(\.height, properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+        super.updateVariables(properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
     }
 
     // MARK: NSCopying
@@ -48,11 +56,14 @@ public class OffsetModifier: JudoModifier {
         switch coordinator.documentVersion {
         case ..<15:
             let size = try container.decode(CGSize.self, forKey: .size)
-            width = NumberValue(size.width)
-            height = NumberValue(size.height)
+            width = Variable(LegacyNumberValue(size.width))
+            height = Variable(LegacyNumberValue(size.height))
+        case ..<17:
+            width = try Variable(container.decode(LegacyNumberValue.self, forKey: .width))
+            height = try Variable(container.decode(LegacyNumberValue.self, forKey: .height))
         default:
-            width = try container.decode(NumberValue.self, forKey: .width)
-            height = try container.decode(NumberValue.self, forKey: .height)
+            width = try container.decode(Variable<Double>.self, forKey: .width)
+            height = try container.decode(Variable<Double>.self, forKey: .height)
         }
 
         try super.init(from: decoder)

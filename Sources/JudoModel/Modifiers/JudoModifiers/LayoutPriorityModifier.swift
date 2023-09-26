@@ -17,10 +17,17 @@ import SwiftUI
 
 public class LayoutPriorityModifier: JudoModifier {
 
-    @Published public var priority: NumberValue = 0
+    @Published public var priority: Variable<Double> = 0
 
     public required init() {
         super.init()
+    }
+    
+    // MARK: Variables
+    
+    public override func updateVariables(properties: MainComponent.Properties, data: Any?, fetchedImage: SwiftUI.Image?, unbind: Bool, undoManager: UndoManager?) {
+        updateVariable(\.priority, properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+        super.updateVariables(properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
     }
 
     // MARK: NSCopying
@@ -43,9 +50,11 @@ public class LayoutPriorityModifier: JudoModifier {
         switch coordinator.documentVersion {
         case ..<15:
             let floatValue = try container.decode(Double.self, forKey: .priority)
-            priority = NumberValue(floatValue)
+            priority = Variable(LegacyNumberValue(floatValue))
+        case ..<17:
+            priority = try Variable(container.decode(LegacyNumberValue.self, forKey: .priority))
         default:
-            priority = try container.decode(NumberValue.self, forKey: .priority)
+            priority = try container.decode(Variable<Double>.self, forKey: .priority)
         }
         try super.init(from: decoder)
     }

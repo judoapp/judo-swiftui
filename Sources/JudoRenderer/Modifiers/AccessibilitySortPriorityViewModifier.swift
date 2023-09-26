@@ -28,11 +28,9 @@ struct AccessibilitySortPriorityViewModifier: SwiftUI.ViewModifier {
     }
 
     private var value: Double {
-        switch modifier.sortPriority {
-        case .constant(let value):
-            return value
-        case .property, .data:
-            return modifier.sortPriority.resolve(data: data, componentState: componentState) ?? 0
-        }
+        modifier.sortPriority.forceResolve(
+            properties: componentState.properties,
+            data: data
+        )
     }
 }

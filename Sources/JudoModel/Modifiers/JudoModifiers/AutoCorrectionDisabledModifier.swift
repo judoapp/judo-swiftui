@@ -17,10 +17,17 @@ import SwiftUI
 
 public class AutocorrectionDisabledModifier: JudoModifier {
 
-    @Published public var isDisabled: BooleanValue = true
+    @Published public var isDisabled: Variable<Bool> = true
 
     public required init() {
         super.init()
+    }
+    
+    // MARK: Variables
+    
+    public override func updateVariables(properties: MainComponent.Properties, data: Any?, fetchedImage: SwiftUI.Image?, unbind: Bool, undoManager: UndoManager?) {
+        updateVariable(\.isDisabled, properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+        super.updateVariables(properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
     }
 
     // MARK: NSCopying
@@ -39,7 +46,15 @@ public class AutocorrectionDisabledModifier: JudoModifier {
 
     public required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        isDisabled = try container.decode(BooleanValue.self, forKey: .isDisabled)
+        let coordinator = decoder.userInfo[.decodingCoordinator] as! DecodingCoordinator
+
+        switch coordinator.documentVersion {
+        case ..<17:
+            isDisabled = try Variable(container.decode(LegacyBooleanValue.self, forKey: .isDisabled))
+        default:
+            isDisabled = try container.decode(Variable<Bool>.self, forKey: .isDisabled)
+        }
+
         try super.init(from: decoder)
     }
 

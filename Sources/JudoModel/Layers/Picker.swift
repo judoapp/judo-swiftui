@@ -17,13 +17,28 @@ import SwiftUI
 
 public final class Picker: Layer, Modifiable {
 
-    @Published public var label: TextValue = ""
-    @Published public var textSelection: TextValue?
-    @Published public var numberSelection: NumberValue?
+    @Published public var label: Variable<String> = ""
+    @Published public var textSelection: Variable<String>?
+    @Published public var numberSelection: Variable<Double>?
     @Published @objc public dynamic var options: [PickerOption] = []
+    @Published public var pickerType: PickerType = .text
 
     required public init() {
         super.init()
+    }
+    
+    // MARK: Variables
+    
+    public override func updateVariables(properties: MainComponent.Properties, data: Any?, fetchedImage: SwiftUI.Image?, unbind: Bool, undoManager: UndoManager?) {
+        updateVariable(\.label, properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+        updateVariable(\.textSelection, properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+        updateVariable(\.numberSelection, properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+        
+        for option in options {
+            option.updateVariables(properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+        }
+        
+        super.updateVariables(properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
     }
 
     // MARK: NSCopying
@@ -34,6 +49,7 @@ public final class Picker: Layer, Modifiable {
         layerCopy.textSelection = textSelection
         layerCopy.numberSelection = numberSelection
         layerCopy.options = options
+        layerCopy.pickerType = pickerType
         return layerCopy
     }
 
@@ -44,13 +60,32 @@ public final class Picker: Layer, Modifiable {
         case textSelection
         case numberSelection
         case options
+        case pickerType
     }
 
     required public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        label = try container.decode(TextValue.self, forKey: .label)
-        textSelection = try container.decodeIfPresent(TextValue.self, forKey: .textSelection)
-        numberSelection = try container.decodeIfPresent(NumberValue.self, forKey: .numberSelection)
+        let coordinator = decoder.userInfo[.decodingCoordinator] as! DecodingCoordinator
+
+
+        switch coordinator.documentVersion {
+        case ..<17:
+            label = try Variable(container.decode(LegacyTextValue.self, forKey: .label))
+            if let value = try container.decodeIfPresent(LegacyTextValue.self, forKey: .textSelection) {
+                textSelection = Variable(value)
+                pickerType = .text
+            }
+            if let numberValue = try container.decodeIfPresent(LegacyNumberValue.self, forKey: .numberSelection) {
+                numberSelection = Variable(numberValue)
+                pickerType = .number
+            }
+        default:
+            label = try container.decode(Variable<String>.self, forKey: .label)
+            textSelection = try container.decodeIfPresent(Variable<String>.self, forKey: .textSelection)
+            numberSelection = try container.decodeIfPresent(Variable<Double>.self, forKey: .numberSelection)
+            pickerType = try container.decode(PickerType.self, forKey: .pickerType)
+        }
+
         options = try container.decode([PickerOption].self, forKey: .options)
         try super.init(from: decoder)
     }
@@ -61,6 +96,7 @@ public final class Picker: Layer, Modifiable {
         try container.encode(textSelection, forKey: .textSelection)
         try container.encode(numberSelection, forKey: .numberSelection)
         try container.encode(options, forKey: .options)
+        try container.encode(pickerType, forKey: .pickerType)
         try super.encode(to: encoder)
     }
 }
@@ -68,19 +104,19 @@ public final class Picker: Layer, Modifiable {
 // MARK: - PickerOption
 
 public final class PickerOption: JudoObject {
-    @Published public var title: TextValue?
-    @Published public var icon: ImageValue?
-    @Published public var textValue: TextValue?
-    @Published public var numberValue: NumberValue?
+    @Published public var title: Variable<String>?
+    @Published public var icon: Variable<ImageReference>?
+    @Published public var textValue: Variable<String>?
+    @Published public var numberValue: Variable<Double>?
 
-    public init(title: TextValue?, icon: ImageValue? = nil, textValue: TextValue) {
+    public init(title: Variable<String>?, icon: Variable<ImageReference>? = nil, textValue: Variable<String>) {
         self.title = title
         self.icon = icon
         self.textValue = textValue
         super.init()
     }
     
-    public init(title: TextValue?, icon: ImageValue? = nil, numberValue: NumberValue) {
+    public init(title: Variable<String>?, icon: Variable<ImageReference>? = nil, numberValue: Variable<Double>) {
         self.title = title
         self.icon = icon
         self.numberValue = numberValue
@@ -89,6 +125,16 @@ public final class PickerOption: JudoObject {
     
     public required init() {
         super.init()
+    }
+    
+    // MARK: Variables
+    
+    public override func updateVariables(properties: MainComponent.Properties, data: Any?, fetchedImage: SwiftUI.Image?, unbind: Bool, undoManager: UndoManager?) {
+        updateVariable(\.title, properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+        updateVariable(\.icon, properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+        updateVariable(\.textValue, properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+        updateVariable(\.numberValue, properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+        super.updateVariables(properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
     }
     
     // MARK: NSCopying
@@ -113,10 +159,33 @@ public final class PickerOption: JudoObject {
     
     required public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        title = try container.decode(TextValue?.self, forKey: .title)
-        icon = try container.decode(ImageValue?.self, forKey: .icon)
-        textValue = try container.decode(TextValue?.self, forKey: .textValue)
-        numberValue = try container.decode(NumberValue?.self, forKey: .numberValue)
+        let coordinator = decoder.userInfo[.decodingCoordinator] as! DecodingCoordinator
+
+
+        switch coordinator.documentVersion {
+        case ..<17:
+            if let icon = try container.decode(LegacyImageValue?.self, forKey: .icon) {
+                self.icon = Variable(icon)
+            }
+
+            if let title = try container.decode(LegacyTextValue?.self, forKey: .title) {
+                self.title = Variable(title)
+            }
+
+            if let textValue = try container.decode(LegacyTextValue?.self, forKey: .textValue) {
+                self.textValue = Variable(textValue)
+            }
+
+            if let value = try container.decodeIfPresent(LegacyNumberValue.self, forKey: .numberValue) {
+                numberValue = Variable(value)
+            }
+        default:
+            icon = try container.decode(Variable<ImageReference>?.self, forKey: .icon)
+            title = try container.decode(Variable<String>?.self, forKey: .title)
+            textValue = try container.decode(Variable<String>?.self, forKey: .textValue)
+            numberValue = try container.decodeIfPresent(Variable<Double>.self, forKey: .numberValue)
+        }
+
         try super.init(from: decoder)
     }
     
@@ -128,4 +197,9 @@ public final class PickerOption: JudoObject {
         try container.encode(numberValue, forKey: .numberValue)
         try super.encode(to: encoder)
     }
+}
+
+public enum PickerType: Codable {
+    case text
+    case number
 }

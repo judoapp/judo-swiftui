@@ -14,6 +14,7 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import Foundation
+import SwiftUI
 
 @objc public class JudoObject: NSObject, Codable, Identifiable, NSCopying, ObservableObject, UndoableObject {
     public class var humanName: String {
@@ -29,6 +30,15 @@ import Foundation
     override public required init() {
         self.id = .create()
         super.init()
+    }
+    
+    // MARK: Variables
+    
+    /// Resolves (in-place) all variable properties on this object and optionally unbinds them.
+    ///
+    /// Subclasses that define one or more variable properties must override this method and resolve each of their variables. The super implementation should be called somewhere in the overriding implementation of this method.
+    public func updateVariables(properties: MainComponent.Properties, data: Any?, fetchedImage: SwiftUI.Image?, unbind: Bool, undoManager: UndoManager?) {
+        
     }
     
     // MARK: Description

@@ -14,13 +14,21 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import Foundation
+import SwiftUI
 
 public final class Spacer: Layer, Modifiable {
 
-    @Published public dynamic var minLength: NumberValue?
+    @Published public dynamic var minLength: Variable<Double>?
     
     required public init() {
         super.init()
+    }
+    
+    // MARK: Variables
+    
+    public override func updateVariables(properties: MainComponent.Properties, data: Any?, fetchedImage: SwiftUI.Image?, unbind: Bool, undoManager: UndoManager?) {
+        updateVariable(\.minLength, properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+        super.updateVariables(properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
     }
 
     // MARK: NSCopying
@@ -44,10 +52,14 @@ public final class Spacer: Layer, Modifiable {
         switch coordinator.documentVersion {
         case ..<15:
             if let floatValue = try container.decodeIfPresent(CGFloat.self, forKey: .minLength) {
-                minLength = NumberValue(floatValue)
+                minLength = Variable(LegacyNumberValue(floatValue))
+            }
+        case ..<17:
+            if let numberValue = try container.decodeIfPresent(LegacyNumberValue.self, forKey: .minLength) {
+                minLength = Variable(numberValue)
             }
         default:
-            minLength = try container.decodeIfPresent(NumberValue.self, forKey: .minLength)
+            minLength = try container.decodeIfPresent(Variable<Double>.self, forKey: .minLength)
         }
         try super.init(from: decoder)
     }

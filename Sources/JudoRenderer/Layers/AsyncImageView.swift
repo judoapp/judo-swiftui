@@ -24,7 +24,6 @@ struct AsyncImageView: SwiftUI.View {
     @Environment(\.data) private var data
     @EnvironmentObject private var componentState: ComponentState
 
-    @EnvironmentObject private var localizations: DocumentLocalizations
     @ObservedObject private var image: JudoModel.AsyncImage
 
     init(image: JudoModel.AsyncImage) {
@@ -72,11 +71,9 @@ struct AsyncImageView: SwiftUI.View {
     }
 
     private var resolvedURL: String {
-        image.url.resolve(
-            data: data,
+        image.url.forceResolve(
             properties: componentState.properties,
-            locale: Locale.preferredLocale,
-            localizations: localizations
+            data: data
         )
     }
 }

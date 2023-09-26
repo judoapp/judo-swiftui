@@ -20,6 +20,10 @@ extension KeyedDecodingContainer {
     public func decodeNodes(forKey key: K) throws -> [Node] {
         try decode([NodeWrapper].self, forKey: key).compactMap(\.node)
     }
+
+    public func decodeNode(for key: K) throws -> Node? {
+        try decode(NodeWrapper.self, forKey: key).node
+    }
 }
 
 private struct NodeWrapper: Decodable {
@@ -58,6 +62,8 @@ private struct NodeWrapper: Decodable {
             node = try Divider(from: decoder)
         case Ellipse.typeName:
             node = try Ellipse(from: decoder)
+        case Form.typeName:
+            node = try Form(from: decoder)
         case HStack.typeName:
             node = try HStack(from: decoder)
         case Image.typeName:
@@ -76,6 +82,8 @@ private struct NodeWrapper: Decodable {
             node = try RoundedRectangle(from: decoder)
         case SecureField.typeName:
             node = try SecureField(from: decoder)
+        case Section.typeName:
+            node = try Section(from: decoder)
         case ScrollView.typeName:
             node = try ScrollView(from: decoder)
         case Slider.typeName:
@@ -121,10 +129,18 @@ private struct NodeWrapper: Decodable {
             node = try AutocorrectionDisabledModifier(from: decoder)
         case BackgroundModifier.typeName:
             node = try BackgroundModifier(from: decoder)
+        case BlendModeModifier.typeName:
+            node = try BlendModeModifier(from: decoder)
         case BoldModifier.typeName:
             node = try BoldModifier(from: decoder)
         case ButtonStyleModifier.typeName:
             node = try ButtonStyleModifier(from: decoder)
+        case ClippedModifier.typeName:
+            node = try ClippedModifier(from: decoder)
+        case ClipShapeModifier.typeName:
+            node = try ClipShapeModifier(from: decoder)
+        case FixedSizeModifier.typeName:
+            node = try FixedSizeModifier(from: decoder)
         case FontModifier.typeName:
             node = try FontModifier(from: decoder)
         case ForegroundColorModifier.typeName:
@@ -167,6 +183,10 @@ private struct NodeWrapper: Decodable {
             node = try PaddingModifier(from: decoder)
         case PickerStyleModifier.typeName:
             node = try PickerStyleModifier(from: decoder)
+        case PositionModifier.typeName:
+            node = try PositionModifier(from: decoder)
+        case RotationEffectModifier.typeName:
+            node = try RotationEffectModifier(from: decoder)
         case ScaledToFillModifier.typeName:
             node = try ScaledToFillModifier(from: decoder)
         case ScaledToFitModifier.typeName:

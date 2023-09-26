@@ -143,11 +143,23 @@ private struct JudoViewModifier: SwiftUI.ViewModifier {
         case let modifier as BackgroundModifier:
             content.modifier(BackgroundViewModifier(modifier: modifier))
 
+        case let modifier as BlendModeModifier:
+            content.modifier(BlendModeViewModifier(modifier: modifier))
+
         case let modifier as BoldModifier:
             content.modifier(BoldViewModifier(modifier: modifier))
 
         case let modifier as ButtonStyleModifier:
             content.modifier(ButtonStyleViewModifier(modifier: modifier))
+
+        case let modifier as ClippedModifier:
+            content.modifier(ClippedViewModifier(modifier: modifier))
+
+        case let modifier as ClipShapeModifier:
+            content.modifier(ClipShapeViewModifier(modifier: modifier))
+            
+        case let modifier as FixedSizeModifier:
+            content.modifier(FixedSizeViewModifier(modifier: modifier))
 
         case let modifier as FontModifier:
             content.modifier(FontViewModifier(modifier: modifier))
@@ -211,6 +223,12 @@ private struct JudoViewModifier: SwiftUI.ViewModifier {
 
         case let modifier as PickerStyleModifier:
             content.modifier(PickerStyleViewModifier(modifier: modifier))
+
+        case let modifier as PositionModifier:
+            content.modifier(PositionViewModifier(modifier: modifier))
+
+        case let modifier as RotationEffectModifier:
+            content.modifier(RotationEffectViewModifier(modifier: modifier))
 
         case let modifier as ScaledToFillModifier:
             content.modifier(ScaledToFillViewModifier(modifier: modifier))

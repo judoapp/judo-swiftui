@@ -21,7 +21,6 @@ struct ComponentInstanceView: SwiftUI.View {
     @EnvironmentObject private var componentState: ComponentState
     @ObservedObject var componentInstance: ComponentInstance
 
-    @EnvironmentObject private var localizations: DocumentLocalizations
     @Environment(\.data) private var data
     @Environment(\.fetchedImage) private var fetchedImage
 
@@ -30,31 +29,31 @@ struct ComponentInstanceView: SwiftUI.View {
     }
 
     var body: some SwiftUI.View {
-        if let mainComponent {
-            ForEach(orderedLayers) {
-                LayerView(layer: $0)
-            }
-            .modifier(
-                ZStackContentIfNeededModifier(for: orderedLayers)
-            )
-            .environmentObject(
-                ComponentState(
-                    properties: mainComponent.properties,
-                    overrides: componentInstance.overrides,
-                    localizations: localizations,
-                    data: data,
-                    fetchedImage: fetchedImage,
-                    parentState: componentState
-                )
-            )
+        ForEach(orderedLayers) {
+            LayerView(layer: $0)
         }
+        .modifier(
+            ZStackContentIfNeededModifier(for: orderedLayers)
+        )
+        .environmentObject(
+            ComponentState(
+                properties: mainComponent.properties,
+                overrides: componentInstance.overrides,
+                data: data,
+                fetchedImage: fetchedImage,
+                parentState: componentState
+            )
+        )
     }
     
-    private var mainComponent: MainComponent? {
-        componentInstance.value.resolve(properties: componentState.properties)
+    private var mainComponent: MainComponent {
+        componentInstance.value.forceResolve(
+            properties: componentState.properties,
+            data: data
+        )
     }
     
     private var orderedLayers: [Layer] {
-        mainComponent?.children.allOf(type: Layer.self).reversed() ?? []
+        mainComponent.children.allOf(type: Layer.self).reversed()
     }
 }

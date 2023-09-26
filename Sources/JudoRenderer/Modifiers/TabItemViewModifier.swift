@@ -17,7 +17,6 @@ import JudoModel
 import SwiftUI
 
 struct TabItemViewModifier: SwiftUI.ViewModifier {
-    @Environment(\.data) private var data
     @EnvironmentObject private var componentState: ComponentState
 
     @ObservedObject var modifier: TabItemModifier
@@ -25,23 +24,19 @@ struct TabItemViewModifier: SwiftUI.ViewModifier {
     public func body(content: Content) -> some SwiftUI.View {
         content
             .tabItem {
-                switch (title, modifier.tabItem.icon) {
-                case let (.some(title), nil):
-                    SwiftUI.Text(title)
-                case let (nil, .some(icon)):
-                    SwiftUI.Image(systemName: icon.symbolName)
-                case let (.some(title), .some(icon)):
-                    Label(title, systemImage: icon.symbolName)
-                default:
+                if let tabItemTitle = modifier.tabItem.title {
+                    RealizeText(tabItemTitle) { title in
+                        if let tabItemIcon = modifier.tabItem.icon {
+                            Label(title, systemImage: tabItemIcon.symbolName)
+                        } else {
+                            SwiftUI.Text(title)
+                        }
+                    }
+                } else if let tabItemIcon = modifier.tabItem.icon {
+                    SwiftUI.Image(systemName: tabItemIcon.symbolName)
+                } else {
                     EmptyView()
                 }
             }
-    }
-
-    private var title: String? {
-        try? modifier.tabItem.title?.description.evaluatingExpressions(
-            data: data,
-            properties: componentState.properties
-        )
     }
 }

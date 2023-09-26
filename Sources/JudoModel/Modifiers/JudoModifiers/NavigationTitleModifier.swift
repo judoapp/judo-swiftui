@@ -16,12 +16,19 @@
 import SwiftUI
 
 public class NavigationTitleModifier: JudoModifier {
-    @Published public var title: TextValue = ""
+    @Published public var title: Variable<String> = ""
 
     public required init() {
         super.init()
     }
 
+    // MARK: Variables
+    
+    public override func updateVariables(properties: MainComponent.Properties, data: Any?, fetchedImage: SwiftUI.Image?, unbind: Bool, undoManager: UndoManager?) {
+        updateVariable(\.title, properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+        super.updateVariables(properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+    }
+    
     // MARK: NSCopying
 
     public override func copy(with zone: NSZone? = nil) -> Any {
@@ -38,7 +45,15 @@ public class NavigationTitleModifier: JudoModifier {
 
     public required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        title = try container.decode(TextValue.self, forKey: .title)
+        let coordinator = decoder.userInfo[.decodingCoordinator] as! DecodingCoordinator
+
+        switch coordinator.documentVersion {
+        case ..<17:
+            title = try Variable(container.decode(LegacyTextValue.self, forKey: .title))
+        default:
+            title = try container.decode(Variable<String>.self, forKey: .title)
+        }
+
         try super.init(from: decoder)
     }
 

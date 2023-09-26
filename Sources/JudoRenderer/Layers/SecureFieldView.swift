@@ -19,25 +19,22 @@ import SwiftUI
 struct SecureFieldView: SwiftUI.View {
     @EnvironmentObject private var componentState: ComponentState
     @EnvironmentObject private var localizations: DocumentLocalizations
-    @Environment(\.data) private var data
 
-    @ComponentValue private var titleValue: TextValue
-    @ComponentValue private var textValue: TextValue
-
-    init(secureField: JudoModel.SecureField) {
-        self.titleValue = secureField.title
-        self.textValue = secureField.text
-    }
+    @ObservedObject var secureField: JudoModel.SecureField
 
     var body: some SwiftUI.View {
-        SwiftUI.SecureField($titleValue ?? "", text: textValueBinding)
+        RealizeText(secureField.title, localized: true) { title in
+            RealizeText(secureField.text, localized: false) { text in
+                SwiftUI.SecureField(title, text: textValueBinding(text))
+            }
+        }
     }
 
-    private var textValueBinding: Binding<String> {
+    private func textValueBinding(_ value: String) -> Binding<String> {
         Binding {
-            $textValue ?? ""
+            value
         } set: { newValue in
-            if case .property(let name, _) = textValue {
+            if case .property(let name) = secureField.text.binding {
                 componentState.bindings[name]?.value = .text(newValue)
             }
         }

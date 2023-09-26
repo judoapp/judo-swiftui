@@ -14,12 +14,13 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import Foundation
+import SwiftUI
 
 public final class CustomAction: Action {
-    @Published public var identifier: TextValue
+    @Published public var identifier: Variable<String>
     @Published @objc public dynamic var parameters: [Parameter]
     
-    init(identifier: TextValue, parameters: [Parameter] = []) {
+    init(identifier: Variable<String>, parameters: [Parameter] = []) {
         self.identifier = identifier
         self.parameters = parameters
         super.init()
@@ -29,6 +30,18 @@ public final class CustomAction: Action {
         self.identifier = "Custom"
         self.parameters = []
         super.init()
+    }
+    
+    // MARK: Variables
+    
+    public override func updateVariables(properties: MainComponent.Properties, data: Any?, fetchedImage: SwiftUI.Image?, unbind: Bool, undoManager: UndoManager?) {
+        updateVariable(\.identifier, properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+        
+        for parameter in parameters {
+            parameter.updateVariables(properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+        }
+        
+        super.updateVariables(properties: properties,data: data,fetchedImage: fetchedImage,unbind: unbind,undoManager: undoManager)
     }
     
     // MARK: NSCopying
@@ -49,7 +62,15 @@ public final class CustomAction: Action {
     
     required public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        identifier = try container.decode(TextValue.self, forKey: .identifier)
+        let coordinator = decoder.userInfo[.decodingCoordinator] as! DecodingCoordinator
+
+        switch coordinator.documentVersion {
+        case ..<17:
+            identifier = try Variable(container.decode(LegacyTextValue.self, forKey: .identifier))
+        default:
+            identifier = try container.decode(Variable<String>.self, forKey: .identifier)
+        }
+
         parameters = try container.decode([Parameter].self, forKey: .parameters)
         try super.init(from: decoder)
     }

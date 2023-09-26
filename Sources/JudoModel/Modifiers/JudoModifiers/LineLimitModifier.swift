@@ -16,12 +16,19 @@
 import SwiftUI
 
 public class LineLimitModifier: JudoModifier {
-    @Published public var min: NumberValue? = nil
-    @Published public var max: NumberValue? = 1
-
+    @Published public var min: Variable<Double>? = nil
+    @Published public var max: Variable<Double>? = 1
 
     public required init() {
         super.init()
+    }
+    
+    // MARK: Variables
+    
+    public override func updateVariables(properties: MainComponent.Properties, data: Any?, fetchedImage: SwiftUI.Image?, unbind: Bool, undoManager: UndoManager?) {
+        updateVariable(\.min, properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+        updateVariable(\.max, properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+        super.updateVariables(properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
     }
 
     // MARK: NSCopying
@@ -50,11 +57,19 @@ public class LineLimitModifier: JudoModifier {
         switch coordinator.documentVersion {
         case ..<16:
             if let intValue = try container.decode(Int?.self, forKey: .numberOfLines) {
-                max = NumberValue(intValue)
+                max = Variable(LegacyNumberValue(intValue))
+            }
+        case ..<17:
+            if let value = try container.decode(LegacyNumberValue?.self, forKey: .min) {
+                min = Variable(value)
+            }
+
+            if let value = try container.decode(LegacyNumberValue?.self, forKey: .max) {
+                max = Variable(value)
             }
         default:
-            min = try container.decode(NumberValue?.self, forKey: .min)
-            max = try container.decode(NumberValue?.self, forKey: .max)
+            min = try container.decode(Variable<Double>?.self, forKey: .min)
+            max = try container.decode(Variable<Double>?.self, forKey: .max)
         }
 
         try super.init(from: decoder)

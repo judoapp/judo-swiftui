@@ -19,7 +19,6 @@ import JudoModel
 
 struct TextView: SwiftUI.View {
     @Environment(\.data) private var data
-    @EnvironmentObject private var componentState: ComponentState
     @Environment(\.isBold) private var isBold
     @Environment(\.isItalic) private var isItalic
 
@@ -30,27 +29,25 @@ struct TextView: SwiftUI.View {
     }
 
     var body: some SwiftUI.View {
-        RealizeText(text.value) { textString in
-            if let textValue = try? textString.evaluatingExpressions(data: data, properties: componentState.properties) {
-                textContent(textValue: textValue)
-            }
+        RealizeText(text.value) { text in
+            textContent(text)
         }
     }
     
     @ViewBuilder
-    func textContent(textValue: String) -> some View {
+    private func textContent(_ string: String) -> some View {
         /// Apply the .bold() and .italic() modifiers if running less than iOS 16, as outlined in Backport+bold and Backport+italic.
         if #available(iOS 16, macOS 13, *) {
-            SwiftUI.Text(textValue)
+            SwiftUI.Text(string)
         } else {
             if isBold && isItalic {
-                SwiftUI.Text(textValue).bold().italic()
+                SwiftUI.Text(string).bold().italic()
             } else if isBold {
-                SwiftUI.Text(textValue).bold()
+                SwiftUI.Text(string).bold()
             } else if isItalic {
-                SwiftUI.Text(textValue).italic()
+                SwiftUI.Text(string).italic()
             } else {
-                SwiftUI.Text(textValue)
+                SwiftUI.Text(string)
             }
         }
     }

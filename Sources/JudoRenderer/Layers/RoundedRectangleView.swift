@@ -17,13 +17,20 @@ import JudoModel
 import SwiftUI
 
 struct RoundedRectangleView: SwiftUI.View {
+    @EnvironmentObject private var componentState: ComponentState
+    @Environment(\.data) private var data
+
     @ObservedObject var roundedRectangle: JudoModel.RoundedRectangle
 
     var body: some SwiftUI.View {
         SwiftUI.RoundedRectangle(
-            cornerRadius: roundedRectangle.cornerRadius,
+            cornerRadius: cornerRadius(roundedRectangle.cornerRadius),
             style: roundedRectangle.cornerStyle.swiftUIValue
         )
         .apply(model: roundedRectangle)
+    }
+
+    private func cornerRadius(_ cornerRadius: Variable<Double>) -> Double {
+        cornerRadius.forceResolve(properties: componentState.properties, data: data)
     }
 }

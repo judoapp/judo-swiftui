@@ -19,89 +19,86 @@ import SwiftUI
 struct SliderView: SwiftUI.View {
     @EnvironmentObject private var componentState: ComponentState
     @Environment(\.data) private var data
+    @EnvironmentObject private var localizations: DocumentLocalizations
 
-    @ComponentValue private var labelValue: TextValue
-    @OptionalComponentValue private var minLabelValue: TextValue?
-    @OptionalComponentValue private var maxLabelValue: TextValue?
-    @ComponentValue private var value: NumberValue
-    @OptionalComponentValue private var minValue: NumberValue?
-    @OptionalComponentValue private var maxValue: NumberValue?
-    @OptionalComponentValue private var step: NumberValue?
-
-    init(slider: JudoModel.Slider) {
-        self.labelValue = slider.label
-        self.minLabelValue = slider.minLabel
-        self.maxLabelValue = slider.maxLabel
-        self.value = slider.value
-        self.minValue = slider.minValue
-        self.maxValue = slider.maxValue
-        self.step = slider.step
-    }
+    @ObservedObject var slider: JudoModel.Slider
 
     var body: some SwiftUI.View {
-        if $minLabelValue == nil && $maxLabelValue == nil {
-            // Slider without min and max labels
-            slider
-        } else {
-            // Slider with min and max labels
-            sliderWithMaxMinLabels
-        }
-    }
-
-    @ViewBuilder
-    private var slider: some View {
-        switch (range, $step) {
-        case (.some(let range), .some(let step)):
-            SwiftUI.Slider(value: valueBinding, in: range, step: step) {
-                SwiftUI.Text($labelValue ?? "")
-            }
-        case (.some(let range), .none):
-            SwiftUI.Slider(value: valueBinding, in: range) {
-                SwiftUI.Text($labelValue ?? "")
-            }
-            /// Note: It is not possible to have a slider with a step and no range.
-        default:
-            SwiftUI.Slider(value: valueBinding) {
-                SwiftUI.Text($labelValue ?? "")
+        RealizeText(slider.minLabel ?? "") { minLabel in
+            RealizeText(slider.maxLabel ?? "") { maxLabel in
+                if minLabel.isEmpty && maxLabel.isEmpty {
+                    // Slider without min and max labels
+                    sliderView
+                } else {
+                    // Slider with min and max labels
+                    sliderViewWithMaxMinLabels
+                }
             }
         }
     }
 
     @ViewBuilder
-    private var sliderWithMaxMinLabels: some View {
-        switch (range, $step) {
-        case (.some(let range), .some(let step)):
-            SwiftUI.Slider(value: valueBinding, in: range, step: step) {
-                SwiftUI.Text($labelValue ?? "")
-            } minimumValueLabel: {
-                SwiftUI.Text($minLabelValue ?? "")
-            } maximumValueLabel: {
-                SwiftUI.Text($maxLabelValue ?? "")
+    private var sliderView: some View {
+        RealizeText(slider.label) { label in
+            switch (range, slider.step?.forceResolve(properties: componentState.properties, data: data)) {
+            case (.some(let range), .some(let step)):
+                SwiftUI.Slider(value: valueBinding, in: range, step: step) {
+                    SwiftUI.Text(label)
+                }
+            case (.some(let range), .none):
+                SwiftUI.Slider(value: valueBinding, in: range) {
+                    SwiftUI.Text(label)
+                }
+                /// Note: It is not possible to have a slider with a step and no range.
+            default:
+                SwiftUI.Slider(value: valueBinding) {
+                    SwiftUI.Text(label)
+                }
             }
-        case (.some(let range), .none):
-            SwiftUI.Slider(value: valueBinding, in: range) {
-                SwiftUI.Text($labelValue ?? "")
-            } minimumValueLabel: {
-                SwiftUI.Text($minLabelValue ?? "")
-            } maximumValueLabel: {
-                SwiftUI.Text($maxLabelValue ?? "")
-            }
-        default:
-            SwiftUI.Slider(value: valueBinding) {
-                SwiftUI.Text($labelValue ?? "")
-            } minimumValueLabel: {
-                SwiftUI.Text($minLabelValue ?? "")
-            } maximumValueLabel: {
-                SwiftUI.Text($maxLabelValue ?? "")
+        }
+    }
+
+    @ViewBuilder
+    private var sliderViewWithMaxMinLabels: some View {
+        RealizeText(slider.label) { label in
+            RealizeText(slider.minLabel ?? "") { minLabel in
+                RealizeText(slider.maxLabel ?? "") { maxLabel in
+                    switch (range, slider.step?.forceResolve(properties: componentState.properties, data: data)) {
+                    case (.some(let range), .some(let step)):
+                        SwiftUI.Slider(value: valueBinding, in: range, step: step) {
+                            SwiftUI.Text(label)
+                        } minimumValueLabel: {
+                            SwiftUI.Text(minLabel)
+                        } maximumValueLabel: {
+                            SwiftUI.Text(maxLabel)
+                        }
+                    case (.some(let range), .none):
+                        SwiftUI.Slider(value: valueBinding, in: range) {
+                            SwiftUI.Text(label)
+                        } minimumValueLabel: {
+                            SwiftUI.Text(minLabel)
+                        } maximumValueLabel: {
+                            SwiftUI.Text(maxLabel)
+                        }
+                    default:
+                        SwiftUI.Slider(value: valueBinding) {
+                            SwiftUI.Text(label)
+                        } minimumValueLabel: {
+                            SwiftUI.Text(minLabel)
+                        } maximumValueLabel: {
+                            SwiftUI.Text(maxLabel)
+                        }
+                    }
+                }
             }
         }
     }
 
     private var valueBinding: Binding<Double> {
         Binding {
-            $value ?? 0
+            slider.value.forceResolve(properties: componentState.properties, data: data)
         } set: { newValue in
-            if case .property(let name) = value {
+            if case .property(let name) = slider.value.binding {
                 switch componentState.bindings[name]?.value {
                 case .number:
                     componentState.bindings[name]?.value = .number(newValue)
@@ -115,11 +112,12 @@ struct SliderView: SwiftUI.View {
     }
 
     private var range: ClosedRange<Double>? {
-        guard let minValue = $minValue, let maxValue = $maxValue else { return nil }
+        guard let minValue = slider.minValue?.forceResolve(properties: componentState.properties, data: data), let maxValue = slider.maxValue?.forceResolve(properties: componentState.properties, data: data) else { return nil }
         if minValue < maxValue {
             return minValue...maxValue
         } else {
             return nil
         }
     }
+
 }

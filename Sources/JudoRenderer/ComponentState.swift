@@ -25,7 +25,7 @@ final class ComponentState: ObservableObject {
         }
     }
 
-    init(properties: MainComponent.Properties, overrides: ComponentInstance.Overrides, localizations: DocumentLocalizations, data: Any?, fetchedImage: SwiftUI.Image?, parentState: ComponentState?) {
+    init(properties: MainComponent.Properties, overrides: ComponentInstance.Overrides, data: Any?, fetchedImage: SwiftUI.Image?, parentState: ComponentState?) {
         var result = properties.mapValues {
             ComponentBinding(value: $0)
         }.asDictionary()
@@ -33,24 +33,22 @@ final class ComponentState: ObservableObject {
         properties.forEach { (key, value) in
             switch (value, overrides[key]) {
             case (.text, .text(let textValue)):
-                if case .property(let propertyName, _) = textValue, let parentState, parentState.bindings.keys.contains(propertyName) {
+                if case .property(let propertyName) = textValue.binding, let parentState, parentState.bindings.keys.contains(propertyName) {
                     result[key] = ComponentBinding(binding: Binding {
                         parentState.bindings[propertyName]!.value
                     } set: { newValue in
                         parentState.bindings[propertyName]!.value = newValue
                     })
                 } else {
-                    let resolvedValue = textValue.resolve(
-                        data: data,
+                    let resolvedValue = textValue.forceResolve(
                         properties: properties,
-                        locale: Locale.preferredLocale,
-                        localizations: localizations
+                        data: data
                     )
                     
                     result[key] = ComponentBinding(value: .text(resolvedValue))
                 }
             case (.number(let defaultValue), .number(let numberValue)):
-                if case .property(let propertyName) = numberValue, let parentState, parentState.bindings.keys.contains(propertyName) {
+                if case .property(let propertyName) = numberValue.binding, let parentState, parentState.bindings.keys.contains(propertyName) {
                     result[key] = ComponentBinding(binding: Binding {
                         parentState.bindings[propertyName]!.value
                     } set: { newValue in
@@ -58,38 +56,56 @@ final class ComponentState: ObservableObject {
                     })
                 } else {
                     let resolvedValue = numberValue.resolve(
-                        data: data,
-                        properties: properties
+                        properties: properties,
+                        data: data
                     )
                     result[key] = ComponentBinding(value: .number(resolvedValue ?? defaultValue))
                 }
             case (.boolean, .boolean(let booleanValue)):
-                if case .property(let propertyName) = booleanValue, let parentState, parentState.bindings.keys.contains(propertyName) {
+                if case .property(let propertyName) = booleanValue.binding, let parentState, parentState.bindings.keys.contains(propertyName) {
                     result[key] = ComponentBinding(binding: Binding {
                         parentState.bindings[propertyName]!.value
                     } set: { newValue in
                         parentState.bindings[propertyName]!.value = newValue
                     })
                 } else {
-                    let resolvedValue = booleanValue.resolve(
-                        data: data,
-                        properties: properties
+                    let resolvedValue = booleanValue.forceResolve(
+                        properties: properties,
+                        data: data
                     )
                     result[key] = ComponentBinding(value: .boolean(resolvedValue))
                 }
-            case (.image(let defaultValue), .image(let value)):
-                let resolvedValue = value.resolve(
-                    properties: properties,
-                    fetchedImage: fetchedImage
-                )
-
-                result[key] = ComponentBinding(value: .image(resolvedValue ?? defaultValue))
+            case (.image, .image(let value)):
+                if case .property(let propertyName) = value.binding, let parentState, parentState.bindings.keys.contains(propertyName) {
+                    result[key] = ComponentBinding(binding: Binding {
+                        parentState.bindings[propertyName]!.value
+                    } set: { newValue in
+                        parentState.bindings[propertyName]!.value = newValue
+                    })
+                } else {
+                    let resolvedValue = value.forceResolve(
+                        properties: properties,
+                        data: data,
+                        fetchedImage: fetchedImage
+                    )
+                    
+                    result[key] = ComponentBinding(value: .image(resolvedValue))
+                }
             case (.component(let defaultValue), .component(let value)):
-                let resolvedValue = value.resolve(
-                    properties: properties
-                )
-
-                result[key] = ComponentBinding(value: .component(resolvedValue ?? defaultValue))
+                if case .property(let propertyName) = value.binding, let parentState, parentState.bindings.keys.contains(propertyName) {
+                    result[key] = ComponentBinding(binding: Binding {
+                        parentState.bindings[propertyName]!.value
+                    } set: { newValue in
+                        parentState.bindings[propertyName]!.value = newValue
+                    })
+                } else {
+                    let resolvedValue = value.resolve(
+                        properties: properties,
+                        data: data
+                    )
+                    
+                    result[key] = ComponentBinding(value: .component(resolvedValue ?? defaultValue))
+                }
             default:
                 break
             }

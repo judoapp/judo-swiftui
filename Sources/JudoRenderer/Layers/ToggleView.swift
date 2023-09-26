@@ -19,24 +19,23 @@ import SwiftUI
 struct ToggleView: SwiftUI.View {
     @EnvironmentObject private var componentState: ComponentState
     @Environment(\.data) private var data
-    
-    @ComponentValue private var isOnValue: BooleanValue
-    @ComponentValue private var labelValue: TextValue
 
-    init(toggle: JudoModel.Toggle) {
-        self.isOnValue = toggle.isOn
-        self.labelValue = toggle.label
-    }
+    @ObservedObject var toggle: JudoModel.Toggle
 
     var body: some SwiftUI.View {
-        SwiftUI.Toggle($labelValue ?? "", isOn: isOnBinding)
+        RealizeText(toggle.label) { label in
+            SwiftUI.Toggle(label, isOn: isOnBinding)
+        }
     }
 
     private var isOnBinding: Binding<Bool> {
         Binding {
-            $isOnValue ?? false
+            toggle.isOn.forceResolve(
+                properties: componentState.properties,
+                data: data
+            )
         } set: { newValue in
-            if case .property(let name) = isOnValue {
+            if case .property(let name) = toggle.isOn.binding {
                 componentState.bindings[name]?.value = .boolean(newValue)
             }
         }

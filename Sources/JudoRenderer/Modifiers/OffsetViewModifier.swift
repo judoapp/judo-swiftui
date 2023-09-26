@@ -17,19 +17,27 @@ import JudoModel
 import SwiftUI
 
 struct OffsetViewModifier: SwiftUI.ViewModifier {
-    @ObservedObject var modifier: OffsetModifier
-    @ComponentValue private var width: NumberValue
-    @ComponentValue private var height: NumberValue
+    @EnvironmentObject private var componentState: ComponentState
+    @Environment(\.data) private var data
 
-    init(modifier: OffsetModifier) {
-        self.modifier = modifier
-        self.width = modifier.width
-        self.height = modifier.height
-    }
+    @ObservedObject var modifier: OffsetModifier
 
     func body(content: Content) -> some SwiftUI.View {
         content
-            .offset(CGSize(width: $width ?? 0, height: $height ?? 0))
+            .offset(size)
+    }
+    
+    private var size: CGSize {
+        CGSize(
+            width: modifier.width.forceResolve(
+                properties: componentState.properties,
+                data: data
+            ),
+            height: modifier.height.forceResolve(
+                properties: componentState.properties,
+                data: data
+            )
+        )
     }
 }
 

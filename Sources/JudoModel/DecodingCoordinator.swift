@@ -43,9 +43,11 @@ final public class DecodingCoordinator {
 
     // TODO: Consider replacing relationships with deferred blocks
     
-    private var deferredBlocks = [() throws -> Void]()
-    
-    public func `defer`(block: @escaping () throws -> Void) {
+    private var deferredBlocks = [() throws -> Bool]()
+
+
+    // Block return `true` if operation evaluated, or `false` to defer it further
+    public func `defer`(_ block: @escaping () throws -> Bool) {
         deferredBlocks.append(block)
     }
 
@@ -66,9 +68,13 @@ final public class DecodingCoordinator {
 
         pendingRelationships.forEach { $0.resolve(nodes: self.nodes, documentColors: colorsByID, documentGradients: gradientsByID) }
         pendingRelationships = []
-        
-        try deferredBlocks.forEach { block in
-            try block()
+
+        while !deferredBlocks.isEmpty {
+            let block = deferredBlocks.removeFirst()
+            if try block() == false {
+                // move at the end of the list to re-evaluate again later
+                deferredBlocks.append(block)
+            }
         }
     }
 }

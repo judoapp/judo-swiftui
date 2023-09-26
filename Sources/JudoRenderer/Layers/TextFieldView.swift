@@ -18,35 +18,38 @@ import SwiftUI
 
 struct TextFieldView: SwiftUI.View {
     @EnvironmentObject private var componentState: ComponentState
-    @EnvironmentObject private var localizations: DocumentLocalizations
     @Environment(\.data) private var data
+    @EnvironmentObject private var localizations: DocumentLocalizations
 
-    @ComponentValue private var titleValue: TextValue
-    @ComponentValue private var textValue: TextValue
-
-    init(textField: JudoModel.TextField) {
-        self.titleValue = textField.title
-        self.textValue = textField.text
-    }
+    @ObservedObject var textField: JudoModel.TextField
 
     var body: some SwiftUI.View {
-        if case .property(let name, _) = textValue {
-            switch componentState.bindings[name]?.value {
-            case .number:
-                SwiftUI.TextField($titleValue ?? "", value: numberValueBinding, formatter: NumberFormatter.allowsFloatsNumberFormatter)
-            default:
-                SwiftUI.TextField($titleValue ?? "", text: textValueBinding)
+        // Get the realizedText for the Label
+        RealizeText(textField.title, localized: true) { title in
+
+            // Get the realizedText for the text/value binding
+            RealizeText(textField.text, localized: false) { text in
+
+                if case .property(let name) = textField.text.binding {
+                    switch componentState.bindings[name]?.value {
+                    case .number:
+                        SwiftUI.TextField(title, value: numberValueBinding(text), formatter: NumberFormatter.allowsFloatsNumberFormatter)
+                    default:
+                        SwiftUI.TextField(title, text: textValueBinding(text))
+                    }
+                } else {
+                    SwiftUI.TextField(title, text: textValueBinding(text))
+                }
+
             }
-        } else {
-            SwiftUI.TextField($titleValue ?? "", text: textValueBinding)
         }
     }
 
-    private var textValueBinding: Binding<String> {
+    private func textValueBinding(_ value: String) -> Binding<String> {
         Binding {
-            $textValue ?? ""
+            value
         } set: { newValue in
-            if case .property(let name, _) = textValue {
+            if case .property(let name) = textField.text.binding {
                 switch componentState.bindings[name]?.value {
                 case .text:
                     componentState.bindings[name]?.value = .text(newValue)
@@ -57,11 +60,11 @@ struct TextFieldView: SwiftUI.View {
         }
     }
 
-    private var numberValueBinding: Binding<Double?> {
+    private func numberValueBinding(_ value: String) -> Binding<Double?> {
         Binding {
-            Double($textValue ?? "")
+            Double(value)
         } set: { newValue in
-            if case .property(let name, _) = textValue {
+            if case .property(let name) = textField.text.binding {
                 switch componentState.bindings[name]?.value {
                 case .number:
                     if let newValue {

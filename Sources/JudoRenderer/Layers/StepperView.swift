@@ -19,51 +19,45 @@ import SwiftUI
 struct StepperView: SwiftUI.View {
     @EnvironmentObject private var componentState: ComponentState
     @Environment(\.data) private var data
+    @EnvironmentObject private var localizations: DocumentLocalizations
 
-    @ComponentValue private var labelValue: TextValue
-    @ComponentValue private var value: NumberValue
-    @OptionalComponentValue private var minValue: NumberValue?
-    @OptionalComponentValue private var maxValue: NumberValue?
-    @OptionalComponentValue private var step: NumberValue?
-
-
-    init(stepper: JudoModel.Stepper) {
-        self.labelValue = stepper.label
-        self.value = stepper.value
-        self.minValue = stepper.minValue
-        self.maxValue = stepper.maxValue
-        self.step = stepper.step
-    }
+    @ObservedObject var stepper: JudoModel.Stepper
 
     var body: some SwiftUI.View {
-        switch (range, $step) {
-        case (.some(let range), .some(let step)):
-            SwiftUI.Stepper($labelValue ?? "", value: valueBinding, in: range, step: step)
-        case (.some(let range), .none):
-            SwiftUI.Stepper($labelValue ?? "", value: valueBinding, in: range)
-        case (.none, .some(let step)):
-            SwiftUI.Stepper($labelValue ?? "", value: valueBinding, step: step)
-        default:
-            SwiftUI.Stepper($labelValue ?? "", value: valueBinding)
+        RealizeText(stepper.label) { label in
+            switch (range, stepper.step?.forceResolve(properties: componentState.properties, data: data)) {
+            case (.some(let range), .some(let step)):
+                SwiftUI.Stepper(label, value: valueBinding, in: range, step: step)
+            case (.some(let range), .none):
+                SwiftUI.Stepper(label, value: valueBinding, in: range)
+            case (.none, .some(let step)):
+                SwiftUI.Stepper(label, value: valueBinding, step: step)
+            default:
+                SwiftUI.Stepper(label, value: valueBinding)
+            }
         }
     }
 
     private var valueBinding: Binding<Double> {
         Binding {
-            $value ?? 0
+            stepper.value.forceResolve(
+                properties: componentState.properties,
+                data: data
+            )
         } set: { newValue in
-            if case .property(let name) = value {
+            if case .property(let name) = stepper.value.binding {
                 componentState.bindings[name]?.value = .number(newValue)
             }
         }
     }
 
     private var range: ClosedRange<Double>? {
-        guard let minValue = $minValue, let maxValue = $maxValue else { return nil }
+        guard let minValue = stepper.minValue?.forceResolve(properties: componentState.properties, data: data), let maxValue = stepper.maxValue?.forceResolve(properties: componentState.properties, data: data) else { return nil }
         if minValue < maxValue {
             return minValue...maxValue
         } else {
             return nil
         }
     }
+
 }

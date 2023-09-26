@@ -32,45 +32,16 @@ struct ImageView: SwiftUI.View {
     }
     
     var body: some SwiftUI.View {
-        switch image.value {
-        case .reference(let imageReference):
-            ImageReferenceView(
-                imageReference: imageReference,
-                resizing: image.resizing,
-                renderingMode: image.renderingMode,
-                symbolRenderingMode: image.symbolRenderingMode
-            )
-        case .property(let propertyName):
-            if let imageReference = resolveImageReference(from: propertyName) {
-                ImageReferenceView(
-                    imageReference: imageReference,
-                    resizing: image.resizing,
-                    renderingMode: image.renderingMode,
-                    symbolRenderingMode: image.symbolRenderingMode
-                )
-            } else {
-                MissingImageView()
-            }
-        case .fetchedImage:
-            if let fetchedImage {
-                InlineImageView(
-                    image: fetchedImage,
-                    resizing: image.resizing,
-                    renderingMode: image.renderingMode
-                )
-            } else {
-                MissingImageView()
-            }
-        }
-    }
-    
-    private func resolveImageReference(from propertyName: String) -> ImageReference? {
-        switch componentState.properties[propertyName] {
-        case .image(let imageName):
-            return imageName
-        default:
-            return nil
-        }
+        ImageReferenceView(
+            imageReference: image.value.forceResolve(
+                properties: componentState.properties,
+                data: data,
+                fetchedImage: fetchedImage
+            ),
+            resizing: image.resizing,
+            renderingMode: image.renderingMode,
+            symbolRenderingMode: image.symbolRenderingMode
+        )
     }
 }
 

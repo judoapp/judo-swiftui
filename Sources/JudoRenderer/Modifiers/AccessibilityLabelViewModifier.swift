@@ -20,7 +20,8 @@ struct AccessibilityLabelViewModifier: SwiftUI.ViewModifier {
     @ObservedObject var modifier: AccessibilityLabelModifier
 
     func body(content: Content) -> some SwiftUI.View {
-        content
-            .accessibilityLabel(SwiftUI.Text(modifier.label.description))
+        RealizeText(modifier.label) { label in
+            content.accessibilityLabel(label)
+        }
     }
 }

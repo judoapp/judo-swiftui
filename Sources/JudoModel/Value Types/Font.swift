@@ -23,13 +23,13 @@ public enum Font: Hashable {
     case dynamic(textStyle: FontTextStyle, design: FontDesign)
 
     /// A system font with a fixed size and weight.
-    case fixed(size: NumberValue, weight: FontWeight, design: FontDesign)
+    case fixed(size: Variable<Double>, weight: FontWeight, design: FontDesign)
 
     /// A font which uses the `CustomFont` value from a `DocumentFont` matching the `fontFamily` and `textStyle`.
     case document(fontFamily: FontFamily, textStyle: FontTextStyle)
 
     /// A custom font which uses the supplied `FontName` and given `size`.
-    case custom(fontName: FontName, size: NumberValue)
+    case custom(fontName: FontName, size: Variable<Double>)
 }
 
 // MARK: Convenience Initializers
@@ -81,9 +81,12 @@ extension Font: Codable {
             switch coordinator.documentVersion {
             case ..<16:
                 let size = try container.decode(CGFloat.self, forKey: .size)
-                self = .fixed(size: NumberValue(size), weight: weight, design: design)
+                self = .fixed(size: Variable(LegacyNumberValue(size)), weight: weight, design: design)
+            case ..<17:
+                let size = try container.decode(LegacyNumberValue.self, forKey: .size)
+                self = .fixed(size: Variable(size), weight: weight, design: design)
             default:
-                let size = try container.decode(NumberValue.self, forKey: .size)
+                let size = try container.decode(Variable<Double>.self, forKey: .size)
                 self = .fixed(size: size, weight: weight, design: design)
             }
         case "document":
@@ -95,9 +98,12 @@ extension Font: Codable {
             switch coordinator.documentVersion {
             case ..<16:
                 let size = try container.decode(CGFloat.self, forKey: .size)
-                self = .custom(fontName: fontName, size: NumberValue(size))
+                self = .custom(fontName: fontName, size: Variable(LegacyNumberValue(size)))
+            case ..<17:
+                let size = try container.decode(LegacyNumberValue.self, forKey: .size)
+                self = .custom(fontName: fontName, size: Variable(size))
             default:
-                let size = try container.decode(NumberValue.self, forKey: .size)
+                let size = try container.decode(Variable<Double>.self, forKey: .size)
                 self = .custom(fontName: fontName, size: size)
             }
 

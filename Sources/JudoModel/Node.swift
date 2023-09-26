@@ -15,6 +15,7 @@
 
 import Foundation
 import OrderedCollections
+import SwiftUI
 
 public class Node: JudoObject {
     @Published @objc public dynamic var name: String?
@@ -28,6 +29,14 @@ public class Node: JudoObject {
     public convenience init(name: String) {
         self.init()
         self.name = name
+    }
+    
+    // MARK: Variables
+    
+    public override func updateVariables(properties: MainComponent.Properties, data: Any?, fetchedImage: SwiftUI.Image?, unbind: Bool, undoManager: UndoManager?) {
+        for child in children {
+            child.updateVariables(properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+        }
     }
     
     // MARK: Description
@@ -263,12 +272,12 @@ extension Sequence where Element: Node {
             }
         }
         
-        func extractComponents(from value: ComponentInstance.ComponentValue, enclosingMainComponent: MainComponent?, into partialResult: inout Set<MainComponent>) {
-            let mainComponent = value.resolve(
+        func extractComponents(from value: Variable<MainComponent>, enclosingMainComponent: MainComponent?, into partialResult: inout Set<MainComponent>) {
+            let mainComponent = value.forceResolve(
                 properties: enclosingMainComponent?.properties ?? [:]
             )
             
-            if let mainComponent, !partialResult.contains(mainComponent) {
+            if !partialResult.contains(mainComponent) {
                 extractComponents(from: mainComponent, into: &partialResult)
             }
         }

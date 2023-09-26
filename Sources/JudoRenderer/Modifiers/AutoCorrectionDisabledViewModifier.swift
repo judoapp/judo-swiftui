@@ -17,12 +17,18 @@ import JudoModel
 import SwiftUI
 
 struct AutocorrectionDisabledViewModifier: SwiftUI.ViewModifier {
+    @Environment(\.data) private var data
+    @EnvironmentObject private var componentState: ComponentState
+
     @ObservedObject var modifier: JudoModel.AutocorrectionDisabledModifier
 
     func body(content: Content) -> some SwiftUI.View {
-        if case let .constant(value: value) = modifier.isDisabled {
-            content
-                .autocorrectionDisabled(value)
-        }
+        content
+            .autocorrectionDisabled(
+                modifier.isDisabled.forceResolve(
+                    properties: componentState.properties,
+                    data: data
+                )
+            )
     }
 }

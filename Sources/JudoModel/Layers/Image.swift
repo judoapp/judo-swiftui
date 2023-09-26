@@ -18,8 +18,8 @@ import os.log
 
 /// A layer that displays an image.
 public final class Image: Layer, Modifiable, AssetProvider {
-    @Published public var value: ImageValue
-    @Published public var label: TextValue = ""
+    @Published public var value: Variable<ImageReference>
+    @Published public var label: Variable<String> = ""
     @Published public var isDecorative: Bool = false
     @Published public var resizing: ResizingMode = .none
     @Published public var renderingMode: TemplateRenderingMode = .original
@@ -27,17 +27,25 @@ public final class Image: Layer, Modifiable, AssetProvider {
 
     public init(_ name: String?) {
         if let name {
-            value = .reference(imageReference: .document(imageName: name))
+            value = Variable(.document(imageName: name))
         } else {
-            value = .default
+            value = Variable(.default)
         }
         
         super.init()
     }
 
     required public init() {
-        value = .default
+        value = Variable(.default)
         super.init()
+    }
+    
+    // MARK: Variables
+    
+    public override func updateVariables(properties: MainComponent.Properties, data: Any?, fetchedImage: SwiftUI.Image?, unbind: Bool, undoManager: UndoManager?) {
+        updateVariable(\.value, properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+        updateVariable(\.label, properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+        super.updateVariables(properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
     }
     
     // MARK: Description
@@ -53,13 +61,18 @@ public final class Image: Layer, Modifiable, AssetProvider {
     // MARK: AssetProvider
 
     public var assetNames: [String] {
-        let imageReference = value.resolve(properties: enclosingComponent?.properties ?? [:], fetchedImage: nil)
-        switch imageReference {
-        case .document(let imageName):
-            return [imageName]
-        default:
-            return []
+        var result: [String] = []
+        
+        let properties = enclosingComponent?.properties ?? [:]
+        if let imageReference = value.resolve(properties: properties), case .document(let imageName) = imageReference {
+            result.append(imageName)
         }
+
+        if case .document(let imageName) = value.constant {
+            result.append(imageName)
+        }
+        
+        return result
     }
         
     // MARK: Traits
@@ -121,21 +134,30 @@ public final class Image: Layer, Modifiable, AssetProvider {
         if let kind = try? container.decode(ImageKind.self, forKey: .imageKind) {
             switch kind {
             case .system(let imageName, let symbolRenderingMode):
-                self.value = .reference(imageReference: .system(imageName: imageName))
+                self.value = Variable(.system(imageName: imageName))
                 self.symbolRenderingMode = symbolRenderingMode
             case .content(let imageName, let resizing, let renderingMode):
-                self.value = .reference(imageReference: .document(imageName: imageName))
+                self.value = Variable(.document(imageName: imageName))
                 self.resizing = resizing
                 self.renderingMode = renderingMode
             case .decorative(let imageName, let resizing, let renderingMode):
-                self.value = .reference(imageReference: .document(imageName: imageName))
+                self.value = Variable(.document(imageName: imageName))
                 self.isDecorative = true
                 self.resizing = resizing
                 self.renderingMode = renderingMode
             }
         } else {
-            value = try container.decode(ImageValue.self, forKey: .value)
-            label = try container.decode(TextValue.self, forKey: .label)
+            let coordinator = decoder.userInfo[.decodingCoordinator] as! DecodingCoordinator
+
+            switch coordinator.documentVersion {
+            case ..<17:
+                value = try Variable(container.decode(LegacyImageValue.self, forKey: .value))
+                label = try Variable(container.decode(LegacyTextValue.self, forKey: .label))
+            default:
+                value = try container.decode(Variable<ImageReference>.self, forKey: .value)
+                label = try container.decode(Variable<String>.self, forKey: .label)
+            }
+
             isDecorative = try container.decode(Bool.self, forKey: .isDecorative)
             resizing = try container.decode(ResizingMode.self, forKey: .resizing)
             renderingMode = try container.decode(TemplateRenderingMode.self, forKey: .renderingMode)

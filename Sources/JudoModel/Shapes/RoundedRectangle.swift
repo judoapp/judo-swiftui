@@ -20,11 +20,18 @@ public final class RoundedRectangle: Shape {
         "Rounded Rectangle"
     }
     
-    @Published public var cornerRadius = CGFloat(8)
+    @Published public var cornerRadius: Variable<Double> = 8
     @Published public var cornerStyle = RoundedCornerStyle.circular
 
     required public init() {
         super.init()
+    }
+    
+    // MARK: Variables
+    
+    public override func updateVariables(properties: MainComponent.Properties, data: Any?, fetchedImage: SwiftUI.Image?, unbind: Bool, undoManager: UndoManager?) {
+        updateVariable(\.cornerRadius, properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+        super.updateVariables(properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
     }
     
     // MARK: NSCopying
@@ -45,7 +52,15 @@ public final class RoundedRectangle: Shape {
     
     required public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        cornerRadius = try container.decode(CGFloat.self, forKey: .cornerRadius)
+        let coordinator = decoder.userInfo[.decodingCoordinator] as! DecodingCoordinator
+
+        switch coordinator.documentVersion {
+        case ..<17:
+            cornerRadius = try Variable(container.decode(Double.self, forKey: .cornerRadius))
+        default:
+            cornerRadius = try container.decode(Variable<Double>.self, forKey: .cornerRadius)
+        }
+
         cornerStyle = try container.decode(RoundedCornerStyle.self, forKey: .cornerStyle)
         try super.init(from: decoder)
     }

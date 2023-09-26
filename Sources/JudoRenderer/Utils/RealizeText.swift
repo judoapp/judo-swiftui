@@ -21,23 +21,70 @@ struct RealizeText<Content>: SwiftUI.View where Content: SwiftUI.View {
     @EnvironmentObject private var componentState: ComponentState
     @Environment(\.data) private var data
 
-    private var text: TextValue
-    private var content: (String) -> Content
+    private let value: Variable<String>
+    private let content: (String) -> Content
+    private let localized: Bool
 
-    init(_ text: TextValue, @ViewBuilder content: @escaping (String) -> Content) {
-        self.text = text
+    init(_ text: Variable<String>, localized: Bool = true, @ViewBuilder content: @escaping (String) -> Content) {
+        self.value = text
         self.content = content
+        self.localized = localized
     }
 
     var body: some View {
         content(
-            text.resolve(
-                data: data,
-                properties: componentState.properties,
-                locale: Locale.preferredLocale,
-                localizations: localizations
-            )
+            localized ? localizedValue : evaluatedValue
         )
     }
 
+    private var localizedValue: String {
+        localize(
+            key: evaluatedValue,
+            locale: Locale.preferredLocale,
+            localizations: localizations
+        ) ?? evaluatedValue
+    }
+
+    private var evaluatedValue: String {
+        (try? resolvedValue.evaluatingExpressions(data: data, properties: componentState.properties)) ?? resolvedValue
+    }
+
+    private var resolvedValue: String {
+        value.forceResolve(
+            properties: componentState.properties,
+            data: data
+        )
+    }
+}
+
+func localize(key: String?, locale: Locale?, localizations: DocumentLocalizations) -> String? {
+
+    // A simple (and not complete) attempt at RFC 4647 basic filtering.
+    guard let localeIdentifier = locale?.identifier else {
+        return key
+    }
+
+    guard let key else {
+        return key
+    }
+
+    if let matchedLocale = localizations[localeIdentifier], let translation = matchedLocale[key] {
+        return translation
+    }
+
+    if #available(iOS 16, *) {
+        if  let languageCode = Locale(identifier: localeIdentifier).language.languageCode?.identifier,
+            let matchedLocale = localizations.fuzzyMatch(key: languageCode),
+            let translation = matchedLocale[key] {
+            return translation
+        }
+    } else {
+        if  let languageCode = Locale(identifier: localeIdentifier).languageCode,
+            let matchedLocale = localizations.fuzzyMatch(key: languageCode),
+            let translation = matchedLocale[key] {
+            return translation
+        }
+    }
+
+    return key
 }

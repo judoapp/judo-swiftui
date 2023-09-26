@@ -28,11 +28,9 @@ struct OpacityViewModifier: SwiftUI.ViewModifier {
     }
 
     private var opacityValue: Double {
-        switch modifier.opacity {
-        case .constant(let value):
-            return value
-        case .property, .data:
-            return (modifier.opacity.resolve(data: data, componentState: componentState) ?? (1 * 100)) / 100
-        }
+        modifier.opacity.forceResolve(
+            properties: componentState.properties,
+            data: data
+        )
     }
 }

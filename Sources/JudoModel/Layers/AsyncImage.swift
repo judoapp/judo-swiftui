@@ -64,7 +64,7 @@ public final class AsyncImage: Layer, Modifiable {
         }
     }
 
-    @Published public var url: TextValue = ""
+    @Published public var url: Variable<String> = ""
     @Published public var scale: Scale = .one
     @Published public var errorState: Bool = false
 
@@ -82,7 +82,7 @@ public final class AsyncImage: Layer, Modifiable {
         let contentContainer = Container(name: "Content")
         contentContainer.parent = self
         let image = Image()
-        image.value = .fetchedImage
+        image.value = Variable(.empty, binding: .fetchedImage)
         image.parent = contentContainer
         contentContainer.children = [image]
 
@@ -110,6 +110,13 @@ public final class AsyncImage: Layer, Modifiable {
 
     public var placeholder: Container {
         children[1] as! Container
+    }
+    
+    // MARK: Variables
+    
+    public override func updateVariables(properties: MainComponent.Properties, data: Any?, fetchedImage: SwiftUI.Image?, unbind: Bool, undoManager: UndoManager?) {
+        updateVariable(\.url, properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+        super.updateVariables(properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
     }
 
     // MARK: Hierarchy
@@ -171,8 +178,17 @@ public final class AsyncImage: Layer, Modifiable {
 
     required public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        let coordinator = decoder.userInfo[.decodingCoordinator] as! DecodingCoordinator
+
+        switch coordinator.documentVersion {
+        case ..<17:
+            url = try Variable(container.decode(LegacyTextValue.self, forKey: .url))
+        default:
+            url = try container.decode(Variable<String>.self, forKey: .url)
+        }
+
         scale = try container.decode(AsyncImage.Scale.self, forKey: .scale)
-        url = try container.decode(TextValue.self, forKey: .url)
         errorState = try container.decode(Bool.self, forKey: .errorState)
         try super.init(from: decoder)
     }

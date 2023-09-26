@@ -17,15 +17,22 @@ import CoreGraphics
 import SwiftUI
 
 public final class Text: Layer, Modifiable {
-    @Published public dynamic var value: TextValue = "Hello, world!"
-    
+    @Published public dynamic var value: Variable<String> = "Hello, world!"
+
     required public init() {
         super.init()
     }
     
     public init(_ key: String) {
-        self.value = TextValue(key)
+        self.value = Variable(key)
         super.init()
+    }
+    
+    // MARK: Variables
+    
+    public override func updateVariables(properties: MainComponent.Properties, data: Any?, fetchedImage: SwiftUI.Image?, unbind: Bool, undoManager: UndoManager?) {
+        updateVariable(\.value, properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+        super.updateVariables(properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
     }
     
     // MARK: Description
@@ -66,9 +73,9 @@ public final class Text: Layer, Modifiable {
     
     override public func strings() -> [String] {
         var strings = super.strings()
-        
-        if case .literal(let content) = value {
-            strings.append(content)
+
+        if !value.isBinding {
+            strings.append(value.constant)
         }
         
         return strings
@@ -90,7 +97,14 @@ public final class Text: Layer, Modifiable {
     
     required public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        value = try container.decode(TextValue.self, forKey: .value)
+        let coordinator = decoder.userInfo[.decodingCoordinator] as! DecodingCoordinator
+
+        switch coordinator.documentVersion {
+        case ..<17:
+            value = try Variable(container.decode(LegacyTextValue.self, forKey: .value))
+        default:
+            value = try container.decode(Variable<String>.self, forKey: .value)
+        }
         try super.init(from: decoder)
     }
     

@@ -15,7 +15,7 @@
 
 import Foundation
 
-struct LegacyPadding: Codable {
+struct LegacyPadding: Decodable {
     var top: CGFloat
     var leading: CGFloat
     var bottom: CGFloat

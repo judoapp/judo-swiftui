@@ -18,7 +18,7 @@ import Foundation
 public struct UserData: Codable {
     public var expandedNodeIDs: Set<Node.ID>
     public var zoomScale: CGFloat
-    public var canvasScroll: CGRect?
+    public var scrollOffset: CGPoint
     public var previewLanguage: PreviewLanguage?
     public var isDarkModeEnabled: Bool
     public var isHighContrastModeEnabled: Bool
@@ -30,7 +30,7 @@ public struct UserData: Codable {
     public init(
         expandedNodeIDs: Set<Node.ID>,
         zoomScale: CGFloat,
-        canvasScroll: CGRect?,
+        scrollOffset: CGPoint,
         previewLanguage: PreviewLanguage?,
         isDarkModeEnabled: Bool,
         isHighContrastModeEnabled: Bool,
@@ -41,7 +41,7 @@ public struct UserData: Codable {
     ) {
         self.expandedNodeIDs = expandedNodeIDs
         self.zoomScale = zoomScale
-        self.canvasScroll = canvasScroll
+        self.scrollOffset = scrollOffset
         self.previewLanguage = previewLanguage
         self.isDarkModeEnabled = isDarkModeEnabled
         self.isHighContrastModeEnabled = isHighContrastModeEnabled
@@ -54,7 +54,7 @@ public struct UserData: Codable {
     private enum CodingKeys: String, CodingKey {
         case expandedNodeIDs
         case zoomScale
-        case canvasScroll
+        case scrollOffset
         case previewLanguage
         case isDarkModeEnabled
         case isHighContrastModeEnabled
@@ -65,13 +65,30 @@ public struct UserData: Codable {
         
         // Legacy
         case previewOperatingSystem
+        case canvasScroll
     }
 
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
+        let coordinator = decoder.userInfo[.decodingCoordinator] as! DecodingCoordinator
+        
         expandedNodeIDs = try container.decode(Set<Node.ID>.self, forKey: .expandedNodeIDs)
         zoomScale = try container.decode(CGFloat.self, forKey: .zoomScale)
-        canvasScroll = try container.decodeIfPresent(CGRect.self, forKey: .canvasScroll)
+        
+        switch coordinator.documentVersion {
+        case ..<17:
+            if let canvasScroll = try container.decodeIfPresent(CGRect.self, forKey: .canvasScroll) {
+                scrollOffset = CGPoint(
+                    x: 500_000 - canvasScroll.origin.x,
+                    y: 500_000 - canvasScroll.origin.y
+                )
+            } else {
+                scrollOffset = .zero
+            }
+        default:
+            scrollOffset = try container.decode(CGPoint.self, forKey: .scrollOffset)
+        }
+        
         previewLanguage = try container.decodeIfPresent(PreviewLanguage.self, forKey: .previewLanguage)
         isDarkModeEnabled = try container.decode(Bool.self, forKey: .isDarkModeEnabled)
         isHighContrastModeEnabled = try container.decode(Bool.self, forKey: .isHighContrastModeEnabled)
@@ -85,7 +102,7 @@ public struct UserData: Codable {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(expandedNodeIDs, forKey: .expandedNodeIDs)
         try container.encode(zoomScale, forKey: .zoomScale)
-        try container.encodeIfPresent(canvasScroll, forKey: .canvasScroll)
+        try container.encode(scrollOffset, forKey: .scrollOffset)
         try container.encodeIfPresent(previewLanguage, forKey: .previewLanguage)
         try container.encode(isDarkModeEnabled, forKey: .isDarkModeEnabled)
         try container.encode(isHighContrastModeEnabled, forKey: .isHighContrastModeEnabled)
@@ -93,8 +110,5 @@ public struct UserData: Codable {
         try container.encode(deviceOrientation, forKey: .deviceOrientation)
         try container.encode(contentSizeCategory, forKey: .contentSizeCategory)
         try container.encode(simulateSlowNetwork, forKey: .simulateSlowNetwork)
-        
-        // Legacy
-        try container.encode("iOS", forKey: .previewOperatingSystem)
     }
 }

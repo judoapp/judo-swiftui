@@ -17,11 +17,19 @@ import SwiftUI
 
 public final class Toggle: Layer, Modifiable {
 
-    @Published public var label: TextValue = ""
-    @Published public var isOn: BooleanValue = false
+    @Published public var label: Variable<String> = ""
+    @Published public var isOn: Variable<Bool> = false
 
     required public init() {
         super.init()
+    }
+    
+    // MARK: Variables
+    
+    public override func updateVariables(properties: MainComponent.Properties, data: Any?, fetchedImage: SwiftUI.Image?, unbind: Bool, undoManager: UndoManager?) {
+        updateVariable(\.label, properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+        updateVariable(\.isOn, properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+        super.updateVariables(properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
     }
 
     // MARK: NSCopying
@@ -42,8 +50,18 @@ public final class Toggle: Layer, Modifiable {
 
     required public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        label = try container.decode(TextValue.self, forKey: .label)
-        isOn = try container.decode(BooleanValue.self, forKey: .isOn)
+        let coordinator = decoder.userInfo[.decodingCoordinator] as! DecodingCoordinator
+
+
+        switch coordinator.documentVersion {
+        case ..<17:
+            label = try Variable(container.decode(LegacyTextValue.self, forKey: .label))
+            isOn = try Variable(container.decode(LegacyBooleanValue.self, forKey: .isOn))
+        default:
+            label = try container.decode(Variable<String>.self, forKey: .label)
+            isOn = try container.decode(Variable<Bool>.self, forKey: .isOn)
+        }
+        
         try super.init(from: decoder)
     }
 

@@ -16,34 +16,108 @@
 import SwiftUI
 
 public class FrameModifier: JudoModifier {
-    @Published public var width: NumberValue?
-    @Published public var maxWidth: NumberValue?
-    @Published public var minWidth: NumberValue?
-    @Published public var height: NumberValue?
-    @Published public var maxHeight: NumberValue?
-    @Published public var minHeight: NumberValue?
+    public enum FrameType: Codable {
+        case fixed
+        case flexible
+    }
+    
+    @Published public private(set) var frameType: FrameType = .fixed
+    
+    @Published public private(set) var width: Variable<Double>?
+    @Published public private(set) var minWidth: Variable<Double>?
+    @Published public private(set) var maxWidth: Variable<Double>?
+    
+    @Published public private(set) var height: Variable<Double>?
+    @Published public private(set) var minHeight: Variable<Double>?
+    @Published public private(set) var maxHeight: Variable<Double>?
+    
     @Published public var alignment: Alignment = .center
 
     public required init() {
         super.init()
     }
     
-    public var isFlexible: Bool {
-        [maxWidth, minWidth, maxHeight, minHeight].contains {
-            $0 != nil
+    // MARK: Modifiers
+    
+    public func changeType(to newType: FrameType, undoManager: UndoManager?) {
+        let currentType = self.frameType
+        switch (currentType, newType) {
+        case (.fixed, .flexible):
+            resize(
+                minWidth: nil,
+                maxWidth: width,
+                minHeight: nil,
+                maxHeight: height,
+                undoManager: undoManager
+            )
+        case (.flexible, .fixed):
+            resize(
+                width: maxWidth,
+                height: maxHeight,
+                undoManager: undoManager
+            )
+        default:
+            break
         }
+    }
+    
+    public func resize(
+        width: Variable<Double>?,
+        height: Variable<Double>?,
+        undoManager: UndoManager?
+    ) {
+        set(\.frameType, to: .fixed, undoManager: undoManager)
+        
+        set(\.width, to: width, undoManager: undoManager)
+        set(\.minWidth, to: nil, undoManager: undoManager)
+        set(\.maxWidth, to: nil, undoManager: undoManager)
+        
+        set(\.height, to: height, undoManager: undoManager)
+        set(\.minHeight, to: nil, undoManager: undoManager)
+        set(\.maxHeight, to: nil, undoManager: undoManager)
+    }
+    
+    public func resize(
+        minWidth: Variable<Double>?,
+        maxWidth: Variable<Double>?,
+        minHeight: Variable<Double>?,
+        maxHeight: Variable<Double>?,
+        undoManager: UndoManager?
+    ) {
+        set(\.frameType, to: .flexible, undoManager: undoManager)
+        
+        set(\.width, to: nil, undoManager: undoManager)
+        set(\.minWidth, to: minWidth, undoManager: undoManager)
+        set(\.maxWidth, to: maxWidth, undoManager: undoManager)
+        
+        set(\.height, to: nil, undoManager: undoManager)
+        set(\.minHeight, to: minHeight, undoManager: undoManager)
+        set(\.maxHeight, to: maxHeight, undoManager: undoManager)
+    }
+    
+    // MARK: Variables
+    
+    public override func updateVariables(properties: MainComponent.Properties, data: Any?, fetchedImage: SwiftUI.Image?, unbind: Bool, undoManager: UndoManager?) {
+        updateVariable(\.width, properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+        updateVariable(\.maxWidth, properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+        updateVariable(\.minWidth, properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+        updateVariable(\.height, properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+        updateVariable(\.maxHeight, properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+        updateVariable(\.minHeight, properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+        super.updateVariables(properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
     }
 
     // MARK: NSCopying
 
     public override func copy(with zone: NSZone? = nil) -> Any {
         let modifier = super.copy(with: zone) as! FrameModifier
+        modifier.frameType = frameType
         modifier.width = width
-        modifier.maxWidth = maxWidth
         modifier.minWidth = minWidth
+        modifier.maxWidth = maxWidth
         modifier.height = height
-        modifier.maxHeight = maxHeight
         modifier.minHeight = minHeight
+        modifier.maxHeight = maxHeight
         modifier.alignment = alignment
         return modifier
     }
@@ -51,12 +125,13 @@ public class FrameModifier: JudoModifier {
     // MARK: Codable
 
     private enum CodingKeys: String, CodingKey {
+        case frameType
         case width
-        case maxWidth
         case minWidth
+        case maxWidth
         case height
-        case maxHeight
         case minHeight
+        case maxHeight
         case alignment
         
         // ..<16
@@ -70,20 +145,67 @@ public class FrameModifier: JudoModifier {
         switch coordinator.documentVersion {
         case ..<16:
             let frame = try container.decode(LegacyFrame.self, forKey: .frame)
-            width = frame.width.map { .constant(value: Double($0)) }
-            maxWidth = frame.maxWidth.map { .constant(value: Double($0)) }
-            minWidth = frame.minWidth.map { .constant(value: Double($0)) }
-            height = frame.height.map { .constant(value: Double($0)) }
-            maxHeight = frame.maxHeight.map { .constant(value: Double($0)) }
-            minHeight = frame.minHeight.map { .constant(value: Double($0)) }
+            width = frame.width.map { Variable(Double($0)) }
+            maxWidth = frame.maxWidth.map { Variable(Double($0)) }
+            minWidth = frame.minWidth.map { Variable(Double($0)) }
+            height = frame.height.map { Variable(Double($0)) }
+            maxHeight = frame.maxHeight.map { Variable(Double($0)) }
+            minHeight = frame.minHeight.map { Variable(Double($0)) }
             alignment = frame.alignment
+        case ..<17:
+            var minWidthOrNil: Variable<Double>?
+            var maxWidthOrNil: Variable<Double>?
+            var minHeightOrNil: Variable<Double>?
+            var maxHeightOrNil: Variable<Double>?
+
+            if let minWidth = try container.decode(LegacyNumberValue?.self, forKey: .minWidth) {
+                minWidthOrNil = Variable(minWidth)
+            }
+
+            if let maxWidth = try container.decode(LegacyNumberValue?.self, forKey: .maxWidth) {
+                maxWidthOrNil = Variable(maxWidth)
+            }
+
+            if let minHeight = try container.decode(LegacyNumberValue?.self, forKey: .minHeight) {
+                minHeightOrNil = Variable(minHeight)
+            }
+
+            if let maxHeight = try container.decode(LegacyNumberValue?.self, forKey: .maxHeight) {
+                maxHeightOrNil = Variable(maxHeight)
+            }
+
+            // Check that the values are not nil
+            let isFlexible = minWidthOrNil != nil || maxWidthOrNil != nil || minHeightOrNil != nil || maxHeightOrNil != nil
+
+            if isFlexible {
+                self.frameType = .flexible
+
+                self.minWidth = minWidthOrNil
+                self.maxWidth = maxWidthOrNil
+                self.minHeight = minHeightOrNil
+                self.maxHeight = maxHeightOrNil
+
+            } else {
+                self.frameType = .fixed
+                
+                if let width = try container.decode(LegacyNumberValue?.self, forKey: .width) {
+                    self.width = Variable(width)
+                }
+                
+                if let height = try container.decode(LegacyNumberValue?.self, forKey: .height) {
+                    self.height = Variable(height)
+                }
+            }
+            
+            alignment = try container.decode(Alignment.self, forKey: .alignment)
         default:
-            width = try container.decode(NumberValue?.self, forKey: .width)
-            maxWidth = try container.decode(NumberValue?.self, forKey: .maxWidth)
-            minWidth = try container.decode(NumberValue?.self, forKey: .minWidth)
-            height = try container.decode(NumberValue?.self, forKey: .height)
-            maxHeight = try container.decode(NumberValue?.self, forKey: .maxHeight)
-            minHeight = try container.decode(NumberValue?.self, forKey: .minHeight)
+            frameType = try container.decode(FrameType.self, forKey: .frameType)
+            width = try container.decode(Variable<Double>?.self, forKey: .width)
+            maxWidth = try container.decode(Variable<Double>?.self, forKey: .maxWidth)
+            minWidth = try container.decode(Variable<Double>?.self, forKey: .minWidth)
+            height = try container.decode(Variable<Double>?.self, forKey: .height)
+            maxHeight = try container.decode(Variable<Double>?.self, forKey: .maxHeight)
+            minHeight = try container.decode(Variable<Double>?.self, forKey: .minHeight)
             alignment = try container.decode(Alignment.self, forKey: .alignment)
         }
         
@@ -92,6 +214,7 @@ public class FrameModifier: JudoModifier {
 
     public override func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(frameType, forKey: .frameType)
         try container.encode(width, forKey: .width)
         try container.encode(maxWidth, forKey: .maxWidth)
         try container.encode(minWidth, forKey: .minWidth)

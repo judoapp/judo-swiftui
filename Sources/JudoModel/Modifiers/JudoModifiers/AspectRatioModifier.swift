@@ -17,13 +17,20 @@ import SwiftUI
 
 public class AspectRatioModifier: JudoModifier {
 
-    @Published public var ratio: NumberValue?
+    @Published public var ratio: Variable<Double>?
     @Published public var contentMode: ContentMode = .fit
 
     public required init() {
         super.init()
     }
 
+    // MARK: Variables
+    
+    public override func updateVariables(properties: MainComponent.Properties, data: Any?, fetchedImage: SwiftUI.Image?, unbind: Bool, undoManager: UndoManager?) {
+        updateVariable(\.ratio, properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+        super.updateVariables(properties: properties, data: data, fetchedImage: fetchedImage, unbind: unbind, undoManager: undoManager)
+    }
+    
     // MARK: NSCopying
 
     public override func copy(with zone: NSZone? = nil) -> Any {
@@ -47,10 +54,14 @@ public class AspectRatioModifier: JudoModifier {
         switch coordinator.documentVersion {
         case ..<15:
             if let floatValue = try container.decodeIfPresent(CGFloat.self, forKey: .ratio) {
-                ratio = NumberValue(floatValue)
+                ratio = Variable(LegacyNumberValue(floatValue))
+            }
+        case ..<17:
+            if let value = try container.decodeIfPresent(LegacyNumberValue.self, forKey: .ratio) {
+                ratio = Variable(value)
             }
         default:
-            ratio = try container.decodeIfPresent(NumberValue.self, forKey: .ratio)
+            ratio = try container.decodeIfPresent(Variable<Double>.self, forKey: .ratio)
         }
 
         contentMode = try container.decode(ContentMode.self, forKey: .contentMode)

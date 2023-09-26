@@ -56,9 +56,12 @@ struct PaddingViewModifier: SwiftUI.ViewModifier {
     }
     
     private var length: CGFloat? {
-        modifier.length?.resolve(data: data, componentState: componentState).map {
-            CGFloat($0)
-        }
+        let resolvedValue = modifier.length?.forceResolve(
+            properties: componentState.properties,
+            data: data
+        )
+        
+        return resolvedValue.map { CGFloat($0) }
     }
     
     private var insets: EdgeInsets? {
@@ -70,10 +73,22 @@ struct PaddingViewModifier: SwiftUI.ViewModifier {
         }
         
         return EdgeInsets(
-            top: top.resolve(data: data, componentState: componentState) ?? 0,
-            leading: leading.resolve(data: data, componentState: componentState) ?? 0,
-            bottom: bottom.resolve(data: data, componentState: componentState) ?? 0,
-            trailing: trailing.resolve(data: data, componentState: componentState) ?? 0
+            top: top.forceResolve(
+                properties: componentState.properties,
+                data: data
+            ),
+            leading: leading.forceResolve(
+                properties: componentState.properties,
+                data: data
+            ),
+            bottom: bottom.forceResolve(
+                properties: componentState.properties,
+                data: data
+            ),
+            trailing: trailing.forceResolve(
+                properties: componentState.properties,
+                data: data
+            )
         )
     }
 }

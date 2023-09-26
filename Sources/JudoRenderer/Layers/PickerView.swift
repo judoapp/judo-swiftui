@@ -20,34 +20,33 @@ struct PickerView: SwiftUI.View {
     @EnvironmentObject private var componentState: ComponentState
     @Environment(\.data) private var data
 
-    @ComponentValue private var labelValue: TextValue
-    @OptionalComponentValue private var textSelection: TextValue?
-    @OptionalComponentValue private var numberSelection: NumberValue?
     private var isTextBinding: Bool
     private var options: [PickerOption]
 
+    @ObservedObject var picker: JudoModel.Picker
+
     init(picker: JudoModel.Picker) {
-        self.labelValue = picker.label
-        self.textSelection = picker.textSelection
-        self.numberSelection = picker.numberSelection
+        self.picker = picker
         self.isTextBinding = picker.textSelection != nil
         self.options = picker.options
 
     }
 
     var body: some View {
-        if isTextBinding {
-            SwiftUI.Picker($labelValue ?? "", selection: stringSelectionBinding) {
-                ForEach(options) { option in
-                    row(for: option)
-                        .tag(textTag(option))
+        RealizeText(picker.label) { label in
+            if isTextBinding {
+                SwiftUI.Picker(label, selection: stringSelectionBinding) {
+                    ForEach(options) { option in
+                        row(for: option)
+                            .tag(textTag(option))
+                    }
                 }
-            }
-        } else {
-            SwiftUI.Picker($labelValue ?? "", selection: numberSelectionBinding) {
-                ForEach(options) { option in
-                    row(for: option)
-                        .tag(numberTag(option))
+            } else {
+                SwiftUI.Picker(label, selection: numberSelectionBinding) {
+                    ForEach(options) { option in
+                        row(for: option)
+                            .tag(numberTag(option))
+                    }
                 }
             }
         }
@@ -55,67 +54,64 @@ struct PickerView: SwiftUI.View {
 
     @ViewBuilder
     private func row(for option: PickerOption) -> some View {
-        let title = text(option.title)
-        if let imageReference = option.icon?.resolve(data: data, componentState: componentState) {
-            if title.isEmpty {
-                ImageReferenceView(
-                    imageReference: imageReference,
-                    resizing: .none,
-                    renderingMode: .original,
-                    symbolRenderingMode: .monochrome
-                )
-            } else {
-                SwiftUI.Label {
-                    SwiftUI.Text(title)
-                } icon: {
+        RealizeText(option.title ?? "") { title in
+            if let imageReference = option.icon?.forceResolve(properties: componentState.properties, data: data) {
+                if title.isEmpty {
                     ImageReferenceView(
                         imageReference: imageReference,
                         resizing: .none,
                         renderingMode: .original,
                         symbolRenderingMode: .monochrome
                     )
+                } else {
+                    SwiftUI.Label {
+                        SwiftUI.Text(title)
+                    } icon: {
+                        ImageReferenceView(
+                            imageReference: imageReference,
+                            resizing: .none,
+                            renderingMode: .original,
+                            symbolRenderingMode: .monochrome
+                        )
+                    }
                 }
+            } else {
+                SwiftUI.Text(title)
             }
-        } else {
-            SwiftUI.Text(title)
         }
     }
 
     private var stringSelectionBinding: Binding<String?> {
         Binding {
-            $textSelection
+            picker.textSelection?.forceResolve(properties: componentState.properties, data: data)
         } set: { newValue in
             guard let newValue else {
                 return
             }
             
-            if case let .property(name, _) = textSelection {
+            if case let .property(name) = picker.textSelection?.binding {
                 componentState.bindings[name]?.value = .text(newValue)
             }
         }
     }
 
-    private func text(_ value: TextValue?) -> String {
-        value?.resolve(data: data, componentState: componentState) ?? ""
-    }
-
     private func textTag(_ option: PickerOption) -> String? {
         if let textValue = option.textValue {
-            return textValue.resolve(data: data, componentState: componentState)
+            return textValue.forceResolve(properties: componentState.properties, data: data)
         }
-        
+
         return nil
     }
 
     private var numberSelectionBinding: Binding<Double?> {
         Binding {
-            $numberSelection
+            picker.numberSelection?.forceResolve(properties: componentState.properties, data: data)
         } set: { newValue in
             guard let newValue else {
                 return
             }
             
-            if case let .property(name) = numberSelection {
+            if case let .property(name) = picker.numberSelection?.binding {
                 componentState.bindings[name]?.value = .number(newValue)
             }
         }
@@ -123,9 +119,9 @@ struct PickerView: SwiftUI.View {
 
     private func numberTag(_ option: PickerOption) -> Double? {
         if let numberValue = option.numberValue {
-            return numberValue.resolve(data: data, componentState: componentState)
+            return numberValue.forceResolve(properties: componentState.properties, data: data)
         }
-        
+
         return nil
     }
 }
