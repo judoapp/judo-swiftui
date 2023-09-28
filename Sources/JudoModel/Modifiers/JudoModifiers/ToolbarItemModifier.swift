@@ -62,7 +62,10 @@ public class ToolbarItemModifier: JudoModifier {
             placement = legacyToolbarItem.placement
             actions = legacyToolbarItem.actions
         case ..<17:
-            title = try Variable(container.decode(LegacyTextValue.self, forKey: .title))
+            if let title = try container.decodeIfPresent(LegacyTextValue.self, forKey: .title) {
+                self.title = Variable(title)
+            }
+            
             icon = try container.decode(NamedIcon?.self, forKey: .icon)
             placement = try container.decode(ToolbarItemPlacement.self, forKey: .placement)
             actions = try container.decode([ActionWrapper].self, forKey: .actions).compactMap(\.action)
