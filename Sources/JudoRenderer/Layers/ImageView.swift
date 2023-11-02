@@ -15,7 +15,7 @@
 
 import SwiftUI
 import Combine
-import JudoModel
+import JudoDocument
 
 struct ImageView: SwiftUI.View {
     @Environment(\.colorScheme) private var colorScheme
@@ -23,11 +23,10 @@ struct ImageView: SwiftUI.View {
     @Environment(\.data) private var data
     @Environment(\.fetchedImage) private var fetchedImage
     @EnvironmentObject private var componentState: ComponentState
-    @EnvironmentObject private var assets: Assets
     
-    @ObservedObject private var image: JudoModel.Image
+    private var image: JudoDocument.ImageNode
     
-    init(image: JudoModel.Image) {
+    init(image: JudoDocument.ImageNode) {
         self.image = image
     }
     
@@ -49,7 +48,7 @@ struct ImageReferenceView: View {
     var imageReference: ImageReference
     var resizing: ResizingMode
     var renderingMode: TemplateRenderingMode
-    var symbolRenderingMode: JudoModel.SymbolRenderingMode
+    var symbolRenderingMode: JudoDocument.SymbolRenderingMode
     
     var body: some View {
         switch imageReference {
@@ -75,12 +74,12 @@ struct ImageReferenceView: View {
 }
 
 private struct DocumentImageView: View {
+    @Environment(\.assetManager) private var assetManager
     @Environment(\.colorScheme) private var colorScheme
-    @EnvironmentObject private var assets: Assets
 
     let name: String
-    let resizing: JudoModel.ResizingMode
-    let renderingMode: JudoModel.TemplateRenderingMode
+    let resizing: JudoDocument.ResizingMode
+    let renderingMode: JudoDocument.TemplateRenderingMode
 
     var body: some View {
         if let image {
@@ -112,17 +111,17 @@ private struct DocumentImageView: View {
     
     private var imageMeta: (data: Data, scale: CGFloat)? {
         if colorScheme == .light {
-            return assets.image(named: name, appearance: nil, scale: .two, strictAppearanceMatch: true, searchOtherScale: true)
+            return assetManager.image(named: name, appearance: nil, scale: .two, strictAppearanceMatch: true, searchOtherScale: true)
         } else {
-            return assets.image(named: name, appearance: .dark, scale: .two, strictAppearanceMatch: false, searchOtherScale: true)
+            return assetManager.image(named: name, appearance: .dark, scale: .two, strictAppearanceMatch: false, searchOtherScale: true)
         }
     }
 }
 
 private struct InlineImageView: View {
     let image: SwiftUI.Image
-    let resizing: JudoModel.ResizingMode
-    let renderingMode: JudoModel.TemplateRenderingMode
+    let resizing: JudoDocument.ResizingMode
+    let renderingMode: JudoDocument.TemplateRenderingMode
 
     var body: some View {
         switch renderingMode {
@@ -138,7 +137,7 @@ private struct InlineImageView: View {
 }
 
 private extension SwiftUI.Image {
-    func resizable(_ resizing: JudoModel.ResizingMode) -> SwiftUI.Image {
+    func resizable(_ resizing: JudoDocument.ResizingMode) -> SwiftUI.Image {
         switch resizing {
         case .none:
             return self
@@ -152,7 +151,7 @@ private extension SwiftUI.Image {
 
 private struct SystemImageView: View {
     let systemName: String
-    let renderingMode: JudoModel.SymbolRenderingMode
+    let renderingMode: JudoDocument.SymbolRenderingMode
 
     var body: some View {
         SwiftUI.Image(systemName: systemName)
@@ -161,13 +160,25 @@ private struct SystemImageView: View {
 }
 
 private struct SymbolRenderingModeViewModifier: ViewModifier {
-    let renderingMode: JudoModel.SymbolRenderingMode
+    let renderingMode: JudoDocument.SymbolRenderingMode
     func body(content: Content) -> some View {
         if #available(iOS 15.0, *) {
             content
-                .symbolRenderingMode(renderingMode.swiftUIValue)
+                .symbolRenderingMode(swiftUIValue)
         } else {
             content
+        }
+    }
+    
+    @available(iOS 15.0, macOS 12.0, *)
+    private var swiftUIValue: SwiftUI.SymbolRenderingMode {
+        switch renderingMode {
+        case .hierarchical:
+            return .hierarchical
+        case .monochrome:
+            return .monochrome
+        case .multicolor:
+            return .multicolor
         }
     }
 }

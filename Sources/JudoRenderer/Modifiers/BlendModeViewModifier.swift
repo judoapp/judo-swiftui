@@ -13,14 +13,61 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import JudoModel
+import JudoDocument
 import SwiftUI
 
 struct BlendModeViewModifier: SwiftUI.ViewModifier {
-    @ObservedObject var modifier: BlendModeModifier
+    var modifier: BlendModeModifier
 
     func body(content: Content) -> some SwiftUI.View {
         content
-            .blendMode(modifier.blendMode.swiftUIValue)
+            .blendMode(blendMode)
+    }
+    
+    private var blendMode: SwiftUI.BlendMode {
+        switch modifier.blendMode {
+        case .color:
+            return .color
+        case .colorBurn:
+            return .colorBurn
+        case .colorDodge:
+            return .colorDodge
+        case .darken:
+            return .darken
+        case .destinationOut:
+            return .destinationOut
+        case .destinationOver:
+            return .destinationOver
+        case .difference:
+            return .difference
+        case .exclusion:
+            return .exclusion
+        case .hardLight:
+            return .hardLight
+        case .hue:
+            return .hue
+        case .lighten:
+            return .lighten
+        case .luminosity:
+            return .luminosity
+        case .multiply:
+            return .multiply
+        case .normal:
+            return .normal
+        case .overlay:
+            return .overlay
+        case .plusDarker:
+            return .plusDarker
+        case .plusLighter:
+            return .plusLighter
+        case .saturation:
+            return .saturation
+        case .screen:
+            return .screen
+        case .softLight:
+            return .softLight
+        case .sourceAtop:
+            return .sourceAtop
+        }
     }
 }

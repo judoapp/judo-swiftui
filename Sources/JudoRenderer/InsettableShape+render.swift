@@ -13,12 +13,12 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import JudoModel
+import JudoDocument
 import SwiftUI
 
 extension SwiftUI.InsettableShape {
     @ViewBuilder
-    func apply(model: JudoModel.Shape) -> some SwiftUI.View {
+    func apply(model: JudoDocument.Shape) -> some SwiftUI.View {
         switch model.rasterizationStyle {
         case .fill:
             applyFill(model: model)
@@ -30,7 +30,7 @@ extension SwiftUI.InsettableShape {
     }
     
     @ViewBuilder
-    private func applyFill(model: JudoModel.Shape) -> some SwiftUI.View {
+    private func applyFill(model: JudoDocument.Shape) -> some SwiftUI.View {
         switch model.shapeStyle {
         case .flat(let colorRef):
             RealizeColor(
@@ -46,7 +46,7 @@ extension SwiftUI.InsettableShape {
     }
     
     @ViewBuilder
-    private func applyStroke(model: JudoModel.Shape) -> some SwiftUI.View {
+    private func applyStroke(model: JudoDocument.Shape) -> some SwiftUI.View {
         switch model.shapeStyle {
         case .flat(let colorRef):
             RealizeColor(
@@ -68,7 +68,7 @@ extension SwiftUI.InsettableShape {
     }
     
     @ViewBuilder
-    private func applyStrokeBorder(model: JudoModel.Shape) -> some SwiftUI.View {
+    private func applyStrokeBorder(model: JudoDocument.Shape) -> some SwiftUI.View {
         switch model.shapeStyle {
         case .flat(let colorRef):
             RealizeColor(

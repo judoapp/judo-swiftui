@@ -13,14 +13,13 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import JudoModel
+import JudoDocument
 import SwiftUI
 
 struct SecureFieldView: SwiftUI.View {
     @EnvironmentObject private var componentState: ComponentState
-    @EnvironmentObject private var localizations: DocumentLocalizations
 
-    @ObservedObject var secureField: JudoModel.SecureField
+    var secureField: JudoDocument.SecureFieldNode
 
     var body: some SwiftUI.View {
         RealizeText(secureField.title, localized: true) { title in

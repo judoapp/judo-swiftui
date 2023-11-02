@@ -13,11 +13,13 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import JudoModel
+import JudoDocument
 import SwiftUI
 
 /// Realize a GradientReference into a SwiftUI view that renders the the gradient, accounting for the DocumentGradients getting updated.
 struct RealizeGradient<Content>: SwiftUI.View where Content: SwiftUI.View {
+    @Environment(\.document) private var document
+    
     var gradientReference: GradientReference?
     var content: (GradientValue) -> Content
     
@@ -34,11 +36,12 @@ struct RealizeGradient<Content>: SwiftUI.View where Content: SwiftUI.View {
                 content(gradientValue)
             }
         case .document:
-            if let documentGradient = gradientReference?.documentGradient {
+            if let documentGradientID = gradientReference?.documentGradientID,
+                let documentGradient = document.gradients.first(where: { $0.id == documentGradientID }) {
                 ObserveDocumentGradient(documentGradient: documentGradient, content: content)
             }
         case nil:
-            content(.clear)
+            content(GradientValue(from: .zero, to: CGPoint(x: 1, y: 1), stops: []))
         }
     }
 }
@@ -47,17 +50,33 @@ private struct ObserveDocumentGradient<Content>: SwiftUI.View where Content: Swi
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.colorSchemeContrast) private var colorSchemeContrast
 
-    @ObservedObject var documentGradient: DocumentGradient
+    var documentGradient: DocumentGradient
     
     var content: (GradientValue) -> Content
     
     var body: some SwiftUI.View {
-        content(
-            documentGradient.resolveGradient(
-                darkMode: colorScheme == .dark,
-                highContrast: colorSchemeContrast == .increased
-            )
-        )
+        content(gradientValue)
+    }
+    
+    private var gradientValue: GradientValue {
+        let darkMode = colorScheme == .dark
+        let highContrast = colorSchemeContrast == .increased
+        
+        // prefer tightest match of selectors.  Fault backwards through tightest matches of selectors until getting to the base gradient.
+        let variant: GradientValue?
+        if darkMode, highContrast {
+            variant = documentGradient.variants[[.darkMode, .highContrast]]
+                ?? documentGradient.variants[[.darkMode]]
+                ?? documentGradient.variants[[.highContrast]]
+        } else if darkMode {
+            variant = documentGradient.variants[[.darkMode]]
+        } else if highContrast {
+            variant = documentGradient.variants[[.highContrast]]
+        } else {
+            variant = nil
+        }
+        
+        return variant ?? documentGradient.gradient
     }
 }
 
@@ -67,10 +86,16 @@ extension GradientValue {
             gradient: Gradient(
                 stops: stops
                     .sorted { $0.position < $1.position }
-                    .map { Gradient.Stop(color: $0.color.color, location: CGFloat($0.position)) }
+                    .map { Gradient.Stop(color: $0.color.swiftUIColor, location: CGFloat($0.position)) }
             ),
             startPoint: startPoint ?? .init(x: from.x, y: from.y),
             endPoint: endPoint ?? .init(x: to.x, y: to.y)
         )
+    }
+}
+
+private extension ColorValue {
+    var swiftUIColor: Color {
+        Color(.displayP3, red: red, green: green, blue: blue, opacity: alpha)
     }
 }

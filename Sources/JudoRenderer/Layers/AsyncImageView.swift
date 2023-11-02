@@ -15,7 +15,7 @@
 
 import SwiftUI
 import Combine
-import JudoModel
+import JudoDocument
 import Backport
 
 struct AsyncImageView: SwiftUI.View {
@@ -24,15 +24,15 @@ struct AsyncImageView: SwiftUI.View {
     @Environment(\.data) private var data
     @EnvironmentObject private var componentState: ComponentState
 
-    @ObservedObject private var image: JudoModel.AsyncImage
+    private var image: JudoDocument.AsyncImageNode
 
-    init(image: JudoModel.AsyncImage) {
+    init(image: JudoDocument.AsyncImageNode) {
         self.image = image
     }
 
     var body: some SwiftUI.View {
         if #available(iOS 15, *) {
-            SwiftUI.AsyncImage(url: URL(string: resolvedURL), scale: image.scale.scale) { phase in
+            SwiftUI.AsyncImage(url: URL(string: resolvedURL), scale: scale) { phase in
                 if let image = phase.image {
                     imageView
                         .environment(\.fetchedImage, image)
@@ -44,7 +44,7 @@ struct AsyncImageView: SwiftUI.View {
             }
             .id("\(resolvedURL) \(image.scale)")
         } else {
-            Backport.AsyncImage(url: URL(string: resolvedURL), scale: image.scale.scale) { phase in
+            Backport.AsyncImage(url: URL(string: resolvedURL), scale: scale) { phase in
                 if let image = phase.image {
                     image
                 } else if phase.error != nil {
@@ -56,17 +56,17 @@ struct AsyncImageView: SwiftUI.View {
             .id("\(resolvedURL) \(image.scale)")
         }
     }
-
+    
     @ViewBuilder
     private var imageView: some View {
-        ForEach(image.content.children.allOf(type: Layer.self)) {
-            LayerView(layer: $0)
+        ForEach(image.children[0].children, id: \.id) {
+            NodeView(node: $0)
         }
     }
     @ViewBuilder
     private var placeholderView: some View {
-        ForEach(image.placeholder.children.allOf(type: Layer.self)) {
-            LayerView(layer: $0)
+        ForEach(image.children[1].children, id: \.id) {
+            NodeView(node: $0)
         }
     }
 
@@ -75,5 +75,16 @@ struct AsyncImageView: SwiftUI.View {
             properties: componentState.properties,
             data: data
         )
+    }
+    
+    private var scale: CGFloat {
+        switch image.scale {
+        case .one:
+            return 1
+        case .two:
+            return 2
+        case .three:
+            return 3
+        }
     }
 }

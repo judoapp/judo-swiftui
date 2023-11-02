@@ -13,29 +13,24 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import JudoModel
+import JudoDocument
 import SwiftUI
 
 struct CollectionView: SwiftUI.View {
     @Environment(\.data) private var data
     @EnvironmentObject private var componentState: ComponentState
-    @EnvironmentObject private var documentState: DocumentData
-    @ObservedObject var collection: CollectionLayer
+    var collection: CollectionNode
 
     var body: some SwiftUI.View {
         if let items = items {
             ForEach(Array(zip(items.indices, items)), id: \.0) { index, item in
-                ForEach(layers) { layer in
-                    LayerView(layer: layer)
+                ForEach(collection.children, id: \.id) { node in
+                    NodeView(node: node)
                         .environment(\.data, item)
                 }
                 .contentShape(SwiftUI.Rectangle())
             }
         }
-    }
-
-    private var layers: [Layer] {
-        collection.children.allOf(type: Layer.self)
     }
 
     private var items: [Any]? {
@@ -46,8 +41,8 @@ struct CollectionView: SwiftUI.View {
     }
 }
 
-private extension CollectionLayer {
-    func items(data: Any?, properties: MainComponent.Properties) -> [Any] {
+private extension CollectionNode {
+    func items(data: Any?, properties: Properties) -> [Any] {
         guard var result = JSONSerialization.value(forKeyPath: keyPath, data: data, properties: properties) as? [Any] else {
             return []
         }

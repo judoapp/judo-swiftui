@@ -13,14 +13,23 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import JudoModel
+import JudoDocument
 import SwiftUI
 
 struct CapsuleView: SwiftUI.View {
-    @ObservedObject var capsule: JudoModel.Capsule
+    var capsule: JudoDocument.CapsuleNode
 
     var body: some SwiftUI.View {
-        SwiftUI.Capsule(style: capsule.cornerStyle.swiftUIValue)
+        SwiftUI.Capsule(style: style)
             .apply(model: capsule)
+    }
+    
+    var style: SwiftUI.RoundedCornerStyle {
+          switch capsule.cornerStyle {
+          case .circular:
+              return .circular
+          case .continuous:
+              return .continuous
+          }
     }
 }

@@ -13,14 +13,45 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import JudoModel
+import JudoDocument
 import SwiftUI
 
 struct KeyboardTypeViewModifier: SwiftUI.ViewModifier {
-    @ObservedObject var modifier: KeyboardTypeModifier
+    var modifier: KeyboardTypeModifier
 
     func body(content: Content) -> some SwiftUI.View {
         content
-            .keyboardType(modifier.keyboardType.uiKitValue)
+            .keyboardType(keyboardType)
+    }
+    
+    private var keyboardType: UIKit.UIKeyboardType {
+        switch modifier.keyboardType {
+        case .default:
+            return .default
+        case .asciiCapable:
+            return .asciiCapable
+        case .numbersAndPunctuation:
+            return .numbersAndPunctuation
+        case .URL:
+            return .URL
+        case .numberPad:
+            return .numberPad
+        case .phonePad:
+            return .phonePad
+        case .namePhonePad:
+            return .namePhonePad
+        case .emailAddress:
+            return .emailAddress
+        case .decimalPad:
+            return .decimalPad
+        case .twitter:
+            return .twitter
+        case .webSearch:
+            return .webSearch
+        case .asciiCapableNumberPad:
+            return .asciiCapableNumberPad
+        case .alphabet:
+            return .alphabet
+        }
     }
 }

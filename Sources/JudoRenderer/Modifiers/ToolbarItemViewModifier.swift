@@ -13,12 +13,12 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import JudoModel
+import JudoDocument
 import SwiftUI
 
 struct ToolbarItemViewModifier: SwiftUI.ViewModifier {
 
-    @ObservedObject var modifier: ToolbarItemModifier
+    var modifier: ToolbarItemModifier
 
     func body(content: Content) -> some SwiftUI.View {
         content
@@ -88,18 +88,23 @@ private struct ModernToolbarItemButtonView: SwiftUI.View {
         }
     }
 
-    private func actions(_ actions: [JudoModel.Action]) {
+    private func actions(_ actions: [JudoDocument.Action]) {
         for action in actions {
             switch action {
-            case is JudoModel.DismissAction:
+            case is JudoDocument.DismissAction:
                 dismiss()
 
-            case let action as JudoModel.OpenURLAction:
-                if let url = URL(string: action.url.description) {
+            case let action as JudoDocument.OpenURLAction:
+                let urlString = action.url.forceResolve(
+                    properties: componentState.properties,
+                    data: data
+                )
+                
+                if let url = URL(string: urlString) {
                     openURL(url)
                 }
 
-            case is JudoModel.RefreshAction:
+            case is JudoDocument.RefreshAction:
                 Task {
                     await refresh?()
                 }
@@ -166,18 +171,23 @@ private struct ToolbarItemButtonView: SwiftUI.View {
         }
     }
 
-    private func actions(_ actions: [JudoModel.Action]) {
+    private func actions(_ actions: [JudoDocument.Action]) {
         for action in actions {
             switch action {
-            case is JudoModel.DismissAction:
+            case is JudoDocument.DismissAction:
                 presentationMode.wrappedValue.dismiss()
 
-            case let action as JudoModel.OpenURLAction:
-                if let url = URL(string: action.url.description) {
+            case let action as JudoDocument.OpenURLAction:
+                let urlString = action.url.forceResolve(
+                    properties: componentState.properties,
+                    data: data
+                )
+                
+                if let url = URL(string: urlString) {
                     openURL(url)
                 }
 
-            case is JudoModel.RefreshAction:
+            case is JudoDocument.RefreshAction:
                 logger.info("Refresh is unavailable on iOS 14")
                 assertionFailure("Refresh is unavailable on iOS 14")
                 break
@@ -226,7 +236,7 @@ private struct ToolbarItemButtonView: SwiftUI.View {
     }
 }
 
-private func processPropertyAction(_ action: JudoModel.PropertyAction, componentState: ComponentState, data: Any?) {
+private func processPropertyAction(_ action: JudoDocument.PropertyAction, componentState: ComponentState, data: Any?) {
     guard let propertyName = action.propertyName else {
         return
     }

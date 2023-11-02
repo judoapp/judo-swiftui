@@ -13,24 +13,33 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import JudoModel
+import JudoDocument
 import SwiftUI
 
 struct RoundedRectangleView: SwiftUI.View {
     @EnvironmentObject private var componentState: ComponentState
     @Environment(\.data) private var data
 
-    @ObservedObject var roundedRectangle: JudoModel.RoundedRectangle
+    var roundedRectangle: JudoDocument.RoundedRectangleNode
 
     var body: some SwiftUI.View {
-        SwiftUI.RoundedRectangle(
-            cornerRadius: cornerRadius(roundedRectangle.cornerRadius),
-            style: roundedRectangle.cornerStyle.swiftUIValue
-        )
-        .apply(model: roundedRectangle)
+        SwiftUI.RoundedRectangle(cornerRadius: cornerRadius, style: style)
+            .apply(model: roundedRectangle)
     }
 
-    private func cornerRadius(_ cornerRadius: Variable<Double>) -> Double {
-        cornerRadius.forceResolve(properties: componentState.properties, data: data)
+    private var cornerRadius: Double {
+        roundedRectangle.cornerRadius.forceResolve(
+            properties: componentState.properties,
+            data: data
+        )
+    }
+    
+    private var style: SwiftUI.RoundedCornerStyle {
+          switch roundedRectangle.cornerStyle {
+          case .circular:
+              return .circular
+          case .continuous:
+              return .continuous
+          }
     }
 }

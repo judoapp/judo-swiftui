@@ -13,16 +13,16 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import JudoModel
+import JudoDocument
 import SwiftUI
 
 struct MaskViewModifier: SwiftUI.ViewModifier {
-    @ObservedObject var modifier: JudoModel.MaskModifier
+    var modifier: JudoDocument.MaskModifier
 
     func body(content: Content) -> some SwiftUI.View {
         if #available(macOS 12.0, iOS 15.0, *) {
             content
-                .mask(alignment: self.modifier.alignment.swiftUIValue) {
+                .mask(alignment: alignment) {
                     self.content
                 }
         } else {
@@ -33,13 +33,42 @@ struct MaskViewModifier: SwiftUI.ViewModifier {
     
     @ViewBuilder private var content: some SwiftUI.View {
         SwiftUI.ZStack {
-            ForEach(orderedLayers) {
-                LayerView(layer: $0)
+            ForEach(orderedNodes, id: \.id) {
+                NodeView(node: $0)
             }
         }
     }
 
-    private var orderedLayers: [Layer] {
-        modifier.children.reversed().allOf(type: Layer.self)
+    private var orderedNodes: [Node] {
+        modifier.children.reversed()
+    }
+    
+    private var alignment: SwiftUI.Alignment {
+        switch modifier.alignment {
+        case .topLeading:
+            return .topLeading
+        case .top:
+            return .top
+        case .topTrailing:
+            return .topTrailing
+        case .leading:
+            return .leading
+        case .center:
+            return .center
+        case .trailing:
+            return .trailing
+        case .bottomLeading:
+            return .bottomLeading
+        case .bottom:
+            return .bottom
+        case .bottomTrailing:
+            return .bottomTrailing
+        case .firstTextBaselineLeading:
+            return .leadingFirstTextBaseline
+        case .firstTextBaseline:
+            return .centerFirstTextBaseline
+        case .firstTextBaselineTrailing:
+            return .trailingFirstTextBaseline
+        }
     }
 }

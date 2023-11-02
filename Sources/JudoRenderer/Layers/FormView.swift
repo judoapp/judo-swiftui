@@ -13,16 +13,16 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import JudoModel
+import JudoDocument
 import SwiftUI
 
 struct FormView: SwiftUI.View {
-    @ObservedObject var form: JudoModel.Form
+    var form: JudoDocument.FormNode
 
     var body: some SwiftUI.View {
         SwiftUI.Form {
-            ForEach(form.children.allOf(type: Layer.self)) {
-                LayerView(layer: $0)
+            ForEach(form.children, id: \.id) {
+                NodeView(node: $0)
             }
         }
     }

@@ -13,20 +13,20 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import JudoModel
+import JudoDocument
 import SwiftUI
 
 struct AspectRatioViewModifier: SwiftUI.ViewModifier {
     @EnvironmentObject private var componentState: ComponentState
     @Environment(\.data) private var data
 
-    @ObservedObject var modifier: AspectRatioModifier
+    var modifier: AspectRatioModifier
 
     func body(content: Content) -> some SwiftUI.View {
         content
             .aspectRatio(
                 ratio.map { CGFloat($0) },
-                contentMode: modifier.contentMode.swiftUIValue
+                contentMode: contentMode
             )
     }
     
@@ -35,5 +35,14 @@ struct AspectRatioViewModifier: SwiftUI.ViewModifier {
             properties: componentState.properties,
             data: data
         )
+    }
+    
+    private var contentMode: SwiftUI.ContentMode {
+        switch modifier.contentMode {
+        case .fill:
+            return .fill
+        case .fit:
+            return .fit
+        }
     }
 }

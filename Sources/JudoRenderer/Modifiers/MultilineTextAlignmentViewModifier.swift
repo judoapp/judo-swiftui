@@ -13,13 +13,24 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import JudoModel
+import JudoDocument
 import SwiftUI
 
 struct MultilineTextAlignmentViewModifier: SwiftUI.ViewModifier {
-    @ObservedObject var modifier: MultiLineTextAlignmentModifier
+    var modifier: MultiLineTextAlignmentModifier
 
     func body(content: Content) -> some SwiftUI.View {
-        content.multilineTextAlignment(modifier.textAlignment.swiftUIValue)
+        content.multilineTextAlignment(textAlignment)
+    }
+    
+    private var textAlignment: SwiftUI.TextAlignment {
+        switch modifier.textAlignment {
+        case .center:
+            return .center
+        case .leading:
+            return .leading
+        case .trailing:
+            return .trailing
+        }
     }
 }

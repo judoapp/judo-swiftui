@@ -14,16 +14,27 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import SwiftUI
-import JudoModel
+import JudoDocument
 
 struct VStackView: SwiftUI.View {
-    @ObservedObject var stack: JudoModel.VStack
+    var stack: JudoDocument.VStackNode
     
     var body: some SwiftUI.View {
-        SwiftUI.VStack(alignment: stack.alignment.swiftUIValue, spacing: stack.spacing) {
-            ForEach(stack.children.allOf(type: Layer.self)) {
-                LayerView(layer: $0)
+        SwiftUI.VStack(alignment: alignment, spacing: stack.spacing) {
+            ForEach(stack.children, id: \.id) {
+                NodeView(node: $0)
             }
+        }
+    }
+    
+    private var alignment: SwiftUI.HorizontalAlignment {
+        switch stack.alignment {
+        case .center:
+            return .center
+        case .leading:
+            return .leading
+        case .trailing:
+            return .trailing
         }
     }
 }

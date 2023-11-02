@@ -13,24 +13,24 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import JudoModel
+import JudoDocument
 import SwiftUI
 
 struct SectionView: SwiftUI.View {
-    @ObservedObject var section: JudoModel.Section
+    var section: JudoDocument.SectionNode
 
     var body: some View {
         SwiftUI.Section {
-            ForEach(section.content.children.allOf(type: Layer.self)) {
-                LayerView(layer: $0)
+            ForEach(section.children[0].children, id: \.id) {
+                NodeView(node: $0)
             }
         } header: {
-            ForEach(section.header.children.allOf(type: Layer.self)) {
-                LayerView(layer: $0)
+            ForEach(section.children[1].children, id: \.id) {
+                NodeView(node: $0)
             }
         } footer: {
-            ForEach(section.footer.children.allOf(type: Layer.self)) {
-                LayerView(layer: $0)
+            ForEach(section.children[2].children, id: \.id) {
+                NodeView(node: $0)
             }
         }
     }

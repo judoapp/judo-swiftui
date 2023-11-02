@@ -13,15 +13,14 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import JudoModel
+import JudoDocument
 import SwiftUI
 
 struct StepperView: SwiftUI.View {
     @EnvironmentObject private var componentState: ComponentState
     @Environment(\.data) private var data
-    @EnvironmentObject private var localizations: DocumentLocalizations
 
-    @ObservedObject var stepper: JudoModel.Stepper
+    var stepper: JudoDocument.StepperNode
 
     var body: some SwiftUI.View {
         RealizeText(stepper.label) { label in

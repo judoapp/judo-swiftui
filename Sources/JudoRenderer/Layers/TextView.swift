@@ -15,16 +15,17 @@
 
 import Foundation
 import SwiftUI
-import JudoModel
+import JudoDocument
 
 struct TextView: SwiftUI.View {
     @Environment(\.data) private var data
     @Environment(\.isBold) private var isBold
     @Environment(\.isItalic) private var isItalic
+    @Environment(\.isUnderlined) private var isUnderlined
 
-    @ObservedObject private var text: JudoModel.Text
+    private var text: JudoDocument.TextNode
 
-    init(text: JudoModel.Text) {
+    init(text: JudoDocument.TextNode) {
         self.text = text
     }
 
@@ -40,13 +41,35 @@ struct TextView: SwiftUI.View {
         if #available(iOS 16, macOS 13, *) {
             SwiftUI.Text(string)
         } else {
-            if isBold && isItalic {
-                SwiftUI.Text(string).bold().italic()
-            } else if isBold {
-                SwiftUI.Text(string).bold()
-            } else if isItalic {
-                SwiftUI.Text(string).italic()
-            } else {
+
+            switch (isBold, isItalic, isUnderlined.isActive) {
+            case (true, true, true):
+                SwiftUI.Text(string)
+                    .bold()
+                    .italic()
+                    .underline(isUnderlined.isActive, color: isUnderlined.color)
+            case (true, true, false):
+                SwiftUI.Text(string)
+                    .bold()
+                    .italic()
+            case (true, false, true):
+                SwiftUI.Text(string)
+                    .bold()
+                    .underline(isUnderlined.isActive, color: isUnderlined.color)
+            case (false, true, true):
+                SwiftUI.Text(string)
+                    .italic()
+                    .underline(isUnderlined.isActive, color: isUnderlined.color)
+            case (true, false, false):
+                SwiftUI.Text(string)
+                    .bold()
+            case (false, true, false):
+                SwiftUI.Text(string)
+                    .italic()
+            case (false, false, true):
+                SwiftUI.Text(string)
+                    .underline(isUnderlined.isActive, color: isUnderlined.color)
+            case (false, false, false):
                 SwiftUI.Text(string)
             }
         }

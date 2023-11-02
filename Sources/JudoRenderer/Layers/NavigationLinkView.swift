@@ -13,28 +13,28 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import JudoModel
+import JudoDocument
 import SwiftUI
 
 struct NavigationLinkView: SwiftUI.View {
     @Environment(\.data) private var data
     @Environment(\.fetchedImage) private var fetchedImage
-    @EnvironmentObject private var documentState: DocumentData
+    @Environment(\.document) private var document
     @EnvironmentObject private var componentState: ComponentState
 
-    @ObservedObject var navigationLink: JudoModel.NavigationLink
+    var navigationLink: JudoDocument.NavigationLinkNode
     var body: some SwiftUI.View {
         NavigationLink {
-            ForEach(navigationLink.destination.children.allOf(type: Layer.self)) {
-                LayerView(layer: $0)
+            ForEach(navigationLink.children[1].children, id: \.id) {
+                NodeView(node: $0)
             }
             .environment(\.data, data)
             .environment(\.fetchedImage, fetchedImage)
-            .environmentObject(documentState)
+            .environment(\.document, document)
             .environmentObject(componentState)
         } label: {
-            ForEach(navigationLink.label.children.allOf(type: Layer.self)) {
-                LayerView(layer: $0)
+            ForEach(navigationLink.children[0].children, id: \.id) {
+                NodeView(node: $0)
             }
         }
     }

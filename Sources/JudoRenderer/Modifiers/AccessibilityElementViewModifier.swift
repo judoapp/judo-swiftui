@@ -13,14 +13,25 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import JudoModel
+import JudoDocument
 import SwiftUI
 
 struct AccessibilityElementViewModifier: SwiftUI.ViewModifier {
-    @ObservedObject var modifier: AccessibilityElementModifier
+    var modifier: AccessibilityElementModifier
 
     func body(content: Content) -> some SwiftUI.View {
         content
-            .accessibilityElement(children: modifier.childBehaviour.swiftUIValue)
+            .accessibilityElement(children: children)
+    }
+    
+    private var children: SwiftUI.AccessibilityChildBehavior {
+        switch modifier.childBehaviour {
+        case .combine:
+            return .combine
+        case .contain:
+            return .contain
+        case .ignore:
+            return .ignore
+        }
     }
 }

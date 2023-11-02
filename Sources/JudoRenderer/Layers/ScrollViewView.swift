@@ -13,16 +13,16 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import JudoModel
+import JudoDocument
 import SwiftUI
 
 struct ScrollViewView: SwiftUI.View {
-    @ObservedObject var scrollView: JudoModel.ScrollView
+    var scrollView: JudoDocument.ScrollViewNode
     
     var body: some SwiftUI.View {
         SwiftUI.ScrollView(axis, showsIndicators: scrollView.showsIndicators) {
-            ForEach(scrollView.children.allOf(type: Layer.self)) {
-                LayerView(layer: $0)
+            ForEach(scrollView.children, id: \.id) {
+                NodeView(node: $0)
             }
         }
     }

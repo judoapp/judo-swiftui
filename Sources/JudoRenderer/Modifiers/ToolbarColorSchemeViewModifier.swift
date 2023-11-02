@@ -13,12 +13,12 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import JudoModel
+import JudoDocument
 import SwiftUI
 import Introspect
 
 struct ToolbarColorSchemeViewModifier: SwiftUI.ViewModifier {
-    @ObservedObject var modifier: ToolbarColorSchemeModifier
+    var modifier: ToolbarColorSchemeModifier
 
     func body(content: Content) -> some SwiftUI.View {
         if #available(iOS 16.0, *) {
@@ -54,5 +54,16 @@ struct ToolbarColorSchemeViewModifier: SwiftUI.ViewModifier {
                 }
         }
 
+    }
+}
+
+private extension JudoDocument.ColorScheme {
+    var swiftUIValue: SwiftUI.ColorScheme {
+        switch self {
+        case .dark:
+            return .dark
+        case .light:
+            return .light
+        }
     }
 }

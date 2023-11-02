@@ -13,11 +13,11 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import JudoModel
+import JudoDocument
 import SwiftUI
 
 struct ToggleStyleViewModifier: SwiftUI.ViewModifier {
-    @ObservedObject var modifier: ToggleStyleModifier
+    var modifier: ToggleStyleModifier
 
     func body(content: Content) -> some SwiftUI.View {
         switch modifier.toggleStyle {

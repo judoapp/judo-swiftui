@@ -13,13 +13,13 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import JudoModel
+import JudoDocument
 import SwiftUI
 
 struct RealizeText<Content>: SwiftUI.View where Content: SwiftUI.View {
-    @EnvironmentObject private var localizations: DocumentLocalizations
     @EnvironmentObject private var componentState: ComponentState
     @Environment(\.data) private var data
+    @Environment(\.document) private var document
 
     private let value: Variable<String>
     private let content: (String) -> Content
@@ -41,7 +41,7 @@ struct RealizeText<Content>: SwiftUI.View where Content: SwiftUI.View {
         localize(
             key: evaluatedValue,
             locale: Locale.preferredLocale,
-            localizations: localizations
+            strings: document.strings
         ) ?? evaluatedValue
     }
 
@@ -57,7 +57,7 @@ struct RealizeText<Content>: SwiftUI.View where Content: SwiftUI.View {
     }
 }
 
-func localize(key: String?, locale: Locale?, localizations: DocumentLocalizations) -> String? {
+func localize(key: String?, locale: Locale?, strings: StringsCatalog) -> String? {
 
     // A simple (and not complete) attempt at RFC 4647 basic filtering.
     guard let localeIdentifier = locale?.identifier else {
@@ -68,19 +68,19 @@ func localize(key: String?, locale: Locale?, localizations: DocumentLocalization
         return key
     }
 
-    if let matchedLocale = localizations[localeIdentifier], let translation = matchedLocale[key] {
+    if let matchedLocale = strings[localeIdentifier], let translation = matchedLocale[key] {
         return translation
     }
 
     if #available(iOS 16, *) {
         if  let languageCode = Locale(identifier: localeIdentifier).language.languageCode?.identifier,
-            let matchedLocale = localizations.fuzzyMatch(key: languageCode),
+            let matchedLocale = strings.table(for: languageCode),
             let translation = matchedLocale[key] {
             return translation
         }
     } else {
         if  let languageCode = Locale(identifier: localeIdentifier).languageCode,
-            let matchedLocale = localizations.fuzzyMatch(key: languageCode),
+            let matchedLocale = strings.table(for: languageCode),
             let translation = matchedLocale[key] {
             return translation
         }

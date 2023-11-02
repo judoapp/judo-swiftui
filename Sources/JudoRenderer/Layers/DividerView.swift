@@ -13,11 +13,11 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import JudoModel
+import JudoDocument
 import SwiftUI
 
 struct DividerView: SwiftUI.View {
-    @ObservedObject var divider: JudoModel.Divider
+    var divider: JudoDocument.DividerNode
     
     var body: some SwiftUI.View {
         SwiftUI.Divider()

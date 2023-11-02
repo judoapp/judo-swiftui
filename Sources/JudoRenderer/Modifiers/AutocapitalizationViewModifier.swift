@@ -13,14 +13,27 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import JudoModel
+import JudoDocument
 import SwiftUI
 
 struct AutocapitalizationViewModifier: SwiftUI.ViewModifier {
-    @ObservedObject var modifier: AutocapitalizationModifier
+    var modifier: AutocapitalizationModifier
 
     func body(content: Content) -> some SwiftUI.View {
         content
-            .autocapitalization(modifier.autocapitalizationType.uiKitValue)
+            .autocapitalization(autocapitalizationType)
+    }
+    
+    private var autocapitalizationType: UIKit.UITextAutocapitalizationType {
+        switch modifier.autocapitalizationType {
+        case .none:
+            return .none
+        case .words:
+            return .words
+        case .sentences:
+            return .sentences
+        case .allCharacters:
+            return .allCharacters
+        }
     }
 }

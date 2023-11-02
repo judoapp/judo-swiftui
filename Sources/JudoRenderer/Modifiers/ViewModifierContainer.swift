@@ -13,11 +13,11 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import JudoModel
+import JudoDocument
 import SwiftUI
 
 struct ViewModifierContainer: SwiftUI.ViewModifier {
-    @ObservedObject var layer: Layer
+    var node: Node
     
     func body(content: Content) -> some SwiftUI.View {
         switch view.count {
@@ -104,15 +104,14 @@ struct ViewModifierContainer: SwiftUI.ViewModifier {
     }
     
     private var view: [JudoViewModifier] {
-        layer.modifiers.map {
-            JudoViewModifier(layer: layer, modifier: $0)
-        }
+        node.children
+            .compactMap { $0 as? Modifier }
+            .map { JudoViewModifier(modifier: $0) }
     }
 }
 
 private struct JudoViewModifier: SwiftUI.ViewModifier {
-    var layer: Layer
-    var modifier: JudoModifier
+    var modifier: Modifier
 
     func body(content: Content) -> some SwiftUI.View {
         switch modifier {
@@ -131,7 +130,7 @@ private struct JudoViewModifier: SwiftUI.ViewModifier {
         case let modifier as AccessibilitySortPriorityModifier:
             content.modifier(AccessibilitySortPriorityViewModifier(modifier: modifier))
 
-        case let modifier as JudoModel.AspectRatioModifier:
+        case let modifier as JudoDocument.AspectRatioModifier:
             content.modifier(AspectRatioViewModifier(modifier: modifier))
 
         case let modifier as AutocapitalizationModifier:
@@ -151,6 +150,9 @@ private struct JudoViewModifier: SwiftUI.ViewModifier {
 
         case let modifier as ButtonStyleModifier:
             content.modifier(ButtonStyleViewModifier(modifier: modifier))
+
+        case let modifier as ContainerRelativeFrameModifier:
+            content.modifier(ContainerRelativeFrameViewModifier(modifier: modifier))
 
         case let modifier as ClippedModifier:
             content.modifier(ClippedViewModifier(modifier: modifier))
@@ -236,6 +238,12 @@ private struct JudoViewModifier: SwiftUI.ViewModifier {
         case let modifier as ScaledToFitModifier:
             content.modifier(ScaledToFitViewModifier(modifier: modifier))
 
+        case let modifier as ScrollTargetBehaviorModifier:
+            content.modifier(ScrollTargetBehaviorViewModifier(modifier: modifier))
+
+        case let modifier as ScrollTargetLayoutModifier:
+            content.modifier(ScrollTargetLayoutViewModifier(modifier: modifier))
+
         case let modifier as ShadowModifier:
             content.modifier(ShadowViewModifier(modifier: modifier))
 
@@ -274,9 +282,11 @@ private struct JudoViewModifier: SwiftUI.ViewModifier {
 
         case let modifier as ToolbarItemModifier:
             content.modifier(ToolbarItemViewModifier(modifier: modifier))
-            
+
+        case let modifier as UnderlineModifier:
+            content.modifier(UnderlineViewModifier(modifier: modifier))
+
         default:
-            // assertionFailure("Unable to find view modifier for \(modifier)")
             content
         }
     }

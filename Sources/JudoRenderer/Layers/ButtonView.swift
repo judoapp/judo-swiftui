@@ -13,17 +13,17 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import JudoModel
+import JudoDocument
 import SwiftUI
 
 struct ButtonView: SwiftUI.View {
-    @ObservedObject var button: JudoModel.Button
+    var button: JudoDocument.ButtonNode
 
     var body: some SwiftUI.View {
         if #available(iOS 15.0, *) {
             ButtonWithRole(
                 actions: button.actions,
-                role: button.role.swiftUIValue,
+                role: role,
                 content: content
             )
         } else {
@@ -35,8 +35,20 @@ struct ButtonView: SwiftUI.View {
     }
 
     private var content: some SwiftUI.View {
-        ForEach(button.children.allOf(type: Layer.self)) {
-            LayerView(layer: $0)
+        ForEach(button.children, id: \.id) {
+            NodeView(node: $0)
+        }
+    }
+    
+    @available(iOS 15.0, *)
+    public var role: SwiftUI.ButtonRole? {
+        switch button.role {
+        case .none:
+            return .none
+        case .cancel:
+            return .cancel
+        case .destructive:
+            return .destructive
         }
     }
 }
@@ -55,10 +67,10 @@ private struct ButtonWithoutRole<Content: SwiftUI.View>: SwiftUI.View {
         SwiftUI.Button {
             for action in actions {
                 switch action {
-                case is JudoModel.DismissAction:
+                case is JudoDocument.DismissAction:
                     presentationMode.wrappedValue.dismiss()
 
-                case let action as JudoModel.OpenURLAction:
+                case let action as JudoDocument.OpenURLAction:
                     let urlString = action.url.forceResolve(
                         properties: componentState.properties,
                         data: data
@@ -68,7 +80,7 @@ private struct ButtonWithoutRole<Content: SwiftUI.View>: SwiftUI.View {
                         openURL(url)
                     }
 
-                case is JudoModel.RefreshAction:
+                case is JudoDocument.RefreshAction:
                     logger.info("Refresh is unavailable on iOS 14")
                     assertionFailure("Refresh is unavailable on iOS 14")
                     break
@@ -200,16 +212,20 @@ private struct ButtonWithRole<Content: SwiftUI.View>: SwiftUI.View {
         SwiftUI.Button(role: role) {
             for action in actions {
                 switch action {
-                case is JudoModel.DismissAction:
+                case is JudoDocument.DismissAction:
                     dismiss()
 
-                case let action as JudoModel.OpenURLAction:
-                    if let urlString = action.url.resolve(properties: componentState.properties, data: data),
-                       let url = URL(string: urlString) {
+                case let action as JudoDocument.OpenURLAction:
+                    let urlString = action.url.forceResolve(
+                        properties: componentState.properties,
+                        data: data
+                    )
+                    
+                    if let url = URL(string: urlString) {
                         openURL(url)
                     }
 
-                case is JudoModel.RefreshAction:
+                case is JudoDocument.RefreshAction:
                     Task {
                         await refresh?()
                     }

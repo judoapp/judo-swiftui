@@ -13,13 +13,14 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import JudoModel
+import JudoDocument
 import SwiftUI
 
 /// Realize a ColorVariants into a UIColor or SwiftUI.Color.
 struct RealizeColor<Content>: SwiftUI.View where Content: SwiftUI.View {
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.colorSchemeContrast) private var colorSchemeContrast
+    @Environment(\.document) private var document
 
     private var colorReference: ColorReference?
     private var swiftUIContent: ((Color) -> Content)? = nil
@@ -47,7 +48,7 @@ struct RealizeColor<Content>: SwiftUI.View where Content: SwiftUI.View {
             return AnyView(EmptyView())
         }
 
-        if colorReference.referenceType == .system, let systemName = colorReference.systemColorName {
+        if colorReference.referenceType == .system, let systemName = colorReference.colorName {
             if let swiftUIContent = swiftUIContent {
                 return AnyView(swiftUIContent(Color.named(systemName)))
             }
@@ -56,7 +57,9 @@ struct RealizeColor<Content>: SwiftUI.View where Content: SwiftUI.View {
             }
         }
 
-        if colorReference.referenceType == .document, let documentColor = colorReference.documentColor {
+        if colorReference.referenceType == .document,
+           let documentColorID = colorReference.documentColorID,
+           let documentColor = document.colors.first(where: { $0.id == documentColorID }) {
             if let swiftUIContent = swiftUIContent {
                 return AnyView(ObserveDocumentColor(documentColor, content: swiftUIContent))
             }
@@ -67,7 +70,7 @@ struct RealizeColor<Content>: SwiftUI.View where Content: SwiftUI.View {
 
         if colorReference.referenceType == .custom, let customColor = colorReference.customColor {
             if let swiftUIContent = swiftUIContent {
-                return AnyView(swiftUIContent(customColor.color))
+                return AnyView(swiftUIContent(customColor.swiftUIColor))
             }
             if let cocoaContent = cocoaContent {
                 return AnyView(cocoaContent(customColor.uiColor))
@@ -101,7 +104,7 @@ private struct ObserveDocumentColor<Content>: SwiftUI.View where Content: SwiftU
     var swiftUIContent: ((Color) -> Content)? = nil
     var cocoaContent: ((UIColor) -> Content)? = nil
 
-    @ObservedObject var documentColor: DocumentColor
+    var documentColor: DocumentColor
 
     var body: some SwiftUI.View {
         if let swiftUIContent = swiftUIContent {
@@ -110,7 +113,7 @@ private struct ObserveDocumentColor<Content>: SwiftUI.View where Content: SwiftU
                     documentColor.resolveColor(
                         darkMode: colorScheme == .dark,
                         highContrast: colorSchemeContrast == .increased
-                    ).color
+                    ).swiftUIColor
                 )
             )
         }
@@ -129,6 +132,10 @@ private struct ObserveDocumentColor<Content>: SwiftUI.View where Content: SwiftU
 }
 
 private extension ColorValue {
+    var swiftUIColor: Color {
+        Color(.displayP3, red: red, green: green, blue: blue, opacity: alpha)
+    }
+    
     var uiColor: UIColor {
         UIColor(displayP3Red: CGFloat(red), green: CGFloat(green), blue: CGFloat(blue), alpha: CGFloat(alpha))
     }

@@ -14,18 +14,18 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import Combine
-import JudoModel
+import JudoDocument
 import OrderedCollections
 import SwiftUI
 import os.log
 
-/// A SwiftUI view for rendering a `MainComponent`.
+/// A SwiftUI view for rendering a `MainComponentNode`.
 struct MainComponentView: SwiftUI.View {
-    @ObservedObject var component: MainComponent
+    var component: MainComponentNode
     @StateObject private var componentState: ComponentState
 
-    /// Initialize with MainComponent and user provided bindings (parameters)
-    init(component: MainComponent, userBindings: [String: ComponentBinding]) {
+    /// Initialize with MainComponentNode and user provided bindings (parameters)
+    init(component: MainComponentNode, userBindings: [String: ComponentBinding]) {
         self.component = component
         self._componentState = StateObject(
             wrappedValue: ComponentState(
@@ -38,20 +38,20 @@ struct MainComponentView: SwiftUI.View {
     }
         
     var body: some SwiftUI.View {
-        ForEach(orderedLayers) { layer in
-            LayerView(layer: layer)
+        ForEach(orderedNodes, id: \.id) { node in
+            NodeView(node: node)
         }
         .modifier(
             /// On iOS 12 when content is wrapped in ZStack
             /// the TabView does not properly expand to full screen
             /// To workaround, we only wrap in ZStack if there's
-            /// more than one layer on the root of the component
-            ZStackContentIfNeededModifier(for: orderedLayers)
+            /// more than one node on the root of the component
+            ZStackContentIfNeededModifier(for: orderedNodes)
         )
         .environmentObject(componentState)
     }
     
-    private var orderedLayers: [Layer] {
-        component.children.allOf(type: Layer.self).reversed()
+    private var orderedNodes: [Node] {
+        component.children.reversed()
     }
 }

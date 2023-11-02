@@ -13,11 +13,11 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import JudoModel
+import JudoDocument
 import SwiftUI
 
 struct SubmitLabelViewModifier: SwiftUI.ViewModifier {
-    @ObservedObject var modifier: SubmitLabelModifier
+    var modifier: SubmitLabelModifier
 
     func body(content: Content) -> some SwiftUI.View {
         content
@@ -27,14 +27,38 @@ struct SubmitLabelViewModifier: SwiftUI.ViewModifier {
 }
 
 private struct SwiftUISubmitLabelModifier: SwiftUI.ViewModifier {
-    let submitLabel: JudoModel.SubmitLabel
+    let submitLabel: JudoDocument.SubmitLabel
 
     func body(content: Content) -> some View {
         if #available(iOS 15.0, *) {
             content
-                .submitLabel(submitLabel.swiftUIValue)
+                .submitLabel(swiftUIValue)
         } else {
             content
+        }
+    }
+    
+    @available(iOS 15.0, macOS 12.0, *)
+    private var swiftUIValue: SwiftUI.SubmitLabel {
+        switch submitLabel {
+        case .continue:
+            return .continue
+        case .done:
+            return .done
+        case .go:
+            return .go
+        case .join:
+            return .join
+        case .next:
+            return .next
+        case .return:
+            return .return
+        case .route:
+            return .route
+        case .search:
+            return .search
+        case .send:
+            return .send
         }
     }
 }

@@ -14,7 +14,7 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import Combine
-import JudoModel
+import JudoDocument
 import SwiftUI
 
 struct DataSourceView: SwiftUI.View {
@@ -23,11 +23,11 @@ struct DataSourceView: SwiftUI.View {
     @State private var fetchedData: Any?
     @State private var refreshTimer: Timer?
 
-    @ObservedObject var dataSource: DataSource
+    var dataSource: DataSourceNode
 
     var body: some SwiftUI.View {
         if fetchedData == nil {
-            layersView
+            nodesView
                 .environment(\.data, fetchedData)
                 .onReceive(dataPublisher) { result in
                     guard case let Result.success(fetchedData) = result else {
@@ -38,21 +38,21 @@ struct DataSourceView: SwiftUI.View {
                 }
         } else {
             if #available(iOS 15.0, *) {
-                layersView
+                nodesView
                     .environment(\.data, fetchedData)
                     .refreshable {
                         await refresh()
                     }
             } else {
-                layersView
+                nodesView
                     .environment(\.data, fetchedData)
             }
         }
     }
 
-    private var layersView: some SwiftUI.View {
-        ForEach(dataSource.children.allOf(type: Layer.self)) {
-            LayerView(layer: $0)
+    private var nodesView: some SwiftUI.View {
+        ForEach(dataSource.children, id: \.id) {
+            NodeView(node: $0)
         }
         .onDisappear() {
             refreshTimer?.invalidate()
@@ -94,5 +94,31 @@ struct DataSourceView: SwiftUI.View {
                 await refresh()
             }
         }
+    }
+}
+
+private extension URLSession {
+    func dataPublisher(for request: URLRequest) -> AnyPublisher<Result<Any?, Error>, Never> {
+        dataTaskPublisher(for: request)
+            .retry(1)
+            .tryMap { element -> Data in
+                guard let httpResponse = element.response as? HTTPURLResponse,
+                      httpResponse.statusCode == 200 else {
+                    throw URLError(.badServerResponse)
+                }
+
+                return element.data
+            }
+            .tryMap { data in
+                try JSONSerialization.jsonObject(with: data)
+            }
+            .map { data in
+                .success(data)
+            }
+            .catch { error in
+                Just(.failure(error)).eraseToAnyPublisher()
+            }
+            .receive(on: RunLoop.main)
+            .eraseToAnyPublisher()
     }
 }

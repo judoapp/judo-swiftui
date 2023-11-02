@@ -13,31 +13,32 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import JudoModel
+import JudoDocument
 import SwiftUI
 
 /// A SwiftUI view for rendering a `ComponentInstance`.
 struct ComponentInstanceView: SwiftUI.View {
+    @Environment(\.document) private var document
     @EnvironmentObject private var componentState: ComponentState
-    @ObservedObject var componentInstance: ComponentInstance
+    var componentInstance: ComponentInstanceNode
 
     @Environment(\.data) private var data
     @Environment(\.fetchedImage) private var fetchedImage
 
-    init(componentInstance: ComponentInstance) {
+    init(componentInstance: ComponentInstanceNode) {
         self.componentInstance = componentInstance
     }
 
     var body: some SwiftUI.View {
-        ForEach(orderedLayers) {
-            LayerView(layer: $0)
+        ForEach(orderedNodes, id: \.id) {
+            NodeView(node: $0)
         }
         .modifier(
-            ZStackContentIfNeededModifier(for: orderedLayers)
+            ZStackContentIfNeededModifier(for: orderedNodes)
         )
         .environmentObject(
             ComponentState(
-                properties: mainComponent.properties,
+                properties: mainComponent?.properties ?? [:],
                 overrides: componentInstance.overrides,
                 data: data,
                 fetchedImage: fetchedImage,
@@ -46,14 +47,23 @@ struct ComponentInstanceView: SwiftUI.View {
         )
     }
     
-    private var mainComponent: MainComponent {
-        componentInstance.value.forceResolve(
+    private var mainComponent: MainComponentNode? {
+        let mainComponentID = componentInstance.value.forceResolve(
             properties: componentState.properties,
             data: data
         )
+        
+        return document.children.first { node in
+            switch node {
+            case let mainComponent as MainComponentNode:
+                return mainComponent.id == mainComponentID
+            default:
+                return false
+            }
+        } as? MainComponentNode
     }
     
-    private var orderedLayers: [Layer] {
-        mainComponent.children.allOf(type: Layer.self).reversed()
+    private var orderedNodes: [Node] {
+        mainComponent?.children.reversed() ?? []
     }
 }

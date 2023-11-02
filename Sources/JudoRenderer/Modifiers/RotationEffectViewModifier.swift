@@ -13,18 +13,18 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import JudoModel
+import JudoDocument
 import SwiftUI
 
 struct RotationEffectViewModifier: SwiftUI.ViewModifier {
     @EnvironmentObject private var componentState: ComponentState
     @Environment(\.data) private var data
 
-    @ObservedObject var modifier: JudoModel.RotationEffectModifier
+    var modifier: JudoDocument.RotationEffectModifier
 
     func body(content: Content) -> some SwiftUI.View {
         content
-            .rotationEffect(angle, anchor: modifier.anchor.swiftUIValue)
+            .rotationEffect(angle, anchor: anchor)
     }
 
     private var angle: Angle {
@@ -38,5 +38,30 @@ struct RotationEffectViewModifier: SwiftUI.ViewModifier {
 
     private var angleValue: Double {
         modifier.angleSize.forceResolve(properties: componentState.properties, data: data)
+    }
+    
+    private var anchor: SwiftUI.UnitPoint {
+        switch modifier.anchor {
+        case .bottom:
+            return .bottom
+        case .bottomLeading:
+            return .bottomLeading
+        case .bottomTrailing:
+            return .bottomTrailing
+        case .center:
+            return .center
+        case .leading:
+            return .leading
+        case .top:
+            return .top
+        case .topLeading:
+            return .topLeading
+        case .topTrailing:
+            return .topTrailing
+        case .trailing:
+            return .trailing
+        case .zero:
+            return .zero
+        }
     }
 }

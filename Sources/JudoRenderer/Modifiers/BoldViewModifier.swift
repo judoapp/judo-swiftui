@@ -13,11 +13,11 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import JudoModel
+import JudoDocument
 import SwiftUI
 
 struct BoldViewModifier: SwiftUI.ViewModifier {
-    @ObservedObject var modifier: BoldModifier
+    var modifier: BoldModifier
 
     func body(content: Content) -> some SwiftUI.View {
         content.backport.bold()

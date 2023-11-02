@@ -13,17 +13,30 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import JudoModel
+import JudoDocument
 import SwiftUI
 
 struct HStackView: SwiftUI.View {
-    @ObservedObject var stack: JudoModel.HStack
+    var stack: JudoDocument.HStackNode
 
     var body: some SwiftUI.View {
-        SwiftUI.HStack(alignment: stack.alignment.swiftUIValue, spacing: stack.spacing) {
-            ForEach(stack.children.allOf(type: Layer.self)) {
-                LayerView(layer: $0)
+        SwiftUI.HStack(alignment: alignment, spacing: stack.spacing) {
+            ForEach(stack.children, id: \.id) {
+                NodeView(node: $0)
             }
+        }
+    }
+    
+    private var alignment: SwiftUI.VerticalAlignment {
+        switch stack.alignment {
+        case .top:
+            return .top
+        case .center:
+            return .center
+        case .bottom:
+            return .bottom
+        case .firstTextBaseline:
+            return .firstTextBaseline
         }
     }
 }

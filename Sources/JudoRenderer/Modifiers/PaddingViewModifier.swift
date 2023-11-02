@@ -13,14 +13,14 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import JudoModel
+import JudoDocument
 import SwiftUI
 
 struct PaddingViewModifier: SwiftUI.ViewModifier {
     @Environment(\.data) private var data
     @EnvironmentObject private var componentState: ComponentState
     
-    @ObservedObject var modifier: JudoModel.PaddingModifier
+    var modifier: JudoDocument.PaddingModifier
     
     func body(content: Content) -> some View {
         if let edges {

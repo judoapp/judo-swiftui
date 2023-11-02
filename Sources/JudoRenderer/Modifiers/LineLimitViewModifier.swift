@@ -13,14 +13,14 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import JudoModel
+import JudoDocument
 import SwiftUI
 
 struct LineLimitViewModifier: SwiftUI.ViewModifier {
     @EnvironmentObject private var componentState: ComponentState
     @Environment(\.data) private var data
 
-    @ObservedObject var modifier: LineLimitModifier
+    var modifier: LineLimitModifier
     
     func body(content: Content) -> some SwiftUI.View {
         if #available(iOS 16.0, *) {
@@ -39,7 +39,20 @@ struct LineLimitViewModifier: SwiftUI.ViewModifier {
     }
 
     private var range: ClosedRange<Int>? {
-        modifier.effectiveRange(minValue: minValue, maxValue: maxValue)
+        switch (minValue, maxValue) {
+        case (.some(let minValue), nil):
+            return minValue...Int.max
+        case (.some(let minValue), .some(let maxValue)):
+            if minValue <= maxValue {
+                return minValue...maxValue
+            } else {
+                return nil // invalid range
+            }
+        case (nil, .some(let maxValue)):
+            return 0...maxValue
+        case (nil, nil):
+            return nil
+        }
     }
 
     private var minValue: Int? {

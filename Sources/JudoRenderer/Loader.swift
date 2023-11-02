@@ -15,92 +15,16 @@
 
 import Foundation
 import ZIPFoundation
-import JudoModel
+import JudoDocument
 
 struct Loader {
-
-    static func loadViewData(at path: String) throws -> ViewData {
-
-        if let cachedViewData = ViewCache.shared.value(for: path) {
-             return cachedViewData
+    static func loadDocument(at path: String) throws -> DocumentNode {
+        if let cachedDocument = DocumentCache.shared.value(for: path) {
+             return cachedDocument
         }
 
-        guard let data = try? Data(contentsOf: URL(fileURLWithPath: path)),
-              let archive = ZIPFoundation.Archive(data: data, accessMode: .read)
-        else {
-            logger.error("Unable to open ZIP container")
-            throw CocoaError(.fileReadCorruptFile)
-        }
-
-        let decoder = JSONDecoder()
-        decoder.nonConformingFloatDecodingStrategy = .convertFromString(
-            positiveInfinity: "inf",
-            negativeInfinity: "-inf",
-            nan: "nan"
-        )
-
-        let meta = try archive.extractMeta()
-        // assets
-        let assetCatalog = archive.extractXCAssets()
-        let fonts = try archive.extractFonts()
-        let localizations = try archive.extractLocalizations()
-
-        let decodingCoordinator = DecodingCoordinator(
-            documentVersion: meta.version,
-            compatibilityVersion: meta.compatibilityVersion,
-            xcassets: assetCatalog,
-            fonts: fonts,
-            localizations: localizations
-        )
-
-        decoder.userInfo[.decodingCoordinator] = decodingCoordinator
-
-        // document.json
-        let documentData = DocumentData()
-        guard let documentFile = archive["document.json"], documentFile.type == .file else {
-            throw CocoaError(.fileReadUnknown)
-        }
-
-        do {
-            let extractedData = try archive.extractEntire(entry: documentFile)
-            try documentData.update(from: decoder.decode(DocumentData.self, from: extractedData))
-        } catch {
-            logger.error("Unable to read document.json due to decoding issue: \(error.debugDescription)")
-            throw CocoaError(.fileReadUnknown)
-        }
-
-        // fonts
-        let importedFonts = ImportedFonts()
-        do {
-            importedFonts.fonts = try archive.extractFonts()
-        } catch {
-            logger.error("Unable to read fonts due to ZIP decoding issue: \(error.debugDescription)")
-            throw CocoaError(.fileReadUnknown)
-        }
-
-        // TODO: rebuildStrings()
-
-        let viewData = ViewData(
-            meta: meta,
-            documentData: documentData,
-            assets: Assets(assetCatalog: assetCatalog),
-            importedFonts: importedFonts,
-            fonts: fonts,
-            localizations: localizations
-        )
-
-        ViewCache.shared.add(
-            key: path,
-            value: viewData
-        )
-
-        return viewData
-    }
-}
-
-private extension Error {
-    /// Get a string giving a much more comprehensive explanation of the error, particularly when coming from certain platform types (Codable, in particular).
-    var debugDescription: String {
-        return "Error: \(self.localizedDescription), details: \((self as NSError).userInfo.debugDescription)"
+        let document = try DocumentNode.read(from: URL(fileURLWithPath: path))
+        DocumentCache.shared.add(key: path, value: document)
+        return document
     }
 }

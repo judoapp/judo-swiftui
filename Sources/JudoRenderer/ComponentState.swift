@@ -14,18 +14,18 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import SwiftUI
-import JudoModel
+import JudoDocument
 
 final class ComponentState: ObservableObject {
     @Published var bindings: [String: ComponentBinding]
     
-    var properties: MainComponent.Properties {
-        bindings.reduce(into: MainComponent.Properties()) { partialResult, element in
+    var properties: Properties {
+        bindings.reduce(into: Properties()) { partialResult, element in
             partialResult[element.key] = element.value.value
         }
     }
 
-    init(properties: MainComponent.Properties, overrides: ComponentInstance.Overrides, data: Any?, fetchedImage: SwiftUI.Image?, parentState: ComponentState?) {
+    init(properties: Properties, overrides: Overrides, data: Any?, fetchedImage: SwiftUI.Image?, parentState: ComponentState?) {
         var result = properties.mapValues {
             ComponentBinding(value: $0)
         }.asDictionary()
@@ -106,6 +106,22 @@ final class ComponentState: ObservableObject {
                     
                     result[key] = ComponentBinding(value: .component(resolvedValue ?? defaultValue))
                 }
+
+            case (.video, .video(let videoValue)):
+                if case .property(let propertyName) = videoValue.binding, let parentState, parentState.bindings.keys.contains(propertyName) {
+                    result[key] = ComponentBinding(binding: Binding {
+                        parentState.bindings[propertyName]!.value
+                    } set: { newValue in
+                        parentState.bindings[propertyName]!.value = newValue
+                    })
+                } else {
+                    let resolvedValue = videoValue.forceResolve(
+                        properties: properties,
+                        data: data
+                    )
+
+                    result[key] = ComponentBinding(value: .video(resolvedValue))
+                }
             default:
                 break
             }
@@ -114,7 +130,7 @@ final class ComponentState: ObservableObject {
         self.bindings = result
     }
     
-    init(properties: MainComponent.Properties) {
+    init(properties: Properties) {
         self.bindings = properties.mapValues({ ComponentBinding(value: $0) }).asDictionary()
     }
 
@@ -124,10 +140,10 @@ final class ComponentState: ObservableObject {
 }
 
 struct ComponentBinding {
-    private var ownedValue: MainComponent.Properties.Value?
-    private var binding: Binding<MainComponent.Properties.Value>?
+    private var ownedValue: Properties.Value?
+    private var binding: Binding<Properties.Value>?
 
-    var value: MainComponent.Properties.Value {
+    var value: Properties.Value {
         get {
             if let ownedValue {
                 return ownedValue
@@ -149,11 +165,11 @@ struct ComponentBinding {
         }
     }
 
-    init(value: MainComponent.Properties.Value) {
+    init(value: Properties.Value) {
         self.ownedValue = value
     }
 
-    init(binding: Binding<MainComponent.Properties.Value>) {
+    init(binding: Binding<Properties.Value>) {
         self.binding = binding
     }
 }

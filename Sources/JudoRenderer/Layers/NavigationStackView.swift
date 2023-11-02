@@ -13,18 +13,19 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import JudoModel
+import JudoDocument
 import SwiftUI
 
 struct NavigationStackView: SwiftUI.View {
 
-    @ObservedObject var navigationStack: JudoModel.NavigationStack
+    var navigationStack: JudoDocument.NavigationStackNode
 
     var body: some SwiftUI.View {
         NavigationView {
             SwiftUI.VStack(spacing: 0) {
-                ForEach(navigationStack.children.allOf(type: Layer.self)) {
-                    LayerView(layer: $0)
+                ForEach(navigationStack.children, id: \.id
+                ) {
+                    NodeView(node: $0)
                 }
             }
         }

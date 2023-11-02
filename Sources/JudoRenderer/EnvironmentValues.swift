@@ -14,7 +14,15 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import SwiftUI
-import JudoModel
+import JudoDocument
+
+private struct DocumentKey: EnvironmentKey {
+    static var defaultValue = DocumentNode()
+}
+
+private struct AssetManagerKey: EnvironmentKey {
+    static var defaultValue = AssetManager()
+}
 
 private struct CustomActionsKey: EnvironmentKey {
     static var defaultValue: [CustomActionIdentifier: ActionHandler<[String: Any]>] = [:]
@@ -29,7 +37,16 @@ private struct FetchedImageKey: EnvironmentKey {
 }
 
 extension EnvironmentValues {
-
+    var document: DocumentNode {
+        get { self[DocumentKey.self] }
+        set { self[DocumentKey.self] = newValue }
+    }
+    
+    var assetManager: AssetManager {
+        get { self[AssetManagerKey.self] }
+        set { self[AssetManagerKey.self] = newValue }
+    }
+    
     var customActions: [CustomActionIdentifier: ActionHandler<[String: Any]>] {
         get { self[CustomActionsKey.self] }
         set { self[CustomActionsKey.self] = newValue }

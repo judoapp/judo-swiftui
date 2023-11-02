@@ -13,15 +13,14 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import JudoModel
+import JudoDocument
 import SwiftUI
 
 struct TextFieldView: SwiftUI.View {
     @EnvironmentObject private var componentState: ComponentState
     @Environment(\.data) private var data
-    @EnvironmentObject private var localizations: DocumentLocalizations
 
-    @ObservedObject var textField: JudoModel.TextField
+    var textField: JudoDocument.TextFieldNode
 
     var body: some SwiftUI.View {
         // Get the realizedText for the Label
@@ -35,13 +34,20 @@ struct TextFieldView: SwiftUI.View {
                     case .number:
                         SwiftUI.TextField(title, value: numberValueBinding(text), formatter: NumberFormatter.allowsFloatsNumberFormatter)
                     default:
-                        SwiftUI.TextField(title, text: textValueBinding(text))
+                        textField(title: title, text: text)
                     }
                 } else {
-                    SwiftUI.TextField(title, text: textValueBinding(text))
+                    textField(title: title, text: text)
                 }
-
             }
+        }
+    }
+
+    private func textField(title: String, text: String) -> some View {
+        if #available(iOS 16.0, *) {
+            SwiftUI.TextField(title, text: textValueBinding(text), axis: axis)
+        } else {
+            SwiftUI.TextField(title, text: textValueBinding(text))
         }
     }
 
@@ -76,5 +82,24 @@ struct TextFieldView: SwiftUI.View {
             }
         }
     }
+
+    private var axis: SwiftUI.Axis {
+        switch textField.axis {
+        case .horizontal:
+            return .horizontal
+        case .vertical:
+            return .vertical
+        }
+    }
 }
 
+private extension NumberFormatter {
+    static let allowsFloatsNumberFormatter: NumberFormatter = {
+        let formatter = NumberFormatter()
+        formatter.allowsFloats = true
+        formatter.numberStyle = .decimal // This allows the TextField to accept numbers with decimal points
+        formatter.usesGroupingSeparator = false // We need to set this to false so that we do not end up displaying numbers as 1,000.23 instead of 1000.23
+        formatter.maximumFractionDigits = 10 // We need to allow a maximum number of decimal places otherwise it will only allow 3.
+        return formatter
+    }()
+}

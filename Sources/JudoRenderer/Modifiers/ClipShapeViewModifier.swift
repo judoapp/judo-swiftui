@@ -13,46 +13,46 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import JudoModel
+import JudoDocument
 import SwiftUI
 
 struct ClipShapeViewModifier: SwiftUI.ViewModifier {
     @EnvironmentObject private var componentState: ComponentState
     @Environment(\.data) private var data
 
-    @ObservedObject var modifier: ClipShapeModifier
+    var modifier: ClipShapeModifier
 
     func body(content: Content) -> some SwiftUI.View {
         switch modifier.shape {
-        case let capsule as JudoModel.Capsule:
+        case let capsule as JudoDocument.CapsuleNode:
             content
                 .clipShape(
                     SwiftUI.Capsule(style: capsule.cornerStyle.swiftUIValue),
                     style: fillStyle
                 )
 
-        case is JudoModel.Circle:
+        case is JudoDocument.CircleNode:
             content
                 .clipShape(
                     SwiftUI.Circle(),
                     style: fillStyle
                 )
 
-        case is JudoModel.Ellipse:
+        case is JudoDocument.EllipseNode:
             content
                 .clipShape(
                     SwiftUI.Ellipse(),
                     style: fillStyle
                 )
 
-        case is JudoModel.Rectangle:
+        case is JudoDocument.RectangleNode:
             content
                 .clipShape(
                     SwiftUI.Rectangle(),
                     style: fillStyle
                 )
 
-        case let roundedRectangle as JudoModel.RoundedRectangle:
+        case let roundedRectangle as JudoDocument.RoundedRectangleNode:
             content
                 .clipShape(
                     SwiftUI.RoundedRectangle(
@@ -74,5 +74,16 @@ struct ClipShapeViewModifier: SwiftUI.ViewModifier {
 
     private func cornerRadius(_ cornerRadius: Variable<Double>) -> Double {
         cornerRadius.forceResolve(properties: componentState.properties, data: data)
+    }
+}
+
+private extension JudoDocument.RoundedCornerStyle {
+    var swiftUIValue: SwiftUI.RoundedCornerStyle {
+          switch self {
+          case .circular:
+              return .circular
+          case .continuous:
+              return .continuous
+          }
     }
 }

@@ -14,20 +14,49 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import SwiftUI
-import JudoModel
+import JudoDocument
 
 struct ZStackView: SwiftUI.View {
-    @ObservedObject var stack: JudoModel.ZStack
+    var stack: JudoDocument.ZStackNode
     
     var body: some SwiftUI.View {
-        SwiftUI.ZStack(alignment: stack.alignment.swiftUIValue) {
-            ForEach(orderedLayers) {
-                LayerView(layer: $0)
+        SwiftUI.ZStack(alignment: alignment) {
+            ForEach(orderedNodes, id: \.id) {
+                NodeView(node: $0)
             }
         }
     }
     
-    private var orderedLayers: [Layer] {
-        stack.children.reversed().allOf(type: Layer.self)
+    private var orderedNodes: [Node] {
+        stack.children.reversed()
+    }
+    
+    private var alignment: SwiftUI.Alignment {
+        switch stack.alignment {
+        case .topLeading:
+            return .topLeading
+        case .top:
+            return .top
+        case .topTrailing:
+            return .topTrailing
+        case .leading:
+            return .leading
+        case .center:
+            return .center
+        case .trailing:
+            return .trailing
+        case .bottomLeading:
+            return .bottomLeading
+        case .bottom:
+            return .bottom
+        case .bottomTrailing:
+            return .bottomTrailing
+        case .firstTextBaselineLeading:
+            return .leadingFirstTextBaseline
+        case .firstTextBaseline:
+            return .centerFirstTextBaseline
+        case .firstTextBaselineTrailing:
+            return .trailingFirstTextBaseline
+        }
     }
 }

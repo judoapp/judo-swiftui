@@ -14,18 +14,18 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import SwiftUI
-import JudoModel
+import JudoDocument
 
 /// Conditionally wrap content in ZStack view.
 struct ZStackContentIfNeededModifier: SwiftUI.ViewModifier {
-    private let layers: [Layer]
+    private let nodes: [Node]
 
-    init(for layers: [Layer]) {
-        self.layers = layers
+    init(for nodes: [Node]) {
+        self.nodes = nodes
     }
 
     func body(content: Content) -> some SwiftUI.View {
-        if layers.count <= 1 {
+        if nodes.count <= 1 {
             content
         } else {
             SwiftUI.ZStack {

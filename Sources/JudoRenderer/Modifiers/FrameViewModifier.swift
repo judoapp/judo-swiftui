@@ -13,14 +13,14 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import JudoModel
+import JudoDocument
 import SwiftUI
 
 struct FrameViewModifier: SwiftUI.ViewModifier {
     @Environment(\.data) private var data
     @EnvironmentObject private var componentState: ComponentState
     
-    @ObservedObject var modifier: JudoModel.FrameModifier
+    var modifier: JudoDocument.FrameModifier
 
     func body(content: Content) -> some SwiftUI.View {
         switch modifier.frameType {
@@ -94,6 +94,31 @@ struct FrameViewModifier: SwiftUI.ViewModifier {
     }
     
     private var alignment: SwiftUI.Alignment {
-        modifier.alignment.swiftUIValue
+        switch modifier.alignment {
+        case .topLeading:
+            return .topLeading
+        case .top:
+            return .top
+        case .topTrailing:
+            return .topTrailing
+        case .leading:
+            return .leading
+        case .center:
+            return .center
+        case .trailing:
+            return .trailing
+        case .bottomLeading:
+            return .bottomLeading
+        case .bottom:
+            return .bottom
+        case .bottomTrailing:
+            return .bottomTrailing
+        case .firstTextBaselineLeading:
+            return .leadingFirstTextBaseline
+        case .firstTextBaseline:
+            return .centerFirstTextBaseline
+        case .firstTextBaselineTrailing:
+            return .trailingFirstTextBaseline
+        }
     }
 }

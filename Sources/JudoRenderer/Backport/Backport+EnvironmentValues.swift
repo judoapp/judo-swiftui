@@ -28,6 +28,10 @@ fileprivate extension BackportNamespace {
         static var defaultValue: Bool = false
     }
 
+    // @available(iOS, deprecated: 16.0, message: "We should update the UnderlineModifier so that it now longer uses this workaround")
+    struct UnderlineModifierEnvironmentKey: EnvironmentKey {
+        static var defaultValue: (isActive: Bool, color: Color?) = (false, nil)
+    }
 }
 
 extension EnvironmentValues {
@@ -54,4 +58,8 @@ extension EnvironmentValues {
         set { self[BackportNamespace.ItalicModifierEnvironmentKey.self] = newValue }
     }
 
+    var isUnderlined: (isActive: Bool, color: Color?) {
+        get { self[BackportNamespace.UnderlineModifierEnvironmentKey.self] }
+        set { self[BackportNamespace.UnderlineModifierEnvironmentKey.self] = newValue }
+    }
 }

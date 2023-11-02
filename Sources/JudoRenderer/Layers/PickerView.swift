@@ -13,7 +13,7 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import JudoModel
+import JudoDocument
 import SwiftUI
 
 struct PickerView: SwiftUI.View {
@@ -23,9 +23,9 @@ struct PickerView: SwiftUI.View {
     private var isTextBinding: Bool
     private var options: [PickerOption]
 
-    @ObservedObject var picker: JudoModel.Picker
+    var picker: JudoDocument.PickerNode
 
-    init(picker: JudoModel.Picker) {
+    init(picker: JudoDocument.PickerNode) {
         self.picker = picker
         self.isTextBinding = picker.textSelection != nil
         self.options = picker.options
@@ -36,14 +36,14 @@ struct PickerView: SwiftUI.View {
         RealizeText(picker.label) { label in
             if isTextBinding {
                 SwiftUI.Picker(label, selection: stringSelectionBinding) {
-                    ForEach(options) { option in
+                    ForEach(options, id: \.id) { option in
                         row(for: option)
                             .tag(textTag(option))
                     }
                 }
             } else {
                 SwiftUI.Picker(label, selection: numberSelectionBinding) {
-                    ForEach(options) { option in
+                    ForEach(options, id: \.id) { option in
                         row(for: option)
                             .tag(numberTag(option))
                     }

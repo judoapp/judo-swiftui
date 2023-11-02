@@ -13,15 +13,23 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import JudoModel
+import JudoDocument
 import SwiftUI
 
 struct TextCaseViewModifier: SwiftUI.ViewModifier {
-    @ObservedObject var modifier: TextCaseModifier
+    var modifier: TextCaseModifier
     
     func body(content: Content) -> some SwiftUI.View {
         content
-            .textCase(modifier.textCase.swiftUIValue)
+            .textCase(textCase)
+    }
+    
+    private var textCase: SwiftUI.Text.Case {
+        switch modifier.textCase {
+        case .uppercase:
+            return .uppercase
+        case .lowercase:
+            return .lowercase
+        }
     }
 }
-

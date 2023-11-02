@@ -7,8 +7,9 @@ let package = Package(
     platforms: [.iOS(.v14), .macOS(.v13)],
     products: [
         .library(name: "Judo", type: .static, targets: ["Judo"]),
-        .library(name: "JudoModel", type: .static, targets: ["JudoModel"]),
-        .library(name: "JudoBackport", type: .static, targets: ["Backport"])
+        .library(name: "JudoDocument", type: .static, targets: ["JudoDocument"]),
+        .library(name: "JudoBackport", type: .static, targets: ["Backport"]),
+        .library(name: "XCAssetsKit", type: .static, targets: ["XCAssetsKit"])
     ],
     dependencies: [
         .package(url: "https://github.com/weichsel/ZIPFoundation.git", .upToNextMajor(from: "0.9.16")),
@@ -25,7 +26,7 @@ let package = Package(
         .target(
             name: "JudoRenderer",
             dependencies: [
-                .target(name: "JudoModel"),
+                .target(name: "JudoDocument"),
                 .target(name: "Backport"),
                 .target(name: "XCAssetsKit"),
                 .product(name: "Introspect", package: "SwiftUI-Introspect")
@@ -38,7 +39,7 @@ let package = Package(
             ]
         ),
         .target(
-            name: "JudoModel",
+            name: "JudoDocument",
             dependencies: [
                 "ZIPFoundation",
                 .target(name: "XCAssetsKit"),
