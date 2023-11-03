@@ -16,10 +16,6 @@
 import SwiftUI
 import JudoDocument
 
-private struct DocumentKey: EnvironmentKey {
-    static var defaultValue = DocumentNode()
-}
-
 private struct AssetManagerKey: EnvironmentKey {
     static var defaultValue = AssetManager()
 }
@@ -32,16 +28,15 @@ private struct DataKey: EnvironmentKey {
     static var defaultValue: Any?
 }
 
+private struct DocumentKey: EnvironmentKey {
+    static var defaultValue = DocumentNode()
+}
+
 private struct FetchedImageKey: EnvironmentKey {
     static var defaultValue: SwiftUI.Image?
 }
 
 extension EnvironmentValues {
-    var document: DocumentNode {
-        get { self[DocumentKey.self] }
-        set { self[DocumentKey.self] = newValue }
-    }
-    
     var assetManager: AssetManager {
         get { self[AssetManagerKey.self] }
         set { self[AssetManagerKey.self] = newValue }
@@ -51,15 +46,19 @@ extension EnvironmentValues {
         get { self[CustomActionsKey.self] }
         set { self[CustomActionsKey.self] = newValue }
     }
-
+    
     var data: Any? {
         get { self[DataKey.self] }
         set { self[DataKey.self] = newValue }
+    }
+    
+    var document: DocumentNode {
+        get { self[DocumentKey.self] }
+        set { self[DocumentKey.self] = newValue }
     }
     
     var fetchedImage: SwiftUI.Image? {
         get { self[FetchedImageKey.self] }
         set { self[FetchedImageKey.self] = newValue }
     }
-
 }
