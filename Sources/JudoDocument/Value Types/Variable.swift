@@ -115,7 +115,7 @@ public struct Variable<T: Codable & Hashable & CustomStringConvertible>: Codable
                     return nil
                 }
                 
-                return fetchedImage as? T
+                return ImageReference.inline(image: fetchedImage) as? T
             }
         }
     }

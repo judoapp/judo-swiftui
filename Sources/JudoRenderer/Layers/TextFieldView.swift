@@ -45,9 +45,9 @@ struct TextFieldView: SwiftUI.View {
 
     private func textField(title: String, text: String) -> some View {
         if #available(iOS 16.0, *) {
-            SwiftUI.TextField(title, text: textValueBinding(text), axis: axis)
+            return SwiftUI.TextField(title, text: textValueBinding(text), axis: axis)
         } else {
-            SwiftUI.TextField(title, text: textValueBinding(text))
+            return SwiftUI.TextField(title, text: textValueBinding(text))
         }
     }
 
