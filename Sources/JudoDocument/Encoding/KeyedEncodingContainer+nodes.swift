@@ -108,6 +108,8 @@ extension KeyedEncodingContainer {
                 try container.encode(node)
             case let node as BlendModeModifier:
                 try container.encode(node)
+            case let node as BlurModifier:
+                try container.encode(node)
             case let node as BoldModifier:
                 try container.encode(node)
             case let node as ButtonStyleModifier:
@@ -155,6 +157,12 @@ extension KeyedEncodingContainer {
             case let node as OffsetModifier:
                 try container.encode(node)
             case let node as OpacityModifier:
+                try container.encode(node)
+            case let node as OnAppearModifier:
+                try container.encode(node)
+            case let node as OnDisappearModifier:
+                try container.encode(node)
+            case let node as OnTapGestureModifier:
                 try container.encode(node)
             case let node as OverlayModifier:
                 try container.encode(node)

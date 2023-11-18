@@ -14,29 +14,21 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import JudoDocument
-import SwiftUI
 
-struct TabItemViewModifier: SwiftUI.ViewModifier {
-    @EnvironmentObject private var componentState: ComponentState
-
-    var modifier: TabItemModifier
-
-    func body(content: Content) -> some SwiftUI.View {
-        content
-            .tabItem {
-                if let tabItemTitle = modifier.title {
-                    RealizeText(tabItemTitle) { title in
-                        if let tabItemIcon = modifier.icon {
-                            Label(title, systemImage: tabItemIcon.symbolName)
-                        } else {
-                            SwiftUI.Text(title)
-                        }
-                    }
-                } else if let tabItemIcon = modifier.icon {
-                    SwiftUI.Image(systemName: tabItemIcon.symbolName)
-                } else {
-                    EmptyView()
-                }
-            }
+extension DocumentNode {
+    var components: [MainComponentNode] {
+        children.compactMap { $0 as? MainComponentNode }
+    }
+    
+    func component(named componentName: ComponentName) -> MainComponentNode? {
+        components.first { $0.name == componentName.rawValue }
+    }
+    
+    func initialComponent(preferring componentName: ComponentName?) -> MainComponentNode? {
+        if let componentName, let component = component(named: componentName) {
+            return component
+        }
+        
+        return components.first
     }
 }

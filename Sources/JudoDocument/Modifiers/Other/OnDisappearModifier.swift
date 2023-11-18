@@ -15,23 +15,23 @@
 
 import SwiftUI
 
-public struct TextContentTypeModifier: Modifier {
+public struct OnDisappearModifier: Modifier {
     public var id: UUID
     public var name: String?
     public var children: [Node]
     public var position: CGPoint
     public var isLocked: Bool
-    public var textContentType: TextContentType
+    public var onDisappearActions: [Action]
 
-    public init(id: UUID, name: String?, children: [Node], position: CGPoint, isLocked: Bool, textContentType: TextContentType) {
+    public init(id: UUID, name: String?, children: [Node], position: CGPoint, isLocked: Bool, onDisappearActions: [Action]) {
         self.id = id
         self.name = name
         self.children = children
         self.position = position
         self.isLocked = isLocked
-        self.textContentType = textContentType
+        self.onDisappearActions = onDisappearActions
     }
-    
+
     // MARK: Codable
 
     private enum CodingKeys: String, CodingKey {
@@ -41,7 +41,7 @@ public struct TextContentTypeModifier: Modifier {
         case children
         case position
         case isLocked
-        case textContentType
+        case onDisappearActions
     }
 
     public init(from decoder: Decoder) throws {
@@ -49,24 +49,9 @@ public struct TextContentTypeModifier: Modifier {
         id = try container.decode(UUID.self, forKey: .id)
         name = try container.decodeIfPresent(String.self, forKey: .name)
         children = try container.decodeNodes(forKey: .children)
-        
-        let meta = decoder.userInfo[.meta] as! Meta
-        switch meta.version {
-        case ..<18:
-            position = .zero
-            isLocked = false
-            let textContentType = try container.decode(TextContentType?.self, forKey: .textContentType)
-            self.textContentType = textContentType ?? .none
-        case ..<19:
-            position = try container.decode(CGPoint.self, forKey: .position)
-            isLocked = try container.decode(Bool.self, forKey: .isLocked)
-            let textContentType = try container.decode(TextContentType?.self, forKey: .textContentType)
-            self.textContentType = textContentType ?? .none
-        default:
-            position = try container.decode(CGPoint.self, forKey: .position)
-            isLocked = try container.decode(Bool.self, forKey: .isLocked)
-            self.textContentType = try container.decode(TextContentType.self, forKey: .textContentType)
-        }
+        position = try container.decode(CGPoint.self, forKey: .position)
+        isLocked = try container.decode(Bool.self, forKey: .isLocked)
+        onDisappearActions = try container.decodeActions(forKey: .onDisappearActions)
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -77,6 +62,6 @@ public struct TextContentTypeModifier: Modifier {
         try container.encodeNodes(children, forKey: .children)
         try container.encode(position, forKey: .position)
         try container.encode(isLocked, forKey: .isLocked)
-        try container.encode(textContentType, forKey: .textContentType)
+        try container.encodeActions(onDisappearActions, forKey: .onDisappearActions)
     }
 }

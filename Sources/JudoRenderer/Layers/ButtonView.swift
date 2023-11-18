@@ -39,9 +39,9 @@ struct ButtonView: SwiftUI.View {
             NodeView(node: $0)
         }
     }
-    
+
     @available(iOS 15.0, *)
-    public var role: SwiftUI.ButtonRole? {
+    var role: SwiftUI.ButtonRole? {
         switch button.role {
         case .none:
             return .none
@@ -55,7 +55,7 @@ struct ButtonView: SwiftUI.View {
 
 private struct ButtonWithoutRole<Content: SwiftUI.View>: SwiftUI.View {
     @Environment(\.openURL) private var openURL
-    @Environment(\.customActions) private var customActions
+    @Environment(\.actionHandlers) private var actionHandlers
     @Environment(\.presentationMode) private var presentationMode
     @Environment(\.data) private var data
     @EnvironmentObject private var componentState: ComponentState
@@ -65,129 +65,10 @@ private struct ButtonWithoutRole<Content: SwiftUI.View>: SwiftUI.View {
 
     var body: some SwiftUI.View {
         SwiftUI.Button {
-            for action in actions {
-                switch action {
-                case is JudoDocument.DismissAction:
-                    presentationMode.wrappedValue.dismiss()
-
-                case let action as JudoDocument.OpenURLAction:
-                    let urlString = action.url.forceResolve(
-                        properties: componentState.properties,
-                        data: data
-                    )
-                    
-                    if let url = URL(string: urlString) {
-                        openURL(url)
-                    }
-
-                case is JudoDocument.RefreshAction:
-                    logger.info("Refresh is unavailable on iOS 14")
-                    assertionFailure("Refresh is unavailable on iOS 14")
-                    break
-
-                case let action as CustomAction:
-                    let resolvedValue = action.identifier.forceResolve(
-                        properties: componentState.properties,
-                        data: data
-                    )
-                    
-                    let identifier = CustomActionIdentifier(resolvedValue)
-                    
-                    let parameters: [String: Any] = action.parameters.reduce(into: [:], { partialResult, parameter in
-                        if let textValue = parameter.textValue {
-                            let resolvedValue = textValue.forceResolve(
-                                properties: componentState.properties,
-                                data: data
-                            )
-                            
-                            partialResult[parameter.key] = resolvedValue
-                        } else if let numberValue = parameter.numberValue {
-                            let resolvedValue = numberValue.forceResolve(
-                                properties: componentState.properties,
-                                data: data
-                            )
-                            
-                            partialResult[parameter.key] = resolvedValue
-                        } else if let booleanValue = parameter.booleanValue {
-                            let resolvedValue = booleanValue.forceResolve(
-                                properties: componentState.properties,
-                                data: data
-                            )
-                            
-                            partialResult[parameter.key] = resolvedValue
-                        }
-                    })
-                    
-                    customActions[identifier]?(parameters)
-
-                case let action as PropertyAction:
-                    if let propertyName = action.propertyName {
-                        switch action {
-                        case let action as SetPropertyAction:
-                            if let textValue = action.textValue {
-                                let resolvedValue = textValue.forceResolve(
-                                    properties: componentState.properties,
-                                    data: data
-                                )
-                                
-                                componentState.bindings[propertyName]?.value = .text(resolvedValue)
-                            } else if let numberValue = action.numberValue {
-                                let resolvedValue = numberValue.forceResolve(
-                                    properties: componentState.properties,
-                                    data: data
-                                )
-                                
-                                componentState.bindings[propertyName]?.value = .number(resolvedValue)
-                            } else if let booleanValue = action.booleanValue {
-                                let resolvedValue = booleanValue.forceResolve(
-                                    properties: componentState.properties,
-                                    data: data
-                                )
-                                
-                                componentState.bindings[propertyName]?.value = .boolean(resolvedValue)
-                            } else if let imageValue = action.imageValue {
-                                let resolvedValue = imageValue.forceResolve(
-                                    properties: componentState.properties,
-                                    data: data
-                                )
-                                
-                                componentState.bindings[propertyName]?.value = .image(resolvedValue)
-                            }
-                        case is TogglePropertyAction:
-                            if case .boolean(let value) = componentState.bindings[propertyName]?.value {
-                                componentState.bindings[propertyName]?.value = .boolean(!value)
-                            } else {
-                                assertionFailure("Unexpected binding type")
-                            }
-                        case let action as IncrementPropertyAction:
-                            if case .number(let value) = componentState.bindings[propertyName]?.value {
-                                let resolvedByValue = action.value.forceResolve(
-                                    properties: componentState.properties,
-                                    data: data
-                                )
-                                
-                                componentState.bindings[propertyName]?.value = .number(value + resolvedByValue)
-                            } else {
-                                assertionFailure("Unexpected binding")
-                            }
-                        case let action as DecrementPropertyAction:
-                            if case .number(let value) = componentState.bindings[propertyName]?.value {
-                                let resolvedByValue = action.value.forceResolve(
-                                    properties: componentState.properties,
-                                    data: data
-                                )
-                                
-                                componentState.bindings[propertyName]?.value = .number(value - resolvedByValue)
-                            } else {
-                                assertionFailure("Unexpected binding")
-                            }
-                        default:
-                            assertionFailure("Unexpected action")
-                        }
-                    }
-                default:
-                    assertionFailure("Unexpected action")
-                }
+            Actions.perform(actions: actions, componentState: componentState, data: data, actionHandlers: actionHandlers) {
+                presentationMode.wrappedValue.dismiss()
+            } openURL: { url in
+                openURL(url)
             }
         } label: {
             content
@@ -198,7 +79,7 @@ private struct ButtonWithoutRole<Content: SwiftUI.View>: SwiftUI.View {
 @available(iOS 15.0, *)
 private struct ButtonWithRole<Content: SwiftUI.View>: SwiftUI.View {
     @Environment(\.openURL) private var openURL
-    @Environment(\.customActions) private var customActions
+    @Environment(\.actionHandlers) private var actionHandlers
     @Environment(\.dismiss) private var dismiss // Only available in iOS 15+
     @Environment(\.refresh) private var refresh // Only available in iOS 15+
     @Environment(\.data) private var data
@@ -210,127 +91,13 @@ private struct ButtonWithRole<Content: SwiftUI.View>: SwiftUI.View {
 
     var body: some SwiftUI.View {
         SwiftUI.Button(role: role) {
-            for action in actions {
-                switch action {
-                case is JudoDocument.DismissAction:
-                    dismiss()
-
-                case let action as JudoDocument.OpenURLAction:
-                    let urlString = action.url.forceResolve(
-                        properties: componentState.properties,
-                        data: data
-                    )
-                    
-                    if let url = URL(string: urlString) {
-                        openURL(url)
-                    }
-
-                case is JudoDocument.RefreshAction:
-                    Task {
-                        await refresh?()
-                    }
-
-                case let action as CustomAction:
-                    let resolvedValue = action.identifier.forceResolve(
-                        properties: componentState.properties,
-                        data: data
-                    )
-                    
-                    let identifier = CustomActionIdentifier(resolvedValue)
-                    
-                    let parameters: [String: Any] = action.parameters.reduce(into: [:], { partialResult, parameter in
-                        if let textValue = parameter.textValue {
-                            let resolvedValue = textValue.forceResolve(
-                                properties: componentState.properties,
-                                data: data
-                            )
-                            
-                            partialResult[parameter.key] = resolvedValue
-                        } else if let numberValue = parameter.numberValue {
-                            let resolvedValue = numberValue.forceResolve(
-                                properties: componentState.properties,
-                                data: data
-                            )
-                            
-                            partialResult[parameter.key] = resolvedValue
-                        } else if let booleanValue = parameter.booleanValue {
-                            let resolvedValue = booleanValue.forceResolve(
-                                properties: componentState.properties,
-                                data: data
-                            )
-                            
-                            partialResult[parameter.key] = resolvedValue
-                        }
-                    })
-                    
-                    customActions[identifier]?(parameters)
-                case let action as PropertyAction:
-                    if let propertyName = action.propertyName {
-                        switch action {
-                        case let action as SetPropertyAction:
-                            if let textValue = action.textValue {
-                                let resolvedValue = textValue.forceResolve(
-                                    properties: componentState.properties,
-                                    data: data
-                                )
-                                
-                                componentState.bindings[propertyName]?.value = .text(resolvedValue)
-                            } else if let numberValue = action.numberValue {
-                                let resolvedValue = numberValue.forceResolve(
-                                    properties: componentState.properties,
-                                    data: data
-                                )
-                                
-                                componentState.bindings[propertyName]?.value = .number(resolvedValue)
-                            } else if let booleanValue = action.booleanValue {
-                                let resolvedValue = booleanValue.forceResolve(
-                                    properties: componentState.properties,
-                                    data: data
-                                )
-                                
-                                componentState.bindings[propertyName]?.value = .boolean(resolvedValue)
-                            } else if let imageValue = action.imageValue {
-                                let resolvedValue = imageValue.forceResolve(
-                                    properties: componentState.properties,
-                                    data: data
-                                )
-                                
-                                componentState.bindings[propertyName]?.value = .image(resolvedValue)
-                            }
-                        case is TogglePropertyAction:
-                            if case .boolean(let value) = componentState.bindings[propertyName]?.value {
-                                componentState.bindings[propertyName]?.value = .boolean(!value)
-                            } else {
-                                assertionFailure("Unexpected binding type")
-                            }
-                        case let action as IncrementPropertyAction:
-                            if case .number(let value) = componentState.bindings[propertyName]?.value {
-                                let resolvedByValue = action.value.forceResolve(
-                                    properties: componentState.properties,
-                                    data: data
-                                )
-                                
-                                componentState.bindings[propertyName]?.value = .number(value + resolvedByValue)
-                            } else {
-                                assertionFailure("Unexpected binding")
-                            }
-                        case let action as DecrementPropertyAction:
-                            if case .number(let value) = componentState.bindings[propertyName]?.value {
-                                let resolvedByValue = action.value.forceResolve(
-                                    properties: componentState.properties,
-                                    data: data
-                                )
-                                
-                                componentState.bindings[propertyName]?.value = .number(value - resolvedByValue)
-                            } else {
-                                assertionFailure("Unexpected binding")
-                            }
-                        default:
-                            assertionFailure("Unexpected action")
-                        }
-                    }
-                default:
-                    assertionFailure("Unexpected action")
+            Actions.perform(actions: actions, componentState: componentState, data: data, actionHandlers: actionHandlers) {
+                dismiss()
+            } openURL: { url in
+                openURL(url)
+            } refresh: {
+                Task {
+                    await refresh?()
                 }
             }
         } label: {

@@ -14,17 +14,27 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import Foundation
-import ZIPFoundation
-import JudoDocument
 
-struct Loader {
-    static func loadDocument(at path: String) throws -> DocumentNode {
-        if let cachedDocument = DocumentCache.shared.value(for: path) {
-             return cachedDocument
+public enum JudoAsyncViewPhase {
+    case empty
+    case success(JudoView)
+    case failure(JudoError)
+    
+    var judoView: JudoView? {
+        switch self {
+        case .success(let judoView):
+            return judoView
+        default:
+            return nil
         }
-
-        let document = try DocumentNode.read(from: URL(fileURLWithPath: path))
-        DocumentCache.shared.add(key: path, value: document)
-        return document
+    }
+    
+    var error: JudoError? {
+        switch self {
+        case .failure(let error):
+            return error
+        default:
+            return nil
+        }
     }
 }

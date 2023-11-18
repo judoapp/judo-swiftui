@@ -135,6 +135,8 @@ private struct NodeWrapper: Decodable {
             node = try BackgroundModifier(from: decoder)
         case BlendModeModifier.typeName:
             node = try BlendModeModifier(from: decoder)
+        case BlurModifier.typeName:
+            node = try BlurModifier(from: decoder)
         case BoldModifier.typeName:
             node = try BoldModifier(from: decoder)
         case ButtonStyleModifier.typeName:
@@ -181,6 +183,12 @@ private struct NodeWrapper: Decodable {
             node = try NavigationTitleModifier(from: decoder)
         case OffsetModifier.typeName:
             node = try OffsetModifier(from: decoder)
+        case OnAppearModifier.typeName:
+            node = try OnAppearModifier(from: decoder)
+        case OnDisappearModifier.typeName:
+            node = try OnDisappearModifier(from: decoder)
+        case OnTapGestureModifier.typeName:
+            node = try OnTapGestureModifier(from: decoder)
         case OpacityModifier.typeName:
             node = try OpacityModifier(from: decoder)
         case OverlayModifier.typeName:

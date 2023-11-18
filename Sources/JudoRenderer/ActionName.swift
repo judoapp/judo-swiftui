@@ -15,7 +15,7 @@
 
 import Foundation
 
-public struct CustomActionIdentifier: Hashable, Codable, CustomStringConvertible, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+public struct ActionName: Hashable, Codable, CustomStringConvertible, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
     public let rawValue: String
 
     public init(stringLiteral value: StringLiteralType) {

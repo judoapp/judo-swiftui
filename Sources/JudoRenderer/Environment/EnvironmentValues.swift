@@ -20,8 +20,8 @@ private struct AssetManagerKey: EnvironmentKey {
     static var defaultValue = AssetManager()
 }
 
-private struct CustomActionsKey: EnvironmentKey {
-    static var defaultValue: [CustomActionIdentifier: ActionHandler<[String: Any]>] = [:]
+private struct ActionHandlersKey: EnvironmentKey {
+    static var defaultValue: [ActionName: ActionHandler] = [:]
 }
 
 private struct DataKey: EnvironmentKey {
@@ -42,9 +42,9 @@ extension EnvironmentValues {
         set { self[AssetManagerKey.self] = newValue }
     }
     
-    var customActions: [CustomActionIdentifier: ActionHandler<[String: Any]>] {
-        get { self[CustomActionsKey.self] }
-        set { self[CustomActionsKey.self] = newValue }
+    var actionHandlers: [ActionName: ActionHandler] {
+        get { self[ActionHandlersKey.self] }
+        set { self[ActionHandlersKey.self] = newValue }
     }
     
     var data: Any? {

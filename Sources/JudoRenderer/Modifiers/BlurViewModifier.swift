@@ -13,16 +13,31 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+import JudoDocument
 import SwiftUI
-import UIKit
 
-extension SwiftUI.Image {
-    init(packageResource name: String, ofType type: String) {
-        guard let path = Bundle.module.path(forResource: name, ofType: type),
-              let image = UIImage(contentsOfFile: path) else {
-            self.init(name)
-            return
-        }
-        self.init(uiImage: image)
+struct BlurViewModifier: SwiftUI.ViewModifier {
+    @EnvironmentObject private var componentState: ComponentState
+    @Environment(\.data) private var data
+
+    var modifier: BlurModifier
+
+    func body(content: Content) -> some SwiftUI.View {
+        content
+            .blur(radius: radius, opaque: isOpaque)
+    }
+
+    private var isOpaque: Bool {
+        modifier.isOpaque.forceResolve(
+            properties: componentState.properties,
+            data: data
+        )
+    }
+
+    private var radius: CGFloat {
+        modifier.radius.forceResolve(
+            properties: componentState.properties,
+            data: data
+        )
     }
 }

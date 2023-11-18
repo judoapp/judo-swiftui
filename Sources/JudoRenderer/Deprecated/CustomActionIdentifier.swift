@@ -13,30 +13,7 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import JudoDocument
-import SwiftUI
+import Foundation
 
-struct TabItemViewModifier: SwiftUI.ViewModifier {
-    @EnvironmentObject private var componentState: ComponentState
-
-    var modifier: TabItemModifier
-
-    func body(content: Content) -> some SwiftUI.View {
-        content
-            .tabItem {
-                if let tabItemTitle = modifier.title {
-                    RealizeText(tabItemTitle) { title in
-                        if let tabItemIcon = modifier.icon {
-                            Label(title, systemImage: tabItemIcon.symbolName)
-                        } else {
-                            SwiftUI.Text(title)
-                        }
-                    }
-                } else if let tabItemIcon = modifier.icon {
-                    SwiftUI.Image(systemName: tabItemIcon.symbolName)
-                } else {
-                    EmptyView()
-                }
-            }
-    }
-}
+@available(*, deprecated, renamed: "ActionName")
+public typealias CustomActionIdentifier = ActionName

@@ -13,251 +13,187 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import SwiftUI
-import OSLog
 import JudoDocument
+import SwiftUI
 
-public extension Judo {
-
-    struct View: SwiftUI.View {
-
-        struct Setup {
-            var document: DocumentNode
-            var component: MainComponentNode
-            var bindings: [String: ComponentBinding]
+public struct JudoView: View {
+    private static var documentCache: [String: DocumentNode] = [:]
+    
+    private var result: Result<DocumentNode, JudoError>
+    private var componentName: ComponentName?
+    private var properties: [PropertyName: Any] = [:]
+    private var actionHandlers: [ActionName: ActionHandler] = [:]
+    
+    public init(_ fileName: String, bundle: Bundle = .main) {
+        let name = (fileName as NSString).deletingPathExtension
+        
+        guard let path = bundle.path(forResource: name, ofType: "judo") else {
+            self.init(error: .fileNotFound(path: fileName))
+            return
         }
-
-        private struct RootNodeView: SwiftUI.View {
-            var node: Node
-            let viewSetup: Setup
-
-            init(node: Node, viewSetup: Setup) {
-                self.node = node
-                self.viewSetup = viewSetup
-            }
-
-            var body: some SwiftUI.View {
-                if let component = node as? MainComponentNode {
-                    MainComponentView(component: component, userBindings: viewSetup.bindings)
-                } else {
-                    NodeView(node: node)
-                }
-            }
+        
+        if let document = JudoView.documentCache[path] {
+            self.init(document: document)
+            return
         }
-
-        private var viewSetup: Setup?
-
-        public init(_ fileName: String, bundle: Bundle = .main, component componentName: String? = nil, properties: [String: Any] = [:]) {
-            let resourceName = (fileName as NSString).deletingPathExtension
-            var resourceExtension = (fileName as NSString).pathExtension.lowercased()
-
-
-            // Ensure that we are only looking to open Judo files
-            if !resourceExtension.isEmpty, resourceExtension != "judo" {
-                logger.error("Tried to load unsupported file format \(resourceExtension)")
-                return
-            } else if resourceExtension.isEmpty {
-                resourceExtension = "judo"
-            }
-
-            let resourcePath = bundle.path(forResource: resourceName, ofType: resourceExtension)
-
-            guard let resourcePath = resourcePath else {
-                logger.error("Unable to find Judo view file to load \"\(resourceName).\(resourceExtension)\" in bundle \(bundle.bundleIdentifier!)")
-                return
-            }
-
-            do {
-                let document = try Loader.loadDocument(at: resourcePath)
-
-                let viewComponents = document.children.compactMap { $0 as? MainComponentNode}
-                let foundComponent: MainComponentNode?
-                if componentName == nil {
-                    foundComponent = viewComponents.first
-                } else if let componentName {
-                    foundComponent = viewComponents.first(where: { $0.name == componentName })
-                } else {
-                    foundComponent = nil
-                }
-
-                guard let foundComponent = foundComponent else {
-                    logger.error("Can't find Judo Component to load")
-                    return
-                }
-
-                viewSetup = Setup(
-                    document: document,
-                    component: foundComponent,
-                    bindings: convert(properties)
+        
+        guard let data = FileManager.default.contents(atPath: path) else {
+            self.init(error: .fileNotFound(path: path))
+            return
+        }
+        
+        do {
+            let document = try DocumentNode.read(from: data)
+            JudoView.documentCache[path] = document
+            self.init(document: document)
+        } catch {
+            self.init(error: .dataCorrupted)
+        }
+    }
+    
+    public init(data: Data) {
+        do {
+            let document = try DocumentNode.read(from: data)
+            self.init(document: document)
+        } catch {
+            self.init(error: .dataCorrupted)
+        }
+    }
+    
+    public init(document: DocumentNode) {
+        self.result = .success(document)
+    }
+    
+    private init(error: JudoError) {
+        self.result = .failure(error)
+    }
+    
+    public var body: some SwiftUI.View {
+        switch result {
+        case .success(let document):
+            if let component = document.initialComponent(preferring: componentName) {
+                MainComponentView(
+                    component: component,
+                    userBindings: userBindings
                 )
-            } catch {
-                logger.error("Failed to load View from \(fileName)")
-            }
-
-        }
-
-        public init(fileURL: URL, component componentName: String? = nil, properties: [String: Any] = [:]) {
-            let resourcePath = fileURL.path
-            do {
-                let document = try Loader.loadDocument(at: resourcePath)
-
-                let viewComponents = document.children.compactMap { $0 as? MainComponentNode}
-
-                let foundComponent: MainComponentNode?
-                if componentName == nil {
-                    foundComponent = viewComponents.first
-                } else if let componentName {
-                    foundComponent = viewComponents.first(where: { $0.name == componentName })
-                } else {
-                    foundComponent = nil
-                }
-
-                guard let foundComponent = foundComponent else {
-                    logger.error("Can't find Judo Component to load")
-                    return
-                }
-
-                viewSetup = Setup(
-                    document: document,
-                    component: foundComponent,
-                    bindings: convert(properties)
-                )
-            } catch {
-                logger.error("Failed to load View from \(fileURL)")
-            }
-        }
-
-        public var body: some SwiftUI.View {
-            if let viewSetup = viewSetup {
-                RootNodeView(node: viewSetup.component, viewSetup: viewSetup)
-                    .environment(\.assetManager, AssetManager(assets: viewSetup.document.assets))
-                    .environment(\.document, viewSetup.document)
-                    .id(viewSetup.bindings.mapValues(\.value))
+                .id(userBindings.mapValues(\.value))
+                .environment(\.document, document)
+                .environment(\.assetManager, AssetManager(assets: document.assets))
+                .environment(\.actionHandlers, actionHandlers)
             } else {
-                NotFoundView()
+                JudoErrorView(.emptyFile)
+            }
+        case .failure(let error):
+            JudoErrorView(error)
+        }
+    }
+    
+    /// Convert user provided properties (Any), to corresponding ComponentBinding
+    private var userBindings: [String: ComponentBinding] {
+        var result: [String: ComponentBinding] = [:]
+
+        for (key, anyValue) in properties {
+            switch anyValue {
+            case let value as IntegerLiteralType:
+                result[key.rawValue] = ComponentBinding(value: Property.number(Double(value)))
+            case let bindingValue as Binding<Int>:
+                let propertyValueBinding = Binding {
+                    Properties.Value.number(Double(bindingValue.wrappedValue))
+                } set: { newValue in
+                    if case .number(let value) = newValue {
+                        bindingValue.wrappedValue = Int(value)
+                    }
+                }
+                result[key.rawValue] = ComponentBinding(binding: propertyValueBinding)
+            case let value as FloatLiteralType:
+                result[key.rawValue] = ComponentBinding(value: Property.number(value))
+            case let bindingValue as Binding<Double>:
+                let propertyValueBinding = Binding {
+                    Properties.Value.number(bindingValue.wrappedValue)
+                } set: { newValue in
+                    if case .number(let value) = newValue {
+                        bindingValue.wrappedValue = value
+                    }
+                }
+                result[key.rawValue] = ComponentBinding(binding: propertyValueBinding)
+            case let value as BooleanLiteralType:
+                result[key.rawValue] = ComponentBinding(value: Property.boolean(value))
+            case let bindingValue as Binding<Bool>:
+                let propertyValueBinding = Binding {
+                    Properties.Value.boolean(bindingValue.wrappedValue)
+                } set: { newValue in
+                    if case .boolean(let value) = newValue {
+                        bindingValue.wrappedValue = value
+                    }
+                }
+                result[key.rawValue] = ComponentBinding(binding: propertyValueBinding)
+            case let value as StringLiteralType:
+                result[key.rawValue] = ComponentBinding(value: Property.text(value))
+            case let bindingValue as Binding<String>:
+                let propertyValueBinding = Binding {
+                    Properties.Value.text(bindingValue.wrappedValue)
+                } set: { newValue in
+                    if case .text(let value) = newValue {
+                        bindingValue.wrappedValue = value
+                    }
+                }
+                result[key.rawValue] = ComponentBinding(binding: propertyValueBinding)
+            case let value as SwiftUI.Image:
+                result[key.rawValue] = ComponentBinding(value: Property.image(.inline(image: value)))
+            case let value as UIImage:
+                let image = SwiftUI.Image(uiImage: value)
+                result[key.rawValue] = ComponentBinding(value: Property.image(.inline(image: image)))
+            default:
+                logger.warning("Invalid value for property \"\(key)\". Property unused.")
+                break
             }
         }
 
-        struct NotFoundView: SwiftUI.View {
-            @Environment(\.colorScheme) private var colorScheme
-            @Environment(\.displayScale) private var displayScale
+        return result
+    }
 
-            var body: some SwiftUI.View {
-                SwiftUI.Image(packageResource: assetName, ofType: "png")
-            }
-
-            private var assetName: String {
-                var name = "404"
-                if colorScheme == .dark {
-                    name += "-dark"
-                }
-                if displayScale > 1 {
-                    name += "@2x"
-                }
-                return name
-            }
+    public func component(_ componentName: ComponentName) -> JudoView {
+        var result = self
+        result.componentName = componentName
+        return result
+    }
+    
+    public func property(_ propertyName: PropertyName, _ value: Any) -> JudoView {
+        var result = self
+        result.properties[propertyName] = value
+        return result
+    }
+    
+    public func properties(_ properties: [PropertyName: Any]) -> JudoView {
+        var result = self
+        result.properties = properties
+        return result
+    }
+    
+    public func action(_ actionName: ActionName, handler: @escaping ActionHandler) -> JudoView {
+        var result = self
+        result.actionHandlers[actionName] = handler
+        return result
+    }
+    
+    // MARK: Deprecations
+    
+    @available(*, deprecated, message: "use 'init(_:bundle:)' instead")
+    public init(_ fileName: String, bundle: Bundle = .main, component componentName: String? = nil, properties: [String: Any] = [:]) {
+        self.init(fileName, bundle: bundle)
+        
+        self.componentName = componentName.map {
+            ComponentName($0)
+        }
+        
+        self.properties = properties.reduce(into: [:]) { partialResult, element in
+            let key = PropertyName(element.key)
+            partialResult[key] = element.value
         }
     }
-}
-
-// MARK: - Custom Actions
-
-extension Judo.View {
-    public func on(_ identifier: CustomActionIdentifier, handler: @escaping ([String: Any]) -> Void) -> Judo.ActionModifiedContent<Self> {
-        Judo.ActionModifiedContent(identifier: identifier, handler: ActionHandler(handler: handler), content: self)
+    
+    @available(*, deprecated, renamed: "action(_:handler:)")
+    public func on(_ actionName: ActionName, handler: @escaping ActionHandler) -> JudoView {
+        return action(actionName, handler: handler)
     }
-}
-
-extension Judo.ActionModifiedContent {
-    public func on(_ identifier: CustomActionIdentifier, handler: @escaping ([String: Any]) -> Void) -> Judo.ActionModifiedContent<Self> {
-        Judo.ActionModifiedContent(identifier: identifier, handler: ActionHandler(handler: handler), content: self)
-    }
-}
-
-extension Judo {
-
-    public struct ActionModifiedContent<Content: SwiftUI.View>: SwiftUI.View {
-        @Environment(\.customActions) private var customActions
-        private let identifier: CustomActionIdentifier
-        private let handler: ActionHandler<[String: Any]>
-        private let content: Content
-
-        init(identifier: CustomActionIdentifier, handler: ActionHandler<[String: Any]>, content: Content) {
-            self.identifier = identifier
-            self.handler = handler
-            self.content = content
-        }
-
-        public var body: some SwiftUI.View {
-            content.environment(
-                \.customActions,
-                 customActions.merging([identifier: handler], uniquingKeysWith: {(_, new) in new })
-            )
-        }
-    }
-
-}
-
-/// Convert user provided properties (Any), to corresponding ComponentBinding
-private func convert(_ properties: [String: Any]) -> [String: ComponentBinding] {
-    var result: [String: ComponentBinding] = [:]
-
-    for (key, anyValue) in properties {
-        switch anyValue {
-        case let value as IntegerLiteralType:
-            result[key] = ComponentBinding(value: Property.number(Double(value)))
-        case let bindingValue as Binding<Int>:
-            let propertyValueBinding = Binding {
-                Properties.Value.number(Double(bindingValue.wrappedValue))
-            } set: { newValue in
-                if case .number(let value) = newValue {
-                    bindingValue.wrappedValue = Int(value)
-                }
-            }
-            result[key] = ComponentBinding(binding: propertyValueBinding)
-        case let value as FloatLiteralType:
-            result[key] = ComponentBinding(value: Property.number(value))
-        case let bindingValue as Binding<Double>:
-            let propertyValueBinding = Binding {
-                Properties.Value.number(bindingValue.wrappedValue)
-            } set: { newValue in
-                if case .number(let value) = newValue {
-                    bindingValue.wrappedValue = value
-                }
-            }
-            result[key] = ComponentBinding(binding: propertyValueBinding)
-        case let value as BooleanLiteralType:
-            result[key] = ComponentBinding(value: Property.boolean(value))
-        case let bindingValue as Binding<Bool>:
-            let propertyValueBinding = Binding {
-                Properties.Value.boolean(bindingValue.wrappedValue)
-            } set: { newValue in
-                if case .boolean(let value) = newValue {
-                    bindingValue.wrappedValue = value
-                }
-            }
-            result[key] = ComponentBinding(binding: propertyValueBinding)
-        case let value as StringLiteralType:
-            result[key] = ComponentBinding(value: Property.text(value))
-        case let bindingValue as Binding<String>:
-            let propertyValueBinding = Binding {
-                Properties.Value.text(bindingValue.wrappedValue)
-            } set: { newValue in
-                if case .text(let value) = newValue {
-                    bindingValue.wrappedValue = value
-                }
-            }
-            result[key] = ComponentBinding(binding: propertyValueBinding)
-        case let value as SwiftUI.Image:
-            result[key] = ComponentBinding(value: Property.image(.inline(image: value)))
-        case let value as UIImage:
-            let image = SwiftUI.Image(uiImage: value)
-            result[key] = ComponentBinding(value: Property.image(.inline(image: image)))
-        default:
-            logger.warning("Invalid value for property \"\(key)\". Property unused.")
-            break
-        }
-    }
-
-    return result
 }

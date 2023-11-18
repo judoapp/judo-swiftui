@@ -145,6 +145,9 @@ private struct JudoViewModifier: SwiftUI.ViewModifier {
         case let modifier as BlendModeModifier:
             content.modifier(BlendModeViewModifier(modifier: modifier))
 
+        case let modifier as BlurModifier:
+            content.modifier(BlurViewModifier(modifier: modifier))
+
         case let modifier as BoldModifier:
             content.modifier(BoldViewModifier(modifier: modifier))
 
@@ -216,6 +219,15 @@ private struct JudoViewModifier: SwiftUI.ViewModifier {
 
         case let modifier as OpacityModifier:
             content.modifier(OpacityViewModifier(modifier: modifier))
+
+        case let modifier as OnAppearModifier:
+            content.modifier(OnAppearViewModifier(modifier: modifier))
+
+        case let modifier as OnDisappearModifier:
+            content.modifier(OnDisappearViewModifier(modifier: modifier))
+
+        case let modifier as OnTapGestureModifier:
+            content.modifier(OnTapGestureViewModifier(modifier: modifier))
 
         case let modifier as OverlayModifier:
             content.modifier(OverlayViewModifier(modifier: modifier))

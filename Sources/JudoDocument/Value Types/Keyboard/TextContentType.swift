@@ -17,6 +17,8 @@ import Foundation
 
 public enum TextContentType: Codable {
 
+    case `none`
+
     // Identifying Contacts
     case name
     case namePrefix

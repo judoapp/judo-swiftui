@@ -74,7 +74,7 @@ private struct ModernToolbarItemButtonView: SwiftUI.View {
     @Environment(\.refresh) private var refresh
     @Environment(\.dismiss) private var dismiss
     @Environment(\.openURL) private var openURL
-    @Environment(\.customActions) private var customActions
+    @Environment(\.actionHandlers) private var actionHandlers
     @Environment(\.data) private var data
     @EnvironmentObject private var componentState: ComponentState
 
@@ -110,12 +110,12 @@ private struct ModernToolbarItemButtonView: SwiftUI.View {
                 }
 
             case let action as CustomAction:
-                let resolvedValue = action.identifier.forceResolve(
+                let identifier = action.identifier.forceResolve(
                     properties: componentState.properties,
                     data: data
                 )
                 
-                let identifier = CustomActionIdentifier(resolvedValue)
+                let name = ActionName(identifier)
                 
                 let parameters: [String: Any] = action.parameters.reduce(into: [:], { partialResult, parameter in
                     if let textValue = parameter.textValue {
@@ -142,7 +142,7 @@ private struct ModernToolbarItemButtonView: SwiftUI.View {
                     }
                 })
                 
-                customActions[identifier]?(parameters)
+                actionHandlers[name]?(parameters)
 
             case let action as PropertyAction:
                 processPropertyAction(action, componentState: componentState, data: data)
@@ -157,7 +157,7 @@ private struct ModernToolbarItemButtonView: SwiftUI.View {
 private struct ToolbarItemButtonView: SwiftUI.View {
     @Environment(\.presentationMode) private var presentationMode
     @Environment(\.openURL) private var openURL
-    @Environment(\.customActions) private var customActions
+    @Environment(\.actionHandlers) private var actionHandlers
     @Environment(\.data) private var data
     @EnvironmentObject private var componentState: ComponentState
 
@@ -193,11 +193,11 @@ private struct ToolbarItemButtonView: SwiftUI.View {
                 break
 
             case let action as CustomAction:
-                guard let resolvedValue = action.identifier.resolve(properties: componentState.properties, data: data) else {
+                guard let identifier = action.identifier.resolve(properties: componentState.properties, data: data) else {
                     continue
                 }
                 
-                let identifier = CustomActionIdentifier(resolvedValue)
+                let name = ActionName(identifier)
                 
                 let parameters: [String: Any] = action.parameters.reduce(into: [:], { partialResult, parameter in
                     if let textValue = parameter.textValue {
@@ -224,7 +224,7 @@ private struct ToolbarItemButtonView: SwiftUI.View {
                     }
                 })
                 
-                customActions[identifier]?(parameters)
+                actionHandlers[name]?(parameters)
 
             case let action as PropertyAction:
                 processPropertyAction(action, componentState: componentState, data: data)

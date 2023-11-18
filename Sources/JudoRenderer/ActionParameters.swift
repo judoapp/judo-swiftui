@@ -14,24 +14,5 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import Foundation
-import JudoDocument
 
-final class DocumentCache {
-
-    static let shared = DocumentCache()
-
-    private var cache: [String: DocumentNode] = [:]
-    private init() { }
-
-    func add(key: String, value: DocumentNode) {
-        cache[key] = value
-    }
-
-    func remove(key: String) {
-        cache[key] = nil
-    }
-
-    func value(for key: String) -> DocumentNode? {
-        cache[key]
-    }
-}
+public typealias ActionParameters = [String: Any]

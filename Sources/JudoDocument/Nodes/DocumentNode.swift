@@ -72,9 +72,8 @@ public struct DocumentNode: Node {
 
     // MARK: Read and Write
     
-    public static func read(from url: URL, errorOnForwardsCompatibility: Bool = false) throws -> DocumentNode {
-        guard let data = try? Data(contentsOf: url, options: .mappedIfSafe),
-              let archive = Archive(data: data, accessMode: .read) else {
+    public static func read(from data: Data, errorOnForwardsCompatibility: Bool = false) throws -> DocumentNode {
+        guard let archive = Archive(data: data, accessMode: .read) else {
             throw CocoaError(.fileReadCorruptFile)
         }
 

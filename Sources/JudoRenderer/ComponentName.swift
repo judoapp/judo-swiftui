@@ -13,30 +13,31 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import JudoDocument
-import SwiftUI
+import Foundation
 
-struct TabItemViewModifier: SwiftUI.ViewModifier {
-    @EnvironmentObject private var componentState: ComponentState
+public struct ComponentName: Hashable, Codable, CustomStringConvertible, ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+    public let rawValue: String
 
-    var modifier: TabItemModifier
-
-    func body(content: Content) -> some SwiftUI.View {
-        content
-            .tabItem {
-                if let tabItemTitle = modifier.title {
-                    RealizeText(tabItemTitle) { title in
-                        if let tabItemIcon = modifier.icon {
-                            Label(title, systemImage: tabItemIcon.symbolName)
-                        } else {
-                            SwiftUI.Text(title)
-                        }
-                    }
-                } else if let tabItemIcon = modifier.icon {
-                    SwiftUI.Image(systemName: tabItemIcon.symbolName)
-                } else {
-                    EmptyView()
-                }
-            }
+    public init(stringLiteral value: StringLiteralType) {
+        self.rawValue = value
     }
+
+    public init(_ rawValue: String) {
+        self.rawValue = rawValue
+    }
+
+    public var description: String {
+        rawValue
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(rawValue)
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        self.rawValue = try container.decode(String.self)
+    }
+
 }

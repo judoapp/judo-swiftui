@@ -18,7 +18,7 @@ import SwiftUI
 
 struct NavigationLinkView: SwiftUI.View {
     @Environment(\.assetManager) private var assetManager
-    @Environment(\.customActions) private var customActions
+    @Environment(\.actionHandlers) private var actionHandlers
     @Environment(\.data) private var data
     @Environment(\.document) private var document
     @Environment(\.fetchedImage) private var fetchedImage
@@ -32,7 +32,7 @@ struct NavigationLinkView: SwiftUI.View {
                 NodeView(node: $0)
             }
             .environment(\.assetManager, assetManager)
-            .environment(\.customActions, customActions)
+            .environment(\.actionHandlers, actionHandlers)
             .environment(\.data, data)
             .environment(\.document, document)
             .environment(\.fetchedImage, fetchedImage)

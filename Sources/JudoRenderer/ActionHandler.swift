@@ -15,14 +15,4 @@
 
 import Foundation
 
-public struct ActionHandler<Value> {
-    private var handler: (Value) -> Void
-
-    public init(handler: @escaping (Value) -> Void) {
-        self.handler = handler
-    }
-
-    public func callAsFunction(_ value: Value) {
-        handler(value)
-    }
-}
+public typealias ActionHandler = (ActionParameters) -> Void
