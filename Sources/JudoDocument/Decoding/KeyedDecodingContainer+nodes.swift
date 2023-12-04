@@ -155,10 +155,14 @@ private struct NodeWrapper: Decodable {
             node = try ForegroundColorModifier(from: decoder)
         case FrameModifier.typeName:
             node = try FrameModifier(from: decoder)
+        case FullScreenCoverModifier.typeName:
+            node = try FullScreenCoverModifier(from: decoder)
         case IgnoresSafeAreaModifier.typeName:
             node = try IgnoresSafeAreaModifier(from: decoder)
         case IndexViewStyleModifier.typeName:
             node = try IndexViewStyleModifier(from: decoder)
+        case InteractiveDismissDisabledModifier.typeName:
+            node = try InteractiveDismissDisabledModifier(from: decoder)
         case ItalicModifier.typeName:
             node = try ItalicModifier(from: decoder)
         case KeyboardTypeModifier.typeName:
@@ -199,6 +203,8 @@ private struct NodeWrapper: Decodable {
             node = try PickerStyleModifier(from: decoder)
         case PositionModifier.typeName:
             node = try PositionModifier(from: decoder)
+        case PresentationDetentsModifier.typeName:
+            node = try PresentationDetentsModifier(from: decoder)
         case RotationEffectModifier.typeName:
             node = try RotationEffectModifier(from: decoder)
         case ScaledToFillModifier.typeName:
@@ -211,6 +217,8 @@ private struct NodeWrapper: Decodable {
             node = try ScrollTargetLayoutModifier(from: decoder)
         case ShadowModifier.typeName:
             node = try ShadowModifier(from: decoder)
+        case SheetModifier.typeName:
+            node = try SheetModifier(from: decoder)
         case SubmitLabelModifier.typeName:
             node = try SubmitLabelModifier(from: decoder)
         case TabItemModifier.typeName:

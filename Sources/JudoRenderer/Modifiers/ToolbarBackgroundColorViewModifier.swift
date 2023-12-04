@@ -15,7 +15,6 @@
 
 import JudoDocument
 import SwiftUI
-import Introspect
 
 struct ToolbarBackgroundColorViewModifier: SwiftUI.ViewModifier {
     var modifier: ToolbarBackgroundColorModifier
@@ -35,17 +34,7 @@ struct ToolbarBackgroundColorViewModifier: SwiftUI.ViewModifier {
                 }
             })
         } else {
-            RealizeColor(modifier.color, cocoaContent: { realizedColor in
-                content
-                    .introspectNavigationController { navigationController in
-                        if modifier.bars.contains(.navigationBar) {
-                            let navBarAppearance = navigationController.navigationBar.standardAppearance
-                            navBarAppearance.backgroundColor = realizedColor
-                            navigationController.navigationBar.standardAppearance = navBarAppearance
-                            navigationController.navigationBar.compactAppearance = navBarAppearance
-                        }
-                    }
-            })
+            content
         }
     }
 }

@@ -16,34 +16,21 @@
 import JudoDocument
 import SwiftUI
 
-struct ToolbarColorSchemeViewModifier: SwiftUI.ViewModifier {
-    var modifier: ToolbarColorSchemeModifier
+struct InteractiveDismissDisabledViewModifier: SwiftUI.ViewModifier {
+    @EnvironmentObject private var componentState: ComponentState
+    @Environment(\.data) private var data
+
+    var modifier: InteractiveDismissDisabledModifier
 
     func body(content: Content) -> some SwiftUI.View {
-        if #available(iOS 16.0, *) {
-            switch modifier.bars {
-            case .navigationBar:
-                content.toolbarColorScheme(modifier.colorScheme.swiftUIValue, for: .navigationBar)
-            case .tabBar:
-                content.toolbarColorScheme(modifier.colorScheme.swiftUIValue, for: .tabBar)
-            case .all:
-                content.toolbarColorScheme(modifier.colorScheme.swiftUIValue, for: .navigationBar, .tabBar)
-            default:
-                content
-            }
-        } else {
-            content
-        }
+        content
+            .backport.interactiveDismissDisabled(isDisabled)
     }
-}
 
-private extension JudoDocument.ColorScheme {
-    var swiftUIValue: SwiftUI.ColorScheme {
-        switch self {
-        case .dark:
-            return .dark
-        case .light:
-            return .light
-        }
+    private var isDisabled: Bool {
+        modifier.isDisabled.forceResolve(
+            properties: componentState.properties,
+            data: data
+        )
     }
 }

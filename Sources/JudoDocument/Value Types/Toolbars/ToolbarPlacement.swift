@@ -15,7 +15,7 @@
 
 import Foundation
 
-public struct ToolbarPlacement: OptionSet, Codable, Equatable {
+public struct ToolbarPlacement: OptionSet, Codable, Hashable {
     public static let navigationBar = ToolbarPlacement(rawValue: 1 << 0)
     public static let tabBar = ToolbarPlacement(rawValue: 1 << 1)
     

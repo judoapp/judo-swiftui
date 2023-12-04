@@ -15,7 +15,6 @@
 
 import JudoDocument
 import SwiftUI
-import Introspect
 
 struct ToolbarBackgroundVisibilityViewModifier: SwiftUI.ViewModifier {
     var modifier: ToolbarBackgroundVisibilityModifier
@@ -34,34 +33,6 @@ struct ToolbarBackgroundVisibilityViewModifier: SwiftUI.ViewModifier {
             }
         } else {
             content
-                .introspectNavigationController { navigationController in
-                    switch modifier.visibility {
-                    case .visible:
-                        if modifier.bars.contains(.navigationBar) {
-                            // Need to know the color from ToolbarBackgroundColorViewModifier since it's not yet set at this point
-                            DispatchQueue.main.async {
-                                let navBarAppearance = navigationController.navigationBar.standardAppearance
-                                navigationController.navigationBar.scrollEdgeAppearance = navBarAppearance
-                                if #available(iOS 15.0, *) {
-                                    navigationController.navigationBar.compactScrollEdgeAppearance = navBarAppearance
-                                }
-                            }
-                        }
-                    case .hidden:
-                        if modifier.bars.contains(.navigationBar) {
-                            DispatchQueue.main.async {
-                                let navBarAppearance = navigationController.navigationBar.standardAppearance
-                                navBarAppearance.configureWithTransparentBackground()
-                                navigationController.navigationBar.scrollEdgeAppearance = navBarAppearance
-                                if #available(iOS 15.0, *) {
-                                    navigationController.navigationBar.compactScrollEdgeAppearance = navBarAppearance
-                                }
-                            }
-                        }
-                    case .automatic:
-                        break
-                    }
-                }
         }
     }
 }

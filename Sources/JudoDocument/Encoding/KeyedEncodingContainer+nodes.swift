@@ -128,9 +128,13 @@ extension KeyedEncodingContainer {
                 try container.encode(node)
             case let node as FrameModifier:
                 try container.encode(node)
+            case let node as FullScreenCoverModifier:
+                try container.encode(node)
             case let node as IgnoresSafeAreaModifier:
                 try container.encode(node)
             case let node as IndexViewStyleModifier:
+                try container.encode(node)
+            case let node as InteractiveDismissDisabledModifier:
                 try container.encode(node)
             case let node as ItalicModifier:
                 try container.encode(node)
@@ -172,6 +176,8 @@ extension KeyedEncodingContainer {
                 try container.encode(node)
             case let node as PositionModifier:
                 try container.encode(node)
+            case let node as PresentationDetentsModifier:
+                try container.encode(node)
             case let node as RotationEffectModifier:
                 try container.encode(node)
             case let node as ScaledToFillModifier:
@@ -183,6 +189,8 @@ extension KeyedEncodingContainer {
             case let node as ScrollTargetLayoutModifier:
                 try container.encode(node)
             case let node as ShadowModifier:
+                try container.encode(node)
+            case let node as SheetModifier:
                 try container.encode(node)
             case let node as SubmitLabelModifier:
                 try container.encode(node)

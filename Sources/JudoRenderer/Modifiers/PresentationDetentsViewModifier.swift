@@ -13,30 +13,16 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+import JudoDocument
 import SwiftUI
 
-private struct ConditionalViewModifier<V: SwiftUI.View>: SwiftUI.ViewModifier {
-    let condition: () -> Bool
-    let result: V
+struct PresentationDetentsViewModifier: SwiftUI.ViewModifier {
 
-    init(_ condition: @escaping () -> Bool, @ViewBuilder result: @escaping () -> V) {
-        self.condition = condition
-        self.result = result()
-    }
+    var modifier: PresentationDetentsModifier
 
-    func body(content: Content) -> some SwiftUI.View {
-        if condition() {
-            result
-        }
-    }
-}
+    func body(content: Content) -> some View {
+        content
+            .backport.presentationDetents(modifier.detents)
 
-extension SwiftUI.View {
-    func modifierIf(_ condition: @autoclosure @escaping () -> Bool, result: @escaping () -> some SwiftUI.View) -> some SwiftUI.View {
-        modifier(
-            ConditionalViewModifier(condition) {
-                result()
-            }
-        )
     }
 }

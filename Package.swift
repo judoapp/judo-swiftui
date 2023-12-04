@@ -14,7 +14,6 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/weichsel/ZIPFoundation.git", .upToNextMajor(from: "0.9.16")),
         .package(url: "https://github.com/apple/swift-collections.git", .upToNextMajor(from: "1.0.4")),
-        .package(url: "https://github.com/siteline/SwiftUI-Introspect.git", .upToNextMajor(from: "0.10.0"))
     ],
     targets: [
         .target(
@@ -28,8 +27,7 @@ let package = Package(
             dependencies: [
                 .target(name: "JudoDocument"),
                 .target(name: "Backport"),
-                .target(name: "XCAssetsKit"),
-                .product(name: "Introspect", package: "SwiftUI-Introspect")
+                .target(name: "XCAssetsKit")
             ],
             resources: [
                 .copy("Assets/Logo.png")

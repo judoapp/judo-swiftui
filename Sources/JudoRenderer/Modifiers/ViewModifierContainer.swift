@@ -175,11 +175,17 @@ private struct JudoViewModifier: SwiftUI.ViewModifier {
         case let modifier as FrameModifier:
             content.modifier(FrameViewModifier(modifier: modifier))
 
+        case let modifier as FullScreenCoverModifier:
+            content.modifier(FullScreenCoverViewModifier(modifier: modifier))
+
         case let modifier as IgnoresSafeAreaModifier:
             content.modifier(IgnoresSafeAreaViewModifier(modifier: modifier))
             
         case let modifier as IndexViewStyleModifier:
             content.modifier(IndexViewStyleViewModifier(modifier: modifier))
+
+        case let modifier as InteractiveDismissDisabledModifier:
+            content.modifier(InteractiveDismissDisabledViewModifier(modifier: modifier))
 
         case let modifier as ItalicModifier:
             content.modifier(ItalicViewModifier(modifier: modifier))
@@ -241,6 +247,9 @@ private struct JudoViewModifier: SwiftUI.ViewModifier {
         case let modifier as PositionModifier:
             content.modifier(PositionViewModifier(modifier: modifier))
 
+        case let modifier as PresentationDetentsModifier:
+            content.modifier(PresentationDetentsViewModifier(modifier: modifier))
+
         case let modifier as RotationEffectModifier:
             content.modifier(RotationEffectViewModifier(modifier: modifier))
 
@@ -258,6 +267,9 @@ private struct JudoViewModifier: SwiftUI.ViewModifier {
 
         case let modifier as ShadowModifier:
             content.modifier(ShadowViewModifier(modifier: modifier))
+
+        case let modifier as SheetModifier:
+            content.modifier(SheetViewModifier(modifier: modifier))
 
         case let modifier as SubmitLabelModifier:
             content.modifier(SubmitLabelViewModifier(modifier: modifier))
