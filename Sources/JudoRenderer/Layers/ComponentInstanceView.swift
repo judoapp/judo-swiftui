@@ -38,7 +38,9 @@ struct ComponentInstanceView: SwiftUI.View {
         )
         .environmentObject(
             ComponentState(
-                properties: mainComponent?.properties ?? [:],
+                propertyValues: mainComponent?.properties.reduce(into: [:]) { partialResult, property in
+                    partialResult[property.name] = property.value
+                } ?? [:],
                 overrides: componentInstance.overrides,
                 data: data,
                 fetchedImage: fetchedImage,
@@ -49,7 +51,7 @@ struct ComponentInstanceView: SwiftUI.View {
     
     private var mainComponent: MainComponentNode? {
         let mainComponentID = componentInstance.value.forceResolve(
-            properties: componentState.properties,
+            propertyValues: componentState.propertyValues,
             data: data
         )
         

@@ -36,14 +36,14 @@ struct CollectionView: SwiftUI.View {
     private var items: [Any]? {
         collection.items(
             data: data,
-            properties: componentState.properties
+            propertyValues: componentState.propertyValues
         )
     }
 }
 
 private extension CollectionNode {
-    func items(data: Any?, properties: Properties) -> [Any] {
-        guard var result = JSONSerialization.value(forKeyPath: keyPath, data: data, properties: properties) as? [Any] else {
+    func items(data: Any?, propertyValues: [String: PropertyValue]) -> [Any] {
+        guard var result = JSONSerialization.value(forKeyPath: keyPath, data: data, propertyValues: propertyValues) as? [Any] else {
             return []
         }
 
@@ -51,7 +51,7 @@ private extension CollectionNode {
             result = result.filter { data in
                 condition.isSatisfied(
                     data: data,
-                    properties: properties
+                    propertyValues: propertyValues
                 )
             }
         }
@@ -62,13 +62,13 @@ private extension CollectionNode {
                     let a = JSONSerialization.value(
                         forKeyPath: descriptor.keyPath,
                         data: a,
-                        properties: properties
+                        propertyValues: propertyValues
                     )
 
                     let b = JSONSerialization.value(
                         forKeyPath: descriptor.keyPath,
                         data: b,
-                        properties: properties
+                        propertyValues: propertyValues
                     )
 
                     switch (a, b) {

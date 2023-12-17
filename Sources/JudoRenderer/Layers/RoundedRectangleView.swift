@@ -29,7 +29,7 @@ struct RoundedRectangleView: SwiftUI.View {
 
     private var cornerRadius: Double {
         roundedRectangle.cornerRadius.forceResolve(
-            properties: componentState.properties,
+            propertyValues: componentState.propertyValues,
             data: data
         )
     }

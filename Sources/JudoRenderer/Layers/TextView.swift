@@ -18,10 +18,12 @@ import SwiftUI
 import JudoDocument
 
 struct TextView: SwiftUI.View {
-    @Environment(\.data) private var data
     @Environment(\.isBold) private var isBold
     @Environment(\.isItalic) private var isItalic
     @Environment(\.isUnderlined) private var isUnderlined
+    @Environment(\.fontWeight) private var fontWeight
+    @Environment(\.kerning) private var kerning
+    @Environment(\.tracking) private var tracking
 
     private var text: JudoDocument.TextNode
 
@@ -37,41 +39,86 @@ struct TextView: SwiftUI.View {
     
     @ViewBuilder
     private func textContent(_ string: String) -> some View {
-        /// Apply the .bold() and .italic() modifiers if running less than iOS 16, as outlined in Backport+bold and Backport+italic.
+        /// Apply the modifiers if running less than iOS 16
         if #available(iOS 16, macOS 13, *) {
             SwiftUI.Text(string)
         } else {
+            SwiftUI.Text(string)
+                .conditionalBold(isBold)
+                .conditionalItalic(isItalic)
+                .conditionalUnderline(isUnderlined)
+                .conditionalFontWeight(fontWeight)
+                .conditionalKerning(kerning)
+                .conditionalTracking(tracking)
+        }
+    }
+}
 
-            switch (isBold, isItalic, isUnderlined.isActive) {
-            case (true, true, true):
-                SwiftUI.Text(string)
-                    .bold()
-                    .italic()
-                    .underline(isUnderlined.isActive, color: isUnderlined.color)
-            case (true, true, false):
-                SwiftUI.Text(string)
-                    .bold()
-                    .italic()
-            case (true, false, true):
-                SwiftUI.Text(string)
-                    .bold()
-                    .underline(isUnderlined.isActive, color: isUnderlined.color)
-            case (false, true, true):
-                SwiftUI.Text(string)
-                    .italic()
-                    .underline(isUnderlined.isActive, color: isUnderlined.color)
-            case (true, false, false):
-                SwiftUI.Text(string)
-                    .bold()
-            case (false, true, false):
-                SwiftUI.Text(string)
-                    .italic()
-            case (false, false, true):
-                SwiftUI.Text(string)
-                    .underline(isUnderlined.isActive, color: isUnderlined.color)
-            case (false, false, false):
-                SwiftUI.Text(string)
-            }
+private extension SwiftUI.Text {
+    func conditionalBold(_ condition: Bool) -> Self {
+        if condition {
+            self.bold()
+        } else {
+            self
+        }
+    }
+
+    func conditionalItalic(_ condition: Bool) -> Self {
+        if condition {
+            self.italic()
+        } else {
+            self
+        }
+    }
+
+    func conditionalUnderline(_ value: (isActive: Bool, color: Color?)) -> Self {
+        if value.isActive {
+            self.underline(value.isActive, color: value.color)
+        } else {
+            self
+        }
+    }
+
+    func conditionalFontWeight(_ fontWeight: FontWeight?) -> Self {
+        if fontWeight != FontWeight.none {
+            self.fontWeight(fontWeight?.swiftUIValue)
+        } else {
+            self
+        }
+    }
+
+    func conditionalKerning(_ kerning: CGFloat) -> Self {
+        self.kerning(kerning)
+    }
+
+    func conditionalTracking(_ tracking: CGFloat) -> Self {
+        self.tracking(tracking)
+    }
+}
+
+private extension FontWeight {
+    var swiftUIValue: SwiftUI.Font.Weight? {
+        switch self {
+        case .none:
+            return nil
+        case .ultraLight:
+            return .ultraLight
+        case .thin:
+            return .thin
+        case .light:
+            return .light
+        case .regular:
+            return .regular
+        case .medium:
+            return .medium
+        case .semibold:
+            return .semibold
+        case .bold:
+            return .bold
+        case .heavy:
+            return .heavy
+        case .black:
+            return .black
         }
     }
 }

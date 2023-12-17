@@ -19,18 +19,18 @@ import JudoDocument
 final class ComponentState: ObservableObject {
     @Published var bindings: [String: ComponentBinding]
     
-    var properties: Properties {
-        bindings.reduce(into: Properties()) { partialResult, element in
+    var propertyValues: [String: PropertyValue] {
+        bindings.reduce(into: [String: PropertyValue]()) { partialResult, element in
             partialResult[element.key] = element.value.value
         }
     }
 
-    init(properties: Properties, overrides: Overrides, data: Any?, fetchedImage: SwiftUI.Image?, parentState: ComponentState?) {
-        var result = properties.mapValues {
+    init(propertyValues: [String: PropertyValue], overrides: Overrides, data: Any?, fetchedImage: SwiftUI.Image?, parentState: ComponentState?) {
+        var result = propertyValues.mapValues {
             ComponentBinding(value: $0)
-        }.asDictionary()
+        }
         
-        properties.forEach { (key, value) in
+        propertyValues.forEach { (key, value) in
             switch (value, overrides[key]) {
             case (.text, .text(let textValue)):
                 if case .property(let propertyName) = textValue.binding, let parentState, parentState.bindings.keys.contains(propertyName) {
@@ -41,7 +41,7 @@ final class ComponentState: ObservableObject {
                     })
                 } else {
                     let resolvedValue = textValue.forceResolve(
-                        properties: properties,
+                        propertyValues: propertyValues,
                         data: data
                     )
                     
@@ -56,7 +56,7 @@ final class ComponentState: ObservableObject {
                     })
                 } else {
                     let resolvedValue = numberValue.resolve(
-                        properties: properties,
+                        propertyValues: propertyValues,
                         data: data
                     )
                     result[key] = ComponentBinding(value: .number(resolvedValue ?? defaultValue))
@@ -70,7 +70,7 @@ final class ComponentState: ObservableObject {
                     })
                 } else {
                     let resolvedValue = booleanValue.forceResolve(
-                        properties: properties,
+                        propertyValues: propertyValues,
                         data: data
                     )
                     result[key] = ComponentBinding(value: .boolean(resolvedValue))
@@ -84,7 +84,7 @@ final class ComponentState: ObservableObject {
                     })
                 } else {
                     let resolvedValue = value.forceResolve(
-                        properties: properties,
+                        propertyValues: propertyValues,
                         data: data,
                         fetchedImage: fetchedImage
                     )
@@ -100,7 +100,7 @@ final class ComponentState: ObservableObject {
                     })
                 } else {
                     let resolvedValue = value.resolve(
-                        properties: properties,
+                        propertyValues: propertyValues,
                         data: data
                     )
                     
@@ -116,7 +116,7 @@ final class ComponentState: ObservableObject {
                     })
                 } else {
                     let resolvedValue = videoValue.forceResolve(
-                        properties: properties,
+                        propertyValues: propertyValues,
                         data: data
                     )
 
@@ -130,8 +130,8 @@ final class ComponentState: ObservableObject {
         self.bindings = result
     }
     
-    init(properties: Properties) {
-        self.bindings = properties.mapValues({ ComponentBinding(value: $0) }).asDictionary()
+    init(propertyValues: [String: PropertyValue]) {
+        self.bindings = propertyValues.mapValues({ ComponentBinding(value: $0) })
     }
 
     init(bindings: [String: ComponentBinding]) {
@@ -140,10 +140,10 @@ final class ComponentState: ObservableObject {
 }
 
 struct ComponentBinding {
-    private var ownedValue: Properties.Value?
-    private var binding: Binding<Properties.Value>?
+    private var ownedValue: PropertyValue?
+    private var binding: Binding<PropertyValue>?
 
-    var value: Properties.Value {
+    var value: PropertyValue {
         get {
             if let ownedValue {
                 return ownedValue
@@ -165,11 +165,11 @@ struct ComponentBinding {
         }
     }
 
-    init(value: Properties.Value) {
+    init(value: PropertyValue) {
         self.ownedValue = value
     }
 
-    init(binding: Binding<Properties.Value>) {
+    init(binding: Binding<PropertyValue>) {
         self.binding = binding
     }
 }

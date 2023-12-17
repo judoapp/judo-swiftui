@@ -41,7 +41,7 @@ struct FrameViewModifier: SwiftUI.ViewModifier {
     
     private var width: CGFloat? {
         let resolvedValue = modifier.width?.forceResolve(
-            properties: componentState.properties,
+            propertyValues: componentState.propertyValues,
             data: data
         )
             
@@ -50,7 +50,7 @@ struct FrameViewModifier: SwiftUI.ViewModifier {
     
     private var maxWidth: CGFloat? {
         let resolvedValue = modifier.maxWidth?.forceResolve(
-            properties: componentState.properties,
+            propertyValues: componentState.propertyValues,
             data: data
         )
             
@@ -59,7 +59,7 @@ struct FrameViewModifier: SwiftUI.ViewModifier {
     
     private var minWidth: CGFloat? {
         let resolvedValue = modifier.minWidth?.forceResolve(
-            properties: componentState.properties,
+            propertyValues: componentState.propertyValues,
             data: data
         )
             
@@ -68,7 +68,7 @@ struct FrameViewModifier: SwiftUI.ViewModifier {
     
     private var height: CGFloat? {
         let resolvedValue = modifier.height?.forceResolve(
-            properties: componentState.properties,
+            propertyValues: componentState.propertyValues,
             data: data
         )
             
@@ -77,7 +77,7 @@ struct FrameViewModifier: SwiftUI.ViewModifier {
     
     private var maxHeight: CGFloat? {
         let resolvedValue = modifier.maxHeight?.forceResolve(
-            properties: componentState.properties,
+            propertyValues: componentState.propertyValues,
             data: data
         )
             
@@ -86,7 +86,7 @@ struct FrameViewModifier: SwiftUI.ViewModifier {
     
     private var minHeight: CGFloat? {
         let resolvedValue = modifier.minHeight?.forceResolve(
-            properties: componentState.properties,
+            propertyValues: componentState.propertyValues,
             data: data
         )
             

@@ -55,7 +55,7 @@ struct PickerView: SwiftUI.View {
     @ViewBuilder
     private func row(for option: PickerOption) -> some View {
         RealizeText(option.title ?? "") { title in
-            if let imageReference = option.icon?.forceResolve(properties: componentState.properties, data: data) {
+            if let imageReference = option.icon?.forceResolve(propertyValues: componentState.propertyValues, data: data) {
                 if title.isEmpty {
                     ImageReferenceView(
                         imageReference: imageReference,
@@ -83,7 +83,7 @@ struct PickerView: SwiftUI.View {
 
     private var stringSelectionBinding: Binding<String?> {
         Binding {
-            picker.textSelection?.forceResolve(properties: componentState.properties, data: data)
+            picker.textSelection?.forceResolve(propertyValues: componentState.propertyValues, data: data)
         } set: { newValue in
             guard let newValue else {
                 return
@@ -97,7 +97,7 @@ struct PickerView: SwiftUI.View {
 
     private func textTag(_ option: PickerOption) -> String? {
         if let textValue = option.textValue {
-            return textValue.forceResolve(properties: componentState.properties, data: data)
+            return textValue.forceResolve(propertyValues: componentState.propertyValues, data: data)
         }
 
         return nil
@@ -105,7 +105,7 @@ struct PickerView: SwiftUI.View {
 
     private var numberSelectionBinding: Binding<Double?> {
         Binding {
-            picker.numberSelection?.forceResolve(properties: componentState.properties, data: data)
+            picker.numberSelection?.forceResolve(propertyValues: componentState.propertyValues, data: data)
         } set: { newValue in
             guard let newValue else {
                 return
@@ -119,7 +119,7 @@ struct PickerView: SwiftUI.View {
 
     private func numberTag(_ option: PickerOption) -> Double? {
         if let numberValue = option.numberValue {
-            return numberValue.forceResolve(properties: componentState.properties, data: data)
+            return numberValue.forceResolve(propertyValues: componentState.propertyValues, data: data)
         }
 
         return nil

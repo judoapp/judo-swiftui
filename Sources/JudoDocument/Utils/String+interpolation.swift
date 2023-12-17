@@ -32,8 +32,8 @@ enum Formatters {
 }
 
 extension String {
-    public func evaluatingExpressions(data: Any?, properties: Properties) throws -> String {
-        try ExpressionEvaluator(data: data, properties: properties)
+    public func evaluatingExpressions(data: Any?, propertyValues: [String: PropertyValue]) throws -> String {
+        try ExpressionEvaluator(data: data, propertyValues: propertyValues)
             .evaluate(string: self)
     }
 
@@ -57,7 +57,7 @@ struct ExpressionEvaluator {
 
     init(
         data: Any?,
-        properties: Properties,
+        propertyValues: [String: PropertyValue],
         dateFormatter: DateFormatter = Formatters.dateFormatter,
         customizableNumberFormatter: CustomizableNumberFormatter = Formatters.customizableNumberFormatter,
         defaultDateCreator: ISO8601DateFormatter = Formatters.defaultDateCreator,
@@ -65,7 +65,7 @@ struct ExpressionEvaluator {
     ) {
         expressionHelper = ExpressionHelper(
             data: data,
-            properties: properties,
+            propertyValues: propertyValues,
             dateFormatter: dateFormatter,
             customizableNumberFormatter: customizableNumberFormatter,
             defaultDateCreator: defaultDateCreator,
@@ -118,7 +118,7 @@ private struct ExpressionHelper {
     typealias Helper = ([String]) throws -> String?
 
     private let data: Any?
-    private let properties: Properties
+    private let propertyValues: [String: PropertyValue]
     private let dateFormatter: DateFormatter
     private let customizableNumberFormatter: CustomizableNumberFormatter
     private let defaultDateCreator: ISO8601DateFormatter
@@ -126,14 +126,14 @@ private struct ExpressionHelper {
 
     init(
         data: Any?,
-        properties: Properties,
+        propertyValues: [String: PropertyValue],
         dateFormatter: DateFormatter,
         customizableNumberFormatter: CustomizableNumberFormatter,
         defaultDateCreator: ISO8601DateFormatter,
         localDateCreator: ISO8601DateFormatter
     ) {
         self.data = data
-        self.properties = properties
+        self.propertyValues = propertyValues
         self.dateFormatter = dateFormatter
         self.customizableNumberFormatter = customizableNumberFormatter
         self.defaultDateCreator = defaultDateCreator
@@ -179,7 +179,7 @@ private struct ExpressionHelper {
         let value = JSONSerialization.value(
             forKeyPath: keyPathOrStringLiteral,
             data: data,
-            properties: properties
+            propertyValues: propertyValues
         )
 
         switch value {
@@ -403,7 +403,7 @@ private struct ExpressionHelper {
         let value = JSONSerialization.value(
             forKeyPath: keyPathOrStringLiteral,
             data: data,
-            properties: properties
+            propertyValues: propertyValues
         )
 
         switch value {

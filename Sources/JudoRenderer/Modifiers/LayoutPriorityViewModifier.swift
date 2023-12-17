@@ -29,7 +29,7 @@ struct LayoutPriorityViewModifier: SwiftUI.ViewModifier {
 
     private var priority: Double {
         modifier.priority.forceResolve(
-            properties: componentState.properties,
+            propertyValues: componentState.propertyValues,
             data: data
         )
     }

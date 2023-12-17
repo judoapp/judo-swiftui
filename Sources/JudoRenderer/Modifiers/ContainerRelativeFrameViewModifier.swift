@@ -51,21 +51,21 @@ struct ContainerRelativeFrameViewModifier: SwiftUI.ViewModifier {
 
     private var count: Int {
         Int(modifier.count.forceResolve(
-            properties: componentState.properties,
+            propertyValues: componentState.propertyValues,
             data: data
         ))
     }
 
     private var span: Int {
         Int(modifier.span.forceResolve(
-            properties: componentState.properties,
+            propertyValues: componentState.propertyValues,
             data: data
         ))
     }
 
     private var spacing: Double {
         modifier.spacing.forceResolve(
-            properties: componentState.properties,
+            propertyValues: componentState.propertyValues,
             data: data
         )
     }

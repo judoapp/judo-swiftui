@@ -72,7 +72,7 @@ struct AsyncImageView: SwiftUI.View {
 
     private var resolvedURL: String {
         image.url.forceResolve(
-            properties: componentState.properties,
+            propertyValues: componentState.propertyValues,
             data: data
         )
     }

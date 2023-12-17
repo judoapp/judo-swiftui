@@ -29,7 +29,7 @@ struct OpacityViewModifier: SwiftUI.ViewModifier {
 
     private var opacityValue: Double {
         modifier.opacity.forceResolve(
-            properties: componentState.properties,
+            propertyValues: componentState.propertyValues,
             data: data
         )
     }

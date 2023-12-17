@@ -29,7 +29,7 @@ struct AccessibilitySortPriorityViewModifier: SwiftUI.ViewModifier {
 
     private var value: Double {
         modifier.sortPriority.forceResolve(
-            properties: componentState.properties,
+            propertyValues: componentState.propertyValues,
             data: data
         )
     }

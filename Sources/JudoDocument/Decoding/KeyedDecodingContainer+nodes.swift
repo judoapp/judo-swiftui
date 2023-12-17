@@ -139,6 +139,8 @@ private struct NodeWrapper: Decodable {
             node = try BlurModifier(from: decoder)
         case BoldModifier.typeName:
             node = try BoldModifier(from: decoder)
+        case BorderModifier.typeName:
+            node = try BorderModifier(from: decoder)
         case ButtonStyleModifier.typeName:
             node = try ButtonStyleModifier(from: decoder)
         case ContainerRelativeFrameModifier.typeName:
@@ -151,6 +153,8 @@ private struct NodeWrapper: Decodable {
             node = try FixedSizeModifier(from: decoder)
         case FontModifier.typeName:
             node = try FontModifier(from: decoder)
+        case FontWeightModifier.typeName:
+            node = try FontWeightModifier(from: decoder)
         case ForegroundColorModifier.typeName:
             node = try ForegroundColorModifier(from: decoder)
         case FrameModifier.typeName:
@@ -165,6 +169,8 @@ private struct NodeWrapper: Decodable {
             node = try InteractiveDismissDisabledModifier(from: decoder)
         case ItalicModifier.typeName:
             node = try ItalicModifier(from: decoder)
+        case KerningModifier.typeName:
+            node = try KerningModifier(from: decoder)
         case KeyboardTypeModifier.typeName:
             node = try KeyboardTypeModifier(from: decoder)
         case LabelsHiddenModifier.typeName:
@@ -203,8 +209,18 @@ private struct NodeWrapper: Decodable {
             node = try PickerStyleModifier(from: decoder)
         case PositionModifier.typeName:
             node = try PositionModifier(from: decoder)
+        case PresentationBackgroundModifier.typeName:
+            node = try PresentationBackgroundModifier(from: decoder)
+        case PresentationBackgroundInteractionModifier.typeName:
+            node = try PresentationBackgroundInteractionModifier(from: decoder)
+        case PresentationContentInteractionModifier.typeName:
+            node = try PresentationContentInteractionModifier(from: decoder)
+        case PresentationCornerRadiusModifier.typeName:
+            node = try PresentationCornerRadiusModifier(from: decoder)
         case PresentationDetentsModifier.typeName:
             node = try PresentationDetentsModifier(from: decoder)
+        case PresentationDragIndicatorModifier.typeName:
+            node = try PresentationDragIndicatorModifier(from: decoder)
         case RotationEffectModifier.typeName:
             node = try RotationEffectModifier(from: decoder)
         case ScaledToFillModifier.typeName:
@@ -243,6 +259,8 @@ private struct NodeWrapper: Decodable {
             node = try ToolbarColorSchemeModifier(from: decoder)
         case ToolbarItemModifier.typeName:
             node = try ToolbarItemModifier(from: decoder)
+        case TrackingModifier.typeName:
+            node = try TrackingModifier(from: decoder)
         case UnderlineModifier.typeName:
             node = try UnderlineModifier(from: decoder)
 

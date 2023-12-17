@@ -57,7 +57,7 @@ struct LineLimitViewModifier: SwiftUI.ViewModifier {
 
     private var minValue: Int? {
         let resolvedValue = modifier.min?.forceResolve(
-            properties: componentState.properties,
+            propertyValues: componentState.propertyValues,
             data: data
         )
         
@@ -66,7 +66,7 @@ struct LineLimitViewModifier: SwiftUI.ViewModifier {
 
     private var maxValue: Int? {
         let resolvedValue = modifier.max?.forceResolve(
-            properties: componentState.properties,
+            propertyValues: componentState.propertyValues,
             data: data
         )
         

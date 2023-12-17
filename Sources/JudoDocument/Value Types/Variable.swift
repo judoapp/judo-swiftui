@@ -26,10 +26,10 @@ public struct Variable<T: Codable & Hashable & CustomStringConvertible>: Codable
             }
         }
         
-        func resolve(properties: Properties, data: Any? = nil, fetchedImage: SwiftUI.Image? = nil) -> T? {
+        func resolve(propertyValues: [String: PropertyValue], data: Any? = nil, fetchedImage: SwiftUI.Image? = nil) -> T? {
             switch self {
             case .property(let name):
-                guard let property = properties[name] else {
+                guard let property = propertyValues[name] else {
                     return nil
                 }
                 
@@ -74,7 +74,7 @@ public struct Variable<T: Codable & Hashable & CustomStringConvertible>: Codable
                 let value = JSONSerialization.value(
                     forKeyPath: keyPath,
                     data: data,
-                    properties: properties
+                    propertyValues: propertyValues
                 )
                 
                 guard let value else {
@@ -134,11 +134,11 @@ public struct Variable<T: Codable & Hashable & CustomStringConvertible>: Codable
         binding != nil
     }
     
-    /// If the variable does not have a binding, this function simply returns its constant value. If the variable does have a binding, it will return the result of resolvling that binding using the passed in properties, data and fetched image.
-    public func resolve(properties: Properties, data: Any? = nil, fetchedImage: SwiftUI.Image? = nil) -> T? {
+    /// If the variable does not have a binding, this function simply returns its constant value. If the variable does have a binding, it will return the result of resolvling that binding using the passed in propertyValues, data and fetched image.
+    public func resolve(propertyValues: [String: PropertyValue], data: Any? = nil, fetchedImage: SwiftUI.Image? = nil) -> T? {
         if let binding {
             return binding.resolve(
-                properties: properties,
+                propertyValues: propertyValues,
                 data: data,
                 fetchedImage: fetchedImage
             )
@@ -147,23 +147,23 @@ public struct Variable<T: Codable & Hashable & CustomStringConvertible>: Codable
         }
     }
     
-    /// This function is the same in behaviour as the  `resolve(properties:data:fetchedImage:)` function however it will always return a non-nil value. If the result of resolving the variable's binding is nil, then the value of the `defaultValue` argument is returned. If no `defaultArgument` is passed in to the function, then the variable's constant is returned.
-    public func forceResolve(properties: Properties, data: Any? = nil, fetchedImage: SwiftUI.Image? = nil) -> T {
+    /// This function is the same in behaviour as the  `resolve(propertyValues:data:fetchedImage:)` function however it will always return a non-nil value. If the result of resolving the variable's binding is nil, then the value of the `defaultValue` argument is returned. If no `defaultArgument` is passed in to the function, then the variable's constant is returned.
+    public func forceResolve(propertyValues: [String: PropertyValue], data: Any? = nil, fetchedImage: SwiftUI.Image? = nil) -> T {
         binding?.resolve(
-            properties: properties,
+            propertyValues: propertyValues,
             data: data,
             fetchedImage: fetchedImage
         ) ?? constant
     }
     
-    /// This function resolves the variable's binding by calling the `resolve(properties:data:fetchedImage:)` function and if it resolves to a value the variable's constant value is updated with the result. If the result of resolving the binding is nil, then no update takes place.
-    public mutating func updateConstant(properties: Properties, data: Any? = nil, fetchedImage: SwiftUI.Image? = nil) {
+    /// This function resolves the variable's binding by calling the `resolve(propertyValues:data:fetchedImage:)` function and if it resolves to a value the variable's constant value is updated with the result. If the result of resolving the binding is nil, then no update takes place.
+    public mutating func updateConstant(propertyValues: [String: PropertyValue], data: Any? = nil, fetchedImage: SwiftUI.Image? = nil) {
         guard let binding else {
             return
         }
         
         let newValue: T? = binding.resolve(
-            properties: properties,
+            propertyValues: propertyValues,
             data: data,
             fetchedImage: fetchedImage
         )
@@ -175,11 +175,11 @@ public struct Variable<T: Codable & Hashable & CustomStringConvertible>: Codable
         constant = newValue
     }
     
-    /// A non-mutating version of `resolveInPlace(properties:data:fetchedImage:)` that returns a new copy of the variable instead of mutating it.
-    public func withUpdatedConstant(properties: Properties, data: Any? = nil, fetchedImage: SwiftUI.Image? = nil) -> Self {
+    /// A non-mutating version of `resolveInPlace(propertyValues:data:fetchedImage:)` that returns a new copy of the variable instead of mutating it.
+    public func withUpdatedConstant(propertyValues: [String: PropertyValue], data: Any? = nil, fetchedImage: SwiftUI.Image? = nil) -> Self {
         var copy = self
         copy.updateConstant(
-            properties: properties,
+            propertyValues: propertyValues,
             data: data,
             fetchedImage: fetchedImage
         )

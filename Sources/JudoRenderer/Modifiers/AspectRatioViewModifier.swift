@@ -32,7 +32,7 @@ struct AspectRatioViewModifier: SwiftUI.ViewModifier {
     
     private var ratio: Double? {
         modifier.ratio?.forceResolve(
-            properties: componentState.properties,
+            propertyValues: componentState.propertyValues,
             data: data
         )
     }

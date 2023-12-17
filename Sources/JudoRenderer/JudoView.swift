@@ -16,6 +16,27 @@
 import JudoDocument
 import SwiftUI
 
+/// A SwiftUI view that is created from a Judo document.
+///
+/// You initialize a `JudoView` with a Judo document created with the Judo Mac app. The most common way to do this is to add the Judo document to your app's bundle and initialize the `JudoView` by passing it the file name.
+///
+/// ```swift
+/// let myView = JudoView("MyFile")
+/// ```
+///
+/// A `JudoView` conforms to the SwiftUI `View` protocol and can be used directly within the body of other SwiftUI views. SwiftUI view modifiers can also be applied to a `JudoView`.
+///
+/// ```swift
+/// struct MyView: View {
+///     var body: some View {
+///         JudoView("MyFile")
+///             .padding()
+///             .opacity(0.5)
+///     }
+/// }
+/// ```
+///
+/// To load a `JudoView` asynchronously, including from a remote server, see ``JudoAsyncView``.
 public struct JudoView: View {
     private static var documentCache: [String: DocumentNode] = [:]
     
@@ -95,10 +116,10 @@ public struct JudoView: View {
         for (key, anyValue) in properties {
             switch anyValue {
             case let value as IntegerLiteralType:
-                result[key.rawValue] = ComponentBinding(value: Property.number(Double(value)))
+                result[key.rawValue] = ComponentBinding(value: .number(Double(value)))
             case let bindingValue as Binding<Int>:
                 let propertyValueBinding = Binding {
-                    Properties.Value.number(Double(bindingValue.wrappedValue))
+                    PropertyValue.number(Double(bindingValue.wrappedValue))
                 } set: { newValue in
                     if case .number(let value) = newValue {
                         bindingValue.wrappedValue = Int(value)
@@ -106,10 +127,10 @@ public struct JudoView: View {
                 }
                 result[key.rawValue] = ComponentBinding(binding: propertyValueBinding)
             case let value as FloatLiteralType:
-                result[key.rawValue] = ComponentBinding(value: Property.number(value))
+                result[key.rawValue] = ComponentBinding(value: .number(value))
             case let bindingValue as Binding<Double>:
                 let propertyValueBinding = Binding {
-                    Properties.Value.number(bindingValue.wrappedValue)
+                    PropertyValue.number(bindingValue.wrappedValue)
                 } set: { newValue in
                     if case .number(let value) = newValue {
                         bindingValue.wrappedValue = value
@@ -117,10 +138,10 @@ public struct JudoView: View {
                 }
                 result[key.rawValue] = ComponentBinding(binding: propertyValueBinding)
             case let value as BooleanLiteralType:
-                result[key.rawValue] = ComponentBinding(value: Property.boolean(value))
+                result[key.rawValue] = ComponentBinding(value: .boolean(value))
             case let bindingValue as Binding<Bool>:
                 let propertyValueBinding = Binding {
-                    Properties.Value.boolean(bindingValue.wrappedValue)
+                    PropertyValue.boolean(bindingValue.wrappedValue)
                 } set: { newValue in
                     if case .boolean(let value) = newValue {
                         bindingValue.wrappedValue = value
@@ -128,10 +149,10 @@ public struct JudoView: View {
                 }
                 result[key.rawValue] = ComponentBinding(binding: propertyValueBinding)
             case let value as StringLiteralType:
-                result[key.rawValue] = ComponentBinding(value: Property.text(value))
+                result[key.rawValue] = ComponentBinding(value: .text(value))
             case let bindingValue as Binding<String>:
                 let propertyValueBinding = Binding {
-                    Properties.Value.text(bindingValue.wrappedValue)
+                    PropertyValue.text(bindingValue.wrappedValue)
                 } set: { newValue in
                     if case .text(let value) = newValue {
                         bindingValue.wrappedValue = value
@@ -139,10 +160,10 @@ public struct JudoView: View {
                 }
                 result[key.rawValue] = ComponentBinding(binding: propertyValueBinding)
             case let value as SwiftUI.Image:
-                result[key.rawValue] = ComponentBinding(value: Property.image(.inline(image: value)))
+                result[key.rawValue] = ComponentBinding(value: .image(.inline(image: value)))
             case let value as UIImage:
                 let image = SwiftUI.Image(uiImage: value)
-                result[key.rawValue] = ComponentBinding(value: Property.image(.inline(image: image)))
+                result[key.rawValue] = ComponentBinding(value: .image(.inline(image: image)))
             default:
                 logger.warning("Invalid value for property \"\(key)\". Property unused.")
                 break

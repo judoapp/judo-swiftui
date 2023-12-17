@@ -16,10 +16,10 @@
 import Foundation
 
 extension DataSourceNode {
-    public func urlRequest(data: Any?, properties: Properties) throws -> URLRequest {
+    public func urlRequest(data: Any?, propertyValues: [String: PropertyValue]) throws -> URLRequest {
         let urlString = try url.evaluatingExpressions(
             data: data,
-            properties: properties
+            propertyValues: propertyValues
         )
         
         guard
@@ -35,14 +35,14 @@ extension DataSourceNode {
         request.httpBody = try? httpBody?
             .evaluatingExpressions(
                 data: data,
-                properties: properties
+                propertyValues: propertyValues
             )
             .data(using: .utf8)
         
         request.allHTTPHeaderFields = headers.reduce(nil) { result, header in
             let maybeValue = try? header.value.evaluatingExpressions(
                 data: data,
-                properties: properties
+                propertyValues: propertyValues
             )
             
             guard let value = maybeValue else {

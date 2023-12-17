@@ -35,7 +35,7 @@ struct UnderlineViewModifier: SwiftUI.ViewModifier {
 
     private var isActive: Bool {
         modifier.isActive.forceResolve(
-            properties: componentState.properties,
+            propertyValues: componentState.propertyValues,
             data: data
         )
     }

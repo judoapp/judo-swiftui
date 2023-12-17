@@ -29,14 +29,14 @@ struct BlurViewModifier: SwiftUI.ViewModifier {
 
     private var isOpaque: Bool {
         modifier.isOpaque.forceResolve(
-            properties: componentState.properties,
+            propertyValues: componentState.propertyValues,
             data: data
         )
     }
 
     private var radius: CGFloat {
         modifier.radius.forceResolve(
-            properties: componentState.properties,
+            propertyValues: componentState.propertyValues,
             data: data
         )
     }

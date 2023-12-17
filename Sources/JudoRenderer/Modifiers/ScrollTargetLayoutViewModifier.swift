@@ -33,7 +33,7 @@ struct ScrollTargetLayoutViewModifier: SwiftUI.ViewModifier {
 
     private var isEnabled: Bool {
         modifier.isEnabled.forceResolve(
-            properties: componentState.properties,
+            propertyValues: componentState.propertyValues,
             data: data
         )
     }

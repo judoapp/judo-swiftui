@@ -16,6 +16,7 @@
 import Foundation
 
 public enum FontWeight: String, Codable {
+    case none
     case ultraLight
     case thin
     case light

@@ -37,7 +37,7 @@ struct RotationEffectViewModifier: SwiftUI.ViewModifier {
     }
 
     private var angleValue: Double {
-        modifier.angleSize.forceResolve(properties: componentState.properties, data: data)
+        modifier.angleSize.forceResolve(propertyValues: componentState.propertyValues, data: data)
     }
     
     private var anchor: SwiftUI.UnitPoint {

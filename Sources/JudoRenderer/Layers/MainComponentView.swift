@@ -30,9 +30,12 @@ struct MainComponentView: SwiftUI.View {
         self._componentState = StateObject(
             wrappedValue: ComponentState(
                 bindings: component.properties
-                    .mapValues { ComponentBinding(value: $0) }
+                    .reduce(into: [:]) { partialResult, property in
+                        partialResult[property.name] = ComponentBinding(
+                            value: property.value
+                        )
+                    }
                     .merging(userBindings, uniquingKeysWith: { (_, new) in new })
-                    .asDictionary()
             )
         )
     }

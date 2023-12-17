@@ -31,7 +31,7 @@ struct ToggleView: SwiftUI.View {
     private var isOnBinding: Binding<Bool> {
         Binding {
             toggle.isOn.forceResolve(
-                properties: componentState.properties,
+                propertyValues: componentState.propertyValues,
                 data: data
             )
         } set: { newValue in

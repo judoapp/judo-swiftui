@@ -96,7 +96,7 @@ private struct ModernToolbarItemButtonView: SwiftUI.View {
 
             case let action as JudoDocument.OpenURLAction:
                 let urlString = action.url.forceResolve(
-                    properties: componentState.properties,
+                    propertyValues: componentState.propertyValues,
                     data: data
                 )
                 
@@ -111,7 +111,7 @@ private struct ModernToolbarItemButtonView: SwiftUI.View {
 
             case let action as CustomAction:
                 let identifier = action.identifier.forceResolve(
-                    properties: componentState.properties,
+                    propertyValues: componentState.propertyValues,
                     data: data
                 )
                 
@@ -120,21 +120,21 @@ private struct ModernToolbarItemButtonView: SwiftUI.View {
                 let parameters: [String: Any] = action.parameters.reduce(into: [:], { partialResult, parameter in
                     if let textValue = parameter.textValue {
                         let resolvedValue = textValue.forceResolve(
-                            properties: componentState.properties,
+                            propertyValues: componentState.propertyValues,
                             data: data
                         )
                         
                         partialResult[parameter.key] = resolvedValue
                     } else if let numberValue = parameter.numberValue {
                         let resolvedValue = numberValue.forceResolve(
-                            properties: componentState.properties,
+                            propertyValues: componentState.propertyValues,
                             data: data
                         )
                         
                         partialResult[parameter.key] = resolvedValue
                     } else if let booleanValue = parameter.booleanValue {
                         let resolvedValue = booleanValue.forceResolve(
-                            properties: componentState.properties,
+                            propertyValues: componentState.propertyValues,
                             data: data
                         )
                         
@@ -179,7 +179,7 @@ private struct ToolbarItemButtonView: SwiftUI.View {
 
             case let action as JudoDocument.OpenURLAction:
                 let urlString = action.url.forceResolve(
-                    properties: componentState.properties,
+                    propertyValues: componentState.propertyValues,
                     data: data
                 )
                 
@@ -193,7 +193,7 @@ private struct ToolbarItemButtonView: SwiftUI.View {
                 break
 
             case let action as CustomAction:
-                guard let identifier = action.identifier.resolve(properties: componentState.properties, data: data) else {
+                guard let identifier = action.identifier.resolve(propertyValues: componentState.propertyValues, data: data) else {
                     continue
                 }
                 
@@ -202,21 +202,21 @@ private struct ToolbarItemButtonView: SwiftUI.View {
                 let parameters: [String: Any] = action.parameters.reduce(into: [:], { partialResult, parameter in
                     if let textValue = parameter.textValue {
                         let resolvedValue = textValue.forceResolve(
-                            properties: componentState.properties,
+                            propertyValues: componentState.propertyValues,
                             data: data
                         )
                         
                         partialResult[parameter.key] = resolvedValue
                     } else if let numberValue = parameter.numberValue {
                         let resolvedValue = numberValue.forceResolve(
-                            properties: componentState.properties,
+                            propertyValues: componentState.propertyValues,
                             data: data
                         )
                         
                         partialResult[parameter.key] = resolvedValue
                     } else if let booleanValue = parameter.booleanValue {
                         let resolvedValue = booleanValue.forceResolve(
-                            properties: componentState.properties,
+                            propertyValues: componentState.propertyValues,
                             data: data
                         )
                         
@@ -245,28 +245,28 @@ private func processPropertyAction(_ action: JudoDocument.PropertyAction, compon
     case let action as SetPropertyAction:
         if let textValue = action.textValue {
             let resolvedValue = textValue.forceResolve(
-                properties: componentState.properties,
+                propertyValues: componentState.propertyValues,
                 data: data
             )
             
             componentState.bindings[propertyName]?.value = .text(resolvedValue)
         } else if let numberValue = action.numberValue {
             let resolvedValue = numberValue.forceResolve(
-                properties: componentState.properties,
+                propertyValues: componentState.propertyValues,
                 data: data
             )
             
             componentState.bindings[propertyName]?.value = .number(resolvedValue)
         } else if let booleanValue = action.booleanValue {
             let resolvedValue = booleanValue.forceResolve(
-                properties: componentState.properties,
+                propertyValues: componentState.propertyValues,
                 data: data
             )
             
             componentState.bindings[propertyName]?.value = .boolean(resolvedValue)
         } else if let imageValue = action.imageValue {
             let resolvedValue = imageValue.forceResolve(
-                properties: componentState.properties,
+                propertyValues: componentState.propertyValues,
                 data: data
             )
             
@@ -283,7 +283,7 @@ private func processPropertyAction(_ action: JudoDocument.PropertyAction, compon
     case let action as IncrementPropertyAction:
         if case .number(let value) = componentState.bindings[propertyName]?.value {
             let resolvedByValue = action.value.forceResolve(
-                properties: componentState.properties,
+                propertyValues: componentState.propertyValues,
                 data: data
             )
             
@@ -294,7 +294,7 @@ private func processPropertyAction(_ action: JudoDocument.PropertyAction, compon
     case let action as DecrementPropertyAction:
         if case .number(let value) = componentState.bindings[propertyName]?.value {
             let resolvedByValue = action.value.forceResolve(
-                properties: componentState.properties,
+                propertyValues: componentState.propertyValues,
                 data: data
             )
             

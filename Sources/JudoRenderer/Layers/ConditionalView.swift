@@ -33,7 +33,7 @@ struct ConditionalView: SwiftUI.View {
         conditional.conditions.allSatisfy { condition in
             condition.isSatisfied(
                 data: data,
-                properties: componentState.properties
+                propertyValues: componentState.propertyValues
             )
         }
     }

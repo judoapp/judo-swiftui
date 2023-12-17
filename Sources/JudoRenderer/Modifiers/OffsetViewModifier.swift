@@ -30,11 +30,11 @@ struct OffsetViewModifier: SwiftUI.ViewModifier {
     private var size: CGSize {
         CGSize(
             width: modifier.width.forceResolve(
-                properties: componentState.properties,
+                propertyValues: componentState.propertyValues,
                 data: data
             ),
             height: modifier.height.forceResolve(
-                properties: componentState.properties,
+                propertyValues: componentState.propertyValues,
                 data: data
             )
         )

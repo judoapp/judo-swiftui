@@ -29,7 +29,7 @@ struct InteractiveDismissDisabledViewModifier: SwiftUI.ViewModifier {
 
     private var isDisabled: Bool {
         modifier.isDisabled.forceResolve(
-            properties: componentState.properties,
+            propertyValues: componentState.propertyValues,
             data: data
         )
     }

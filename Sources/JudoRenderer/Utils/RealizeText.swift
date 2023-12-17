@@ -46,12 +46,12 @@ struct RealizeText<Content>: SwiftUI.View where Content: SwiftUI.View {
     }
 
     private var evaluatedValue: String {
-        (try? resolvedValue.evaluatingExpressions(data: data, properties: componentState.properties)) ?? resolvedValue
+        (try? resolvedValue.evaluatingExpressions(data: data, propertyValues: componentState.propertyValues)) ?? resolvedValue
     }
 
     private var resolvedValue: String {
         value.forceResolve(
-            properties: componentState.properties,
+            propertyValues: componentState.propertyValues,
             data: data
         )
     }

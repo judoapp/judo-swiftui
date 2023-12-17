@@ -32,5 +32,5 @@ extension Backport where Wrapped: SwiftUI.View {
                 .environment(\.isBold, isActive)
         }
     }
-    
+
 }

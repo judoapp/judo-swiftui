@@ -24,7 +24,7 @@ struct StepperView: SwiftUI.View {
 
     var body: some SwiftUI.View {
         RealizeText(stepper.label) { label in
-            switch (range, stepper.step?.forceResolve(properties: componentState.properties, data: data)) {
+            switch (range, stepper.step?.forceResolve(propertyValues: componentState.propertyValues, data: data)) {
             case (.some(let range), .some(let step)):
                 SwiftUI.Stepper(label, value: valueBinding, in: range, step: step)
             case (.some(let range), .none):
@@ -40,7 +40,7 @@ struct StepperView: SwiftUI.View {
     private var valueBinding: Binding<Double> {
         Binding {
             stepper.value.forceResolve(
-                properties: componentState.properties,
+                propertyValues: componentState.propertyValues,
                 data: data
             )
         } set: { newValue in
@@ -51,7 +51,7 @@ struct StepperView: SwiftUI.View {
     }
 
     private var range: ClosedRange<Double>? {
-        guard let minValue = stepper.minValue?.forceResolve(properties: componentState.properties, data: data), let maxValue = stepper.maxValue?.forceResolve(properties: componentState.properties, data: data) else { return nil }
+        guard let minValue = stepper.minValue?.forceResolve(propertyValues: componentState.propertyValues, data: data), let maxValue = stepper.maxValue?.forceResolve(propertyValues: componentState.propertyValues, data: data) else { return nil }
         if minValue < maxValue {
             return minValue...maxValue
         } else {

@@ -15,11 +15,14 @@
 
 import Foundation
 
-public enum Property: Codable, Hashable {
-    case text(String)
-    case number(Double)
-    case boolean(Bool)
-    case image(ImageReference)
-    case component(UUID)
-    case video(String)
+public struct Property: Codable {
+    public var id: UUID
+    public var name: String
+    public var value: PropertyValue
+    
+    public init(id: UUID, name: String, value: PropertyValue) {
+        self.id = id
+        self.name = name
+        self.value = value
+    }
 }

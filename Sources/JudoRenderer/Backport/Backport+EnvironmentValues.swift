@@ -14,6 +14,7 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import SwiftUI
+import JudoDocument
 import Backport
 
 fileprivate extension BackportNamespace {
@@ -31,6 +32,18 @@ fileprivate extension BackportNamespace {
     // @available(iOS, deprecated: 16.0, message: "We should update the UnderlineModifier so that it now longer uses this workaround")
     struct UnderlineModifierEnvironmentKey: EnvironmentKey {
         static var defaultValue: (isActive: Bool, color: Color?) = (false, nil)
+    }
+
+    struct FontWeightModifierEnvironmentKey: EnvironmentKey {
+        static var defaultValue: FontWeight? = nil
+    }
+    
+    struct KerningModifierEnvironmentKey: EnvironmentKey {
+        static var defaultValue: CGFloat = 0
+    }
+
+    struct TrackingModifierEnvironmentKey: EnvironmentKey {
+        static var defaultValue: CGFloat = 0
     }
 }
 
@@ -61,5 +74,20 @@ extension EnvironmentValues {
     var isUnderlined: (isActive: Bool, color: Color?) {
         get { self[BackportNamespace.UnderlineModifierEnvironmentKey.self] }
         set { self[BackportNamespace.UnderlineModifierEnvironmentKey.self] = newValue }
+    }
+
+    var fontWeight: FontWeight? {
+        get { self[BackportNamespace.FontWeightModifierEnvironmentKey.self] }
+        set { self[BackportNamespace.FontWeightModifierEnvironmentKey.self] = newValue }
+    }
+
+    var kerning: CGFloat {
+        get { self[BackportNamespace.KerningModifierEnvironmentKey.self] }
+        set { self[BackportNamespace.KerningModifierEnvironmentKey.self] = newValue }
+    }
+
+    var tracking: CGFloat {
+        get { self[BackportNamespace.TrackingModifierEnvironmentKey.self] }
+        set { self[BackportNamespace.TrackingModifierEnvironmentKey.self] = newValue }
     }
 }

@@ -29,14 +29,14 @@ struct FixedSizeViewModifier: SwiftUI.ViewModifier {
 
     private var horizontal: Bool {
         modifier.horizontal.forceResolve(
-            properties: componentState.properties,
+            propertyValues: componentState.propertyValues,
             data: data
         )
     }
 
     private var vertical: Bool {
         modifier.vertical.forceResolve(
-            properties: componentState.properties,
+            propertyValues: componentState.propertyValues,
             data: data
         )
     }

@@ -151,6 +151,9 @@ private struct JudoViewModifier: SwiftUI.ViewModifier {
         case let modifier as BoldModifier:
             content.modifier(BoldViewModifier(modifier: modifier))
 
+        case let modifier as BorderModifier:
+            content.modifier(BorderViewModifier(modifier: modifier))
+
         case let modifier as ButtonStyleModifier:
             content.modifier(ButtonStyleViewModifier(modifier: modifier))
 
@@ -168,6 +171,9 @@ private struct JudoViewModifier: SwiftUI.ViewModifier {
 
         case let modifier as FontModifier:
             content.modifier(FontViewModifier(modifier: modifier))
+
+        case let modifier as FontWeightModifier:
+            content.modifier(FontWeightViewModifier(modifier: modifier))
 
         case let modifier as ForegroundColorModifier:
             content.modifier(ForegroundColorViewModifier(modifier: modifier))
@@ -189,6 +195,9 @@ private struct JudoViewModifier: SwiftUI.ViewModifier {
 
         case let modifier as ItalicModifier:
             content.modifier(ItalicViewModifier(modifier: modifier))
+
+        case let modifier as KerningModifier:
+            content.modifier(KerningViewModifier(modifier: modifier))
 
         case let modifier as KeyboardTypeModifier:
             content.modifier(KeyboardTypeViewModifier(modifier: modifier))
@@ -247,8 +256,23 @@ private struct JudoViewModifier: SwiftUI.ViewModifier {
         case let modifier as PositionModifier:
             content.modifier(PositionViewModifier(modifier: modifier))
 
+        case let modifier as PresentationBackgroundModifier:
+            content.modifier(PresentationBackgroundViewModifier(modifier: modifier))
+            
+        case let modifier as PresentationBackgroundInteractionModifier:
+            content.modifier(PresentationBackgroundInteractionViewModifier(modifier: modifier))
+
+        case let modifier as PresentationContentInteractionModifier:
+            content.modifier(PresentationContentInteractionViewModifier(modifier: modifier))
+
+        case let modifier as PresentationCornerRadiusModifier:
+            content.modifier(PresentationCornerRadiusViewModifier(modifier: modifier))
+
         case let modifier as PresentationDetentsModifier:
             content.modifier(PresentationDetentsViewModifier(modifier: modifier))
+
+        case let modifier as PresentationDragIndicatorModifier:
+            content.modifier(PresentationDragIndicatorViewModifier(modifier: modifier))
 
         case let modifier as RotationEffectModifier:
             content.modifier(RotationEffectViewModifier(modifier: modifier))
@@ -306,6 +330,9 @@ private struct JudoViewModifier: SwiftUI.ViewModifier {
 
         case let modifier as ToolbarItemModifier:
             content.modifier(ToolbarItemViewModifier(modifier: modifier))
+
+        case let modifier as TrackingModifier:
+            content.modifier(TrackingViewModifier(modifier: modifier))
 
         case let modifier as UnderlineModifier:
             content.modifier(UnderlineViewModifier(modifier: modifier))

@@ -30,7 +30,7 @@ struct SpacerView: SwiftUI.View {
     
     private var minLength: Double? {
         spacer.minLength?.forceResolve(
-            properties: componentState.properties,
+            propertyValues: componentState.propertyValues,
             data: data
         )
     }

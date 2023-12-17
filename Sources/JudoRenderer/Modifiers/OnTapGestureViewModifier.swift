@@ -35,7 +35,7 @@ struct OnTapGestureViewModifier: SwiftUI.ViewModifier {
     private var count: Int {
         // Count must always be positive.
         let count = Int(modifier.count.forceResolve(
-            properties: componentState.properties,
+            propertyValues: componentState.propertyValues,
             data: data
         ))
         return count > 0 ? count : 1

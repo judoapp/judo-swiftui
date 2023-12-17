@@ -112,6 +112,8 @@ extension KeyedEncodingContainer {
                 try container.encode(node)
             case let node as BoldModifier:
                 try container.encode(node)
+            case let node as BorderModifier:
+                try container.encode(node)
             case let node as ButtonStyleModifier:
                 try container.encode(node)
             case let node as ContainerRelativeFrameModifier:
@@ -123,6 +125,8 @@ extension KeyedEncodingContainer {
             case let node as FixedSizeModifier:
                 try container.encode(node)
             case let node as FontModifier:
+                try container.encode(node)
+            case let node as FontWeightModifier:
                 try container.encode(node)
             case let node as ForegroundColorModifier:
                 try container.encode(node)
@@ -137,6 +141,8 @@ extension KeyedEncodingContainer {
             case let node as InteractiveDismissDisabledModifier:
                 try container.encode(node)
             case let node as ItalicModifier:
+                try container.encode(node)
+            case let node as KerningModifier:
                 try container.encode(node)
             case let node as KeyboardTypeModifier:
                 try container.encode(node)
@@ -176,7 +182,17 @@ extension KeyedEncodingContainer {
                 try container.encode(node)
             case let node as PositionModifier:
                 try container.encode(node)
+            case let node as PresentationBackgroundModifier:
+                try container.encode(node)
+            case let node as PresentationBackgroundInteractionModifier:
+                try container.encode(node)
+            case let node as PresentationContentInteractionModifier:
+                try container.encode(node)
+            case let node as PresentationCornerRadiusModifier:
+                try container.encode(node)
             case let node as PresentationDetentsModifier:
+                try container.encode(node)
+            case let node as PresentationDragIndicatorModifier:
                 try container.encode(node)
             case let node as RotationEffectModifier:
                 try container.encode(node)
@@ -215,6 +231,8 @@ extension KeyedEncodingContainer {
             case let node as ToolbarColorSchemeModifier:
                 try container.encode(node)
             case let node as ToolbarItemModifier:
+                try container.encode(node)
+            case let node as TrackingModifier:
                 try container.encode(node)
             case let node as UnderlineModifier:
                 try container.encode(node)

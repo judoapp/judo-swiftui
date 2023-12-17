@@ -67,13 +67,13 @@ struct ClipShapeViewModifier: SwiftUI.ViewModifier {
     }
 
     private var fillStyle: SwiftUI.FillStyle {
-        let eoFill = modifier.isEvenOddRule.forceResolve(properties: componentState.properties, data: data)
-        let antialiased = modifier.isAntialiased.forceResolve(properties: componentState.properties, data: data)
+        let eoFill = modifier.isEvenOddRule.forceResolve(propertyValues: componentState.propertyValues, data: data)
+        let antialiased = modifier.isAntialiased.forceResolve(propertyValues: componentState.propertyValues, data: data)
         return FillStyle(eoFill: eoFill, antialiased: antialiased)
     }
 
     private func cornerRadius(_ cornerRadius: Variable<Double>) -> Double {
-        cornerRadius.forceResolve(properties: componentState.properties, data: data)
+        cornerRadius.forceResolve(propertyValues: componentState.propertyValues, data: data)
     }
 }
 

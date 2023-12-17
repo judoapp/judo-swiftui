@@ -37,11 +37,11 @@ struct ShadowViewModifier: SwiftUI.ViewModifier {
     private var offset: CGSize {
         CGSize(
             width: modifier.offsetWidth.forceResolve(
-                properties: componentState.properties,
+                propertyValues: componentState.propertyValues,
                 data: data
             ),
             height: modifier.offsetHeight.forceResolve(
-                properties: componentState.properties,
+                propertyValues: componentState.propertyValues,
                 data: data
             )
         )
@@ -49,7 +49,7 @@ struct ShadowViewModifier: SwiftUI.ViewModifier {
 
     private var radius: CGFloat {
         modifier.radius.forceResolve(
-            properties: componentState.properties,
+            propertyValues: componentState.propertyValues,
             data: data
         )
     }

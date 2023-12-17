@@ -23,14 +23,14 @@ extension JSONSerialization {
     ///
     /// - Returns: The value defined at the supplied key path where `data` refers to the JSON
     /// data. If there is no value at the specified `keyPath`, nil is returned.
-    public static func value(forKeyPath keyPath: String, data: Any?, properties: Properties) -> Any? {
+    public static func value(forKeyPath keyPath: String, data: Any?, propertyValues: [String: PropertyValue]) -> Any? {
         var object: [String: Any] = [:]
 
         if let data = data {
             object["data"] = data
         }
         
-        object["properties"] = properties.reduce(into: [String: Any](), { partialResult, element in
+        object["properties"] = propertyValues.reduce(into: [String: Any](), { partialResult, element in
             switch element.value {
             case .text(let value):
                 partialResult[element.key] = value

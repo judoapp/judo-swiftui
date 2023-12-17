@@ -28,11 +28,11 @@ struct PositionViewModifier: SwiftUI.ViewModifier {
     }
 
     private var x: CGFloat {
-        modifier.x.forceResolve(properties: componentState.properties, data: data)
+        modifier.x.forceResolve(propertyValues: componentState.propertyValues, data: data)
     }
 
     private var y: CGFloat {
-        modifier.y.forceResolve(properties: componentState.properties, data: data)
+        modifier.y.forceResolve(propertyValues: componentState.propertyValues, data: data)
     }
 }
 

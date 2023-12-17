@@ -33,7 +33,7 @@ struct ImageView: SwiftUI.View {
     var body: some SwiftUI.View {
         ImageReferenceView(
             imageReference: image.value.forceResolve(
-                properties: componentState.properties,
+                propertyValues: componentState.propertyValues,
                 data: data,
                 fetchedImage: fetchedImage
             ),

@@ -15,17 +15,45 @@
 
 import Foundation
 
-public enum PreviewLanguage: String, Codable {
+/// A list of supported languages given as BCP-47 locale identifiers.
+public enum PreviewLanguage: String, Codable, CaseIterable, CustomStringConvertible {
     case english = "en"
     case arabic = "ar"
+    case chineseSimplified = "zh-CN"
+    case chineseTraditional = "zh-TW"
+    case chineseHongKong = "zh-HK"
+    case croatian = "hr"
+    case czech = "cs"
+    case danish = "da"
+    case dutch = "nl"
+    case finnish = "fi"
     case french = "fr"
+    case frenchCanada = "fr-CA"
     case german = "de"
+    case greek = "el"
     case hebrew = "he"
     case hindi = "hi"
+    case hungarian = "hu"
+    case italian = "it"
+    case indonesian = "id"
     case japanese = "ja"
     case korean = "ko"
+    case malay = "ms"
+    case norwegian = "no"
+    case romanian = "ro"
     case spanish = "es"
+    case swedish = "sv"
     case polish = "pl"
-    case simplifiedChinese = "zh-CN"
-    case traditionalChinese = "zh-TW"
+    case portuguese = "pt-PT"
+    case portugueseBrasil = "pt-BR"
+    case russian = "ru"
+    case slovak = "sk"
+    case thai = "th"
+    case turkish = "tr"
+    case ukrainian = "uk"
+    case vietnamese = "vi"
+
+    public var description: String {
+        NSLocale.current.localizedString(forIdentifier: rawValue) ?? rawValue
+    }
 }

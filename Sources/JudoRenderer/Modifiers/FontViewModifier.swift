@@ -38,10 +38,10 @@ struct FontViewModifier: SwiftUI.ViewModifier {
         case .fixed(let size, let weight, let design):
             return SwiftUI.Font.system(
                 size: size.forceResolve(
-                    properties: componentState.properties,
+                    propertyValues: componentState.propertyValues,
                     data: data
                 ),
-                weight: weight.swiftUIValue,
+                weight: weight.swiftUIValue ?? .regular,
                 design: design.swiftUIValue
             )
         case .document(let fontFamily, let textStyle):
@@ -58,7 +58,7 @@ struct FontViewModifier: SwiftUI.ViewModifier {
             return getFont(
                 with: fontName,
                 size: size.forceResolve(
-                    properties: componentState.properties,
+                    propertyValues: componentState.propertyValues,
                     data: data
                 )
             )
@@ -296,8 +296,10 @@ private extension FontTextStyle {
 }
 
 private extension FontWeight {
-    var swiftUIValue: SwiftUI.Font.Weight {
+    var swiftUIValue: SwiftUI.Font.Weight? {
         switch self {
+        case .none:
+            return nil
         case .ultraLight:
             return .ultraLight
         case .thin:

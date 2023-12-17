@@ -26,7 +26,7 @@ struct AutocorrectionDisabledViewModifier: SwiftUI.ViewModifier {
         content
             .autocorrectionDisabled(
                 modifier.isDisabled.forceResolve(
-                    properties: componentState.properties,
+                    propertyValues: componentState.propertyValues,
                     data: data
                 )
             )

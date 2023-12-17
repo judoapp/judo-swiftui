@@ -16,18 +16,18 @@
 import Foundation
 
 extension Condition {
-    public func isSatisfied(data: Any?, properties: Properties) -> Bool {
+    public func isSatisfied(data: Any?, propertyValues: [String: PropertyValue]) -> Bool {
         let lhs = JSONSerialization.value(
             forKeyPath: keyPath,
             data: data,
-            properties: properties
+            propertyValues: propertyValues
         )
         
         switch (predicate, self.value) {
         case (.equals, let value as String):
             let maybeValue = try? value.evaluatingExpressions(
                 data: data,
-                properties: properties
+                propertyValues: propertyValues
             )
             
             guard let rhs = maybeValue else {
@@ -40,7 +40,7 @@ extension Condition {
         case (.doesNotEqual, let value as String):
             let maybeValue = try? value.evaluatingExpressions(
                 data: data,
-                properties: properties
+                propertyValues: propertyValues
             )
             
             guard let rhs = maybeValue else {

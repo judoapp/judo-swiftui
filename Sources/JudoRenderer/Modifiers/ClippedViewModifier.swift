@@ -29,7 +29,7 @@ struct ClippedViewModifier: SwiftUI.ViewModifier {
 
     private var isAntialiased: Bool {
         modifier.isAntialiased.forceResolve(
-            properties: componentState.properties,
+            propertyValues: componentState.propertyValues,
             data: data
         )
     }

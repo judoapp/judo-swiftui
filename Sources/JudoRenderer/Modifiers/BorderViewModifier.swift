@@ -13,7 +13,25 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import Foundation
-import OrderedCollections
+import JudoDocument
+import SwiftUI
 
-public typealias Properties = OrderedDictionary<String, Property>
+struct BorderViewModifier: SwiftUI.ViewModifier {
+    @EnvironmentObject private var componentState: ComponentState
+    @Environment(\.data) private var data
+
+    var modifier: BorderModifier
+
+    func body(content: Content) -> some View {
+        RealizeColor(modifier.color) { realizedColor in
+            content.border(realizedColor, width: width)
+        }
+    }
+
+    private var width: Double {
+        modifier.width.forceResolve(
+            propertyValues: componentState.propertyValues,
+            data: data
+        )
+    }
+}

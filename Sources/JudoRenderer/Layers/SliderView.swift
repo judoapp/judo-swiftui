@@ -39,7 +39,7 @@ struct SliderView: SwiftUI.View {
     @ViewBuilder
     private var sliderView: some View {
         RealizeText(slider.label) { label in
-            switch (range, slider.step?.forceResolve(properties: componentState.properties, data: data)) {
+            switch (range, slider.step?.forceResolve(propertyValues: componentState.propertyValues, data: data)) {
             case (.some(let range), .some(let step)):
                 SwiftUI.Slider(value: valueBinding, in: range, step: step) {
                     SwiftUI.Text(label)
@@ -62,7 +62,7 @@ struct SliderView: SwiftUI.View {
         RealizeText(slider.label) { label in
             RealizeText(slider.minLabel ?? "") { minLabel in
                 RealizeText(slider.maxLabel ?? "") { maxLabel in
-                    switch (range, slider.step?.forceResolve(properties: componentState.properties, data: data)) {
+                    switch (range, slider.step?.forceResolve(propertyValues: componentState.propertyValues, data: data)) {
                     case (.some(let range), .some(let step)):
                         SwiftUI.Slider(value: valueBinding, in: range, step: step) {
                             SwiftUI.Text(label)
@@ -95,7 +95,7 @@ struct SliderView: SwiftUI.View {
 
     private var valueBinding: Binding<Double> {
         Binding {
-            slider.value.forceResolve(properties: componentState.properties, data: data)
+            slider.value.forceResolve(propertyValues: componentState.propertyValues, data: data)
         } set: { newValue in
             if case .property(let name) = slider.value.binding {
                 switch componentState.bindings[name]?.value {
@@ -111,7 +111,7 @@ struct SliderView: SwiftUI.View {
     }
 
     private var range: ClosedRange<Double>? {
-        guard let minValue = slider.minValue?.forceResolve(properties: componentState.properties, data: data), let maxValue = slider.maxValue?.forceResolve(properties: componentState.properties, data: data) else { return nil }
+        guard let minValue = slider.minValue?.forceResolve(propertyValues: componentState.propertyValues, data: data), let maxValue = slider.maxValue?.forceResolve(propertyValues: componentState.propertyValues, data: data) else { return nil }
         if minValue < maxValue {
             return minValue...maxValue
         } else {
