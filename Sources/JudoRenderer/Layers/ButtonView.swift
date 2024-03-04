@@ -17,7 +17,7 @@ import JudoDocument
 import SwiftUI
 
 struct ButtonView: SwiftUI.View {
-    var button: JudoDocument.ButtonNode
+    var button: JudoDocument.ButtonLayer
 
     var body: some SwiftUI.View {
         if #available(iOS 15.0, *) {

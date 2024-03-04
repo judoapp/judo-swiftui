@@ -17,7 +17,7 @@ import JudoDocument
 import SwiftUI
 
 struct SectionView: SwiftUI.View {
-    var section: JudoDocument.SectionNode
+    var section: JudoDocument.SectionLayer
 
     var body: some View {
         SwiftUI.Section {

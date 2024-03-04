@@ -19,17 +19,13 @@ public struct AspectRatioModifier: Modifier {
     public var id: UUID
     public var name: String?
     public var children: [Node]
-    public var position: CGPoint
-    public var isLocked: Bool
     public var ratio: Variable<Double>?
     public var contentMode: ContentMode
 
-    public init(id: UUID, name: String?, children: [Node], position: CGPoint, isLocked: Bool, ratio: Variable<Double>?, contentMode: ContentMode) {
+    public init(id: UUID, name: String?, children: [Node], ratio: Variable<Double>?, contentMode: ContentMode) {
         self.id = id
         self.name = name
         self.children = children
-        self.position = position
-        self.isLocked = isLocked
         self.ratio = ratio
         self.contentMode = contentMode
     }
@@ -41,8 +37,6 @@ public struct AspectRatioModifier: Modifier {
         case id
         case name
         case children
-        case position
-        case isLocked
         case ratio
         case contentMode
     }
@@ -56,26 +50,16 @@ public struct AspectRatioModifier: Modifier {
         let meta = decoder.userInfo[.meta] as! Meta
         switch meta.version {
         case ..<15:
-            position = .zero
-            isLocked = false
             
             if let floatValue = try container.decodeIfPresent(CGFloat.self, forKey: .ratio) {
                 ratio = Variable(LegacyNumberValue(floatValue))
             }
         case ..<17:
-            position = .zero
-            isLocked = false
             
             if let value = try container.decodeIfPresent(LegacyNumberValue.self, forKey: .ratio) {
                 ratio = Variable(value)
             }
-        case ..<18:
-            position = .zero
-            isLocked = false
-            ratio = try container.decodeIfPresent(Variable<Double>.self, forKey: .ratio)
         default:
-            position = try container.decode(CGPoint.self, forKey: .position)
-            isLocked = try container.decode(Bool.self, forKey: .isLocked)
             ratio = try container.decodeIfPresent(Variable<Double>.self, forKey: .ratio)
         }
 
@@ -88,8 +72,6 @@ public struct AspectRatioModifier: Modifier {
         try container.encode(id, forKey: .id)
         try container.encodeIfPresent(name, forKey: .name)
         try container.encodeNodes(children, forKey: .children)
-        try container.encode(position, forKey: .position)
-        try container.encode(isLocked, forKey: .isLocked)
         try container.encode(ratio, forKey: .ratio)
         try container.encode(contentMode, forKey: .contentMode)
     }

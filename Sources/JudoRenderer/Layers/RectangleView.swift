@@ -17,7 +17,7 @@ import JudoDocument
 import SwiftUI
 
 struct RectangleView: SwiftUI.View {
-    var rectangle: JudoDocument.RectangleNode
+    var rectangle: JudoDocument.RectangleLayer
 
     var body: some SwiftUI.View {
         SwiftUI.Rectangle().apply(model: rectangle)

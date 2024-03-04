@@ -20,7 +20,7 @@ struct ToggleView: SwiftUI.View {
     @EnvironmentObject private var componentState: ComponentState
     @Environment(\.data) private var data
 
-    var toggle: JudoDocument.ToggleNode
+    var toggle: JudoDocument.ToggleLayer
 
     var body: some SwiftUI.View {
         RealizeText(toggle.label) { label in

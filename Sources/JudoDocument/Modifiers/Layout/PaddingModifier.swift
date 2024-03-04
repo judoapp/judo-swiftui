@@ -24,8 +24,6 @@ public struct PaddingModifier: Modifier {
     public var id: UUID
     public var name: String?
     public var children: [Node]
-    public var position: CGPoint
-    public var isLocked: Bool
     public var edges: Edges?
     public var length: Variable<Double>?
     public var leadingInset: Variable<Double>?
@@ -33,12 +31,10 @@ public struct PaddingModifier: Modifier {
     public var topInset: Variable<Double>?
     public var bottomInset: Variable<Double>?
 
-    public init(id: UUID, name: String?, children: [Node], position: CGPoint, isLocked: Bool, edges: Edges?, length: Variable<Double>?, leadingInset: Variable<Double>?, trailingInset: Variable<Double>?, topInset: Variable<Double>?, bottomInset: Variable<Double>?) {
+    public init(id: UUID, name: String?, children: [Node], edges: Edges?, length: Variable<Double>?, leadingInset: Variable<Double>?, trailingInset: Variable<Double>?, topInset: Variable<Double>?, bottomInset: Variable<Double>?) {
         self.id = id
         self.name = name
         self.children = children
-        self.position = position
-        self.isLocked = isLocked
         self.edges = edges
         self.length = length
         self.leadingInset = leadingInset
@@ -54,8 +50,6 @@ public struct PaddingModifier: Modifier {
         case id
         case name
         case children
-        case position
-        case isLocked
         case edges
         case length
         case leadingInset
@@ -76,17 +70,12 @@ public struct PaddingModifier: Modifier {
         let meta = decoder.userInfo[.meta] as! Meta
         switch meta.version {
         case ..<16:
-            position = .zero
-            isLocked = false
-            
             let padding = try container.decode(LegacyPadding.self, forKey: .padding)
             leadingInset = Variable(.constant(value: padding.leading))
             trailingInset = Variable(.constant(value: padding.trailing))
             topInset = Variable(.constant(value: padding.top))
             bottomInset = Variable(.constant(value: padding.bottom))
         case ..<17:
-            position = .zero
-            isLocked = false
             edges = try container.decode(Edges?.self, forKey: .edges)
 
             if let value = try container.decode(LegacyNumberValue?.self, forKey: .length) {
@@ -108,18 +97,7 @@ public struct PaddingModifier: Modifier {
             if let value = try container.decode(LegacyNumberValue?.self, forKey: .bottomInset) {
                 bottomInset = Variable(value)
             }
-        case ..<18:
-            position = .zero
-            isLocked = false
-            edges = try container.decode(Edges?.self, forKey: .edges)
-            length = try container.decode(Variable<Double>?.self, forKey: .length)
-            leadingInset = try container.decode(Variable<Double>?.self, forKey: .leadingInset)
-            trailingInset = try container.decode(Variable<Double>?.self, forKey: .trailingInset)
-            topInset = try container.decode(Variable<Double>?.self, forKey: .topInset)
-            bottomInset = try container.decode(Variable<Double>?.self, forKey: .bottomInset)
         default:
-            position = try container.decode(CGPoint.self, forKey: .position)
-            isLocked = try container.decode(Bool.self, forKey: .isLocked)
             edges = try container.decode(Edges?.self, forKey: .edges)
             length = try container.decode(Variable<Double>?.self, forKey: .length)
             leadingInset = try container.decode(Variable<Double>?.self, forKey: .leadingInset)
@@ -135,8 +113,6 @@ public struct PaddingModifier: Modifier {
         try container.encode(id, forKey: .id)
         try container.encodeIfPresent(name, forKey: .name)
         try container.encodeNodes(children, forKey: .children)
-        try container.encode(position, forKey: .position)
-        try container.encode(isLocked, forKey: .isLocked)
         try container.encode(edges, forKey: .edges)
         try container.encode(length, forKey: .length)
         try container.encode(leadingInset, forKey: .leadingInset)

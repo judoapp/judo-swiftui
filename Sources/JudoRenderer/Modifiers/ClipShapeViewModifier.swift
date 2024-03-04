@@ -24,35 +24,35 @@ struct ClipShapeViewModifier: SwiftUI.ViewModifier {
 
     func body(content: Content) -> some SwiftUI.View {
         switch modifier.shape {
-        case let capsule as JudoDocument.CapsuleNode:
+        case let capsule as JudoDocument.CapsuleLayer:
             content
                 .clipShape(
                     SwiftUI.Capsule(style: capsule.cornerStyle.swiftUIValue),
                     style: fillStyle
                 )
 
-        case is JudoDocument.CircleNode:
+        case is JudoDocument.CircleLayer:
             content
                 .clipShape(
                     SwiftUI.Circle(),
                     style: fillStyle
                 )
 
-        case is JudoDocument.EllipseNode:
+        case is JudoDocument.EllipseLayer:
             content
                 .clipShape(
                     SwiftUI.Ellipse(),
                     style: fillStyle
                 )
 
-        case is JudoDocument.RectangleNode:
+        case is JudoDocument.RectangleLayer:
             content
                 .clipShape(
                     SwiftUI.Rectangle(),
                     style: fillStyle
                 )
 
-        case let roundedRectangle as JudoDocument.RoundedRectangleNode:
+        case let roundedRectangle as JudoDocument.RoundedRectangleLayer:
             content
                 .clipShape(
                     SwiftUI.RoundedRectangle(

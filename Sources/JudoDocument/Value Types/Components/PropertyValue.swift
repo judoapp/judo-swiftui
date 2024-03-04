@@ -21,5 +21,44 @@ public enum PropertyValue: Codable, Hashable {
     case boolean(Bool)
     case image(ImageReference)
     case component(UUID)
-    case video(String)
+    case video(Video)
+    case computed(ComputedPropertyValue)
+    
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        var allKeys = ArraySlice(container.allKeys)
+        guard let onlyKey = allKeys.popFirst(), allKeys.isEmpty else {
+            throw DecodingError.typeMismatch(PropertyValue.self, DecodingError.Context.init(codingPath: container.codingPath, debugDescription: "Invalid number of keys found, expected one.", underlyingError: nil))
+        }
+        switch onlyKey {
+        case .text:
+            let nestedContainer = try container.nestedContainer(keyedBy: PropertyValue.TextCodingKeys.self, forKey: .text)
+            self = PropertyValue.text(try nestedContainer.decode(String.self, forKey: PropertyValue.TextCodingKeys._0))
+        case .number:
+            let nestedContainer = try container.nestedContainer(keyedBy: PropertyValue.NumberCodingKeys.self, forKey: .number)
+            self = PropertyValue.number(try nestedContainer.decode(Double.self, forKey: PropertyValue.NumberCodingKeys._0))
+        case .boolean:
+            let nestedContainer = try container.nestedContainer(keyedBy: PropertyValue.BooleanCodingKeys.self, forKey: .boolean)
+            self = PropertyValue.boolean(try nestedContainer.decode(Bool.self, forKey: PropertyValue.BooleanCodingKeys._0))
+        case .image:
+            let nestedContainer = try container.nestedContainer(keyedBy: PropertyValue.ImageCodingKeys.self, forKey: .image)
+            self = PropertyValue.image(try nestedContainer.decode(ImageReference.self, forKey: PropertyValue.ImageCodingKeys._0))
+        case .component:
+            let nestedContainer = try container.nestedContainer(keyedBy: PropertyValue.ComponentCodingKeys.self, forKey: .component)
+            self = PropertyValue.component(try nestedContainer.decode(UUID.self, forKey: PropertyValue.ComponentCodingKeys._0))
+        case .video:
+            let nestedContainer = try container.nestedContainer(keyedBy: PropertyValue.VideoCodingKeys.self, forKey: .video)
+            
+            let meta = decoder.userInfo[.meta] as! Meta
+            switch meta.version {
+            case ..<21:
+                self = .video(Video(url: try nestedContainer.decode(String.self, forKey: ._0)))
+            default:
+                self = PropertyValue.video(try nestedContainer.decode(Video.self, forKey: PropertyValue.VideoCodingKeys._0))
+            }
+        case .computed:
+            let nestedContainer = try container.nestedContainer(keyedBy: PropertyValue.ComputedCodingKeys.self, forKey: .computed)
+            self = PropertyValue.computed(try nestedContainer.decode(ComputedPropertyValue.self, forKey: PropertyValue.ComputedCodingKeys._0))
+        }
+    }
 }

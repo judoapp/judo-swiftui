@@ -17,7 +17,7 @@ import JudoDocument
 import SwiftUI
 
 struct FormView: SwiftUI.View {
-    var form: JudoDocument.FormNode
+    var form: JudoDocument.FormLayer
 
     var body: some SwiftUI.View {
         SwiftUI.Form {

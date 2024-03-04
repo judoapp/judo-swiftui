@@ -20,7 +20,7 @@ struct SliderView: SwiftUI.View {
     @EnvironmentObject private var componentState: ComponentState
     @Environment(\.data) private var data
 
-    var slider: JudoDocument.SliderNode
+    var slider: JudoDocument.SliderLayer
 
     var body: some SwiftUI.View {
         RealizeText(slider.minLabel ?? "") { minLabel in

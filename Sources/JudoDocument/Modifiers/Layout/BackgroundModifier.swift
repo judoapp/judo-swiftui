@@ -19,16 +19,12 @@ public struct BackgroundModifier: Modifier {
     public var id: UUID
     public var name: String?
     public var children: [Node]
-    public var position: CGPoint
-    public var isLocked: Bool
     public var alignment: Alignment
   
-    public init(id: UUID, name: String?, children: [Node], position: CGPoint, isLocked: Bool, alignment: Alignment) {
+    public init(id: UUID, name: String?, children: [Node], alignment: Alignment) {
         self.id = id
         self.name = name
         self.children = children
-        self.position = position
-        self.isLocked = isLocked
         self.alignment = alignment
     }
     
@@ -39,8 +35,6 @@ public struct BackgroundModifier: Modifier {
         case id
         case name
         case children
-        case position
-        case isLocked
         case alignment
     }
 
@@ -49,17 +43,6 @@ public struct BackgroundModifier: Modifier {
         id = try container.decode(UUID.self, forKey: .id)
         name = try container.decodeIfPresent(String.self, forKey: .name)
         children = try container.decodeNodes(forKey: .children)
-        
-        let meta = decoder.userInfo[.meta] as! Meta
-        switch meta.version {
-        case ..<18:
-            position = .zero
-            isLocked = false
-        default:
-            position = try container.decode(CGPoint.self, forKey: .position)
-            isLocked = try container.decode(Bool.self, forKey: .isLocked)
-        }
-        
         alignment = try container.decode(Alignment.self, forKey: .alignment)
     }
 
@@ -69,8 +52,6 @@ public struct BackgroundModifier: Modifier {
         try container.encode(id, forKey: .id)
         try container.encodeIfPresent(name, forKey: .name)
         try container.encodeNodes(children, forKey: .children)
-        try container.encode(position, forKey: .position)
-        try container.encode(isLocked, forKey: .isLocked)
         try container.encode(alignment, forKey: .alignment)
     }
 }

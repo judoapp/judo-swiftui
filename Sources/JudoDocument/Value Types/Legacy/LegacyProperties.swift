@@ -52,11 +52,11 @@ extension LegacyProperties {
                     name: element.key,
                     value: .component(id)
                 )
-            case .video(let string):
+            case .video(let url):
                 return Property(
                     id: UUID(),
                     name: element.key,
-                    value: .video(string)
+                    value: .video(Video(url: url))
                 )
             }
         }

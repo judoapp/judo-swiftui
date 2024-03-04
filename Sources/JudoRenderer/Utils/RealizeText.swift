@@ -33,27 +33,19 @@ struct RealizeText<Content>: SwiftUI.View where Content: SwiftUI.View {
 
     var body: some View {
         content(
-            localized ? localizedValue : evaluatedValue
+            realizeText(value, localized: localized, strings: document.strings, propertyValues: componentState.propertyValues, data: data)
         )
     }
+}
 
-    private var localizedValue: String {
-        localize(
-            key: evaluatedValue,
-            locale: Locale.preferredLocale,
-            strings: document.strings
-        ) ?? evaluatedValue
-    }
+func realizeText(_ text: Variable<String>, localized: Bool, strings: StringsCatalog, propertyValues: [String: PropertyValue], data: Any?) -> String {
+    let resolvedValue = text.forceResolve(propertyValues: propertyValues, data: data)
+    let evaluatedValue = (try? resolvedValue.evaluatingExpressions(data: data, propertyValues: propertyValues)) ?? resolvedValue
 
-    private var evaluatedValue: String {
-        (try? resolvedValue.evaluatingExpressions(data: data, propertyValues: componentState.propertyValues)) ?? resolvedValue
-    }
-
-    private var resolvedValue: String {
-        value.forceResolve(
-            propertyValues: componentState.propertyValues,
-            data: data
-        )
+    if localized {
+        return localize(key: evaluatedValue, locale: Locale.preferredLocale, strings: strings) ?? evaluatedValue
+    } else {
+        return evaluatedValue
     }
 }
 

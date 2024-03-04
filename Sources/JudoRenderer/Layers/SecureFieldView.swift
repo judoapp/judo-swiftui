@@ -19,7 +19,7 @@ import SwiftUI
 struct SecureFieldView: SwiftUI.View {
     @EnvironmentObject private var componentState: ComponentState
 
-    var secureField: JudoDocument.SecureFieldNode
+    var secureField: JudoDocument.SecureFieldLayer
 
     var body: some SwiftUI.View {
         RealizeText(secureField.title, localized: true) { title in

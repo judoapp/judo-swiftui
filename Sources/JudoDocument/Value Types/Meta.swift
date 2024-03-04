@@ -21,8 +21,8 @@ public struct Meta: Codable {
     /// The document meta data for any content saved by this copy of the app.
     public static var current: Meta {
         Meta(
-            version: 20,
-            compatibilityVersion: 20,
+            version: 21,
+            compatibilityVersion: 21,
             appVersion: Bundle.main.infoDictionary!["CFBundleShortVersionString"] as! String,
             build: Bundle.main.infoDictionary!["CFBundleVersion"] as! String
         )

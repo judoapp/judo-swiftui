@@ -19,19 +19,15 @@ public struct ShadowModifier: Modifier {
     public var id: UUID
     public var name: String?
     public var children: [Node]
-    public var position: CGPoint
-    public var isLocked: Bool
     public var color: ColorReference
     public var offsetWidth: Variable<Double>
     public var offsetHeight: Variable<Double>
     public var radius: Variable<Double>
 
-    public init(id: UUID, name: String?, children: [Node], position: CGPoint, isLocked: Bool, color: ColorReference, offsetWidth: Variable<Double>, offsetHeight: Variable<Double>, radius: Variable<Double>) {
+    public init(id: UUID, name: String?, children: [Node], color: ColorReference, offsetWidth: Variable<Double>, offsetHeight: Variable<Double>, radius: Variable<Double>) {
         self.id = id
         self.name = name
         self.children = children
-        self.position = position
-        self.isLocked = isLocked
         self.color = color
         self.offsetWidth = offsetWidth
         self.offsetHeight = offsetHeight
@@ -45,8 +41,6 @@ public struct ShadowModifier: Modifier {
         case id
         case name
         case children
-        case position
-        case isLocked
         case color
         case offsetWidth
         case offsetHeight
@@ -66,28 +60,15 @@ public struct ShadowModifier: Modifier {
         let meta = decoder.userInfo[.meta] as! Meta
         switch meta.version {
         case ..<15:
-            position = .zero
-            isLocked = false
-            
             let offset = try container.decode(CGSize.self, forKey: .offset)
             offsetWidth = Variable(LegacyNumberValue(offset.width))
             offsetHeight = Variable(LegacyNumberValue(offset.height))
             radius = try Variable(LegacyNumberValue(container.decode(CGFloat.self, forKey: .radius)))
         case ..<17:
-            position = .zero
-            isLocked = false
             offsetWidth = try Variable(container.decode(LegacyNumberValue.self, forKey: .offsetWidth))
             offsetHeight = try Variable(container.decode(LegacyNumberValue.self, forKey: .offsetHeight))
             radius = try Variable(container.decode(LegacyNumberValue.self, forKey: .radius))
-        case ..<18:
-            position = .zero
-            isLocked = false
-            offsetWidth = try container.decode(Variable<Double>.self, forKey: .offsetWidth)
-            offsetHeight = try container.decode(Variable<Double>.self, forKey: .offsetHeight)
-            radius = try container.decode(Variable<Double>.self, forKey: .radius)
         default:
-            position = try container.decode(CGPoint.self, forKey: .position)
-            isLocked = try container.decode(Bool.self, forKey: .isLocked)
             offsetWidth = try container.decode(Variable<Double>.self, forKey: .offsetWidth)
             offsetHeight = try container.decode(Variable<Double>.self, forKey: .offsetHeight)
             radius = try container.decode(Variable<Double>.self, forKey: .radius)
@@ -100,8 +81,6 @@ public struct ShadowModifier: Modifier {
         try container.encode(id, forKey: .id)
         try container.encodeIfPresent(name, forKey: .name)
         try container.encodeNodes(children, forKey: .children)
-        try container.encode(position, forKey: .position)
-        try container.encode(isLocked, forKey: .isLocked)
         try container.encode(color, forKey: .color)
         try container.encode(offsetWidth, forKey: .offsetWidth)
         try container.encode(offsetHeight, forKey: .offsetHeight)

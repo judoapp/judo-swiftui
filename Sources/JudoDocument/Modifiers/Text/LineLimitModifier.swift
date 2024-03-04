@@ -19,17 +19,13 @@ public struct LineLimitModifier: Modifier {
     public var id: UUID
     public var name: String?
     public var children: [Node]
-    public var position: CGPoint
-    public var isLocked: Bool
     public var min: Variable<Double>?
     public var max: Variable<Double>?
 
-    public init(id: UUID, name: String?, children: [Node], position: CGPoint, isLocked: Bool, min: Variable<Double>?, max: Variable<Double>?) {
+    public init(id: UUID, name: String?, children: [Node], min: Variable<Double>?, max: Variable<Double>?) {
         self.id = id
         self.name = name
         self.children = children
-        self.position = position
-        self.isLocked = isLocked
         self.min = min
         self.max = max
     }
@@ -41,8 +37,6 @@ public struct LineLimitModifier: Modifier {
         case id
         case name
         case children
-        case position
-        case isLocked
         case min
         case max
 
@@ -59,16 +53,10 @@ public struct LineLimitModifier: Modifier {
         let meta = decoder.userInfo[.meta] as! Meta
         switch meta.version {
         case ..<16:
-            position = .zero
-            isLocked = false
-            
             if let intValue = try container.decode(Int?.self, forKey: .numberOfLines) {
                 max = Variable(LegacyNumberValue(intValue))
             }
         case ..<17:
-            position = .zero
-            isLocked = false
-            
             if let value = try container.decode(LegacyNumberValue?.self, forKey: .min) {
                 min = Variable(value)
             }
@@ -76,14 +64,7 @@ public struct LineLimitModifier: Modifier {
             if let value = try container.decode(LegacyNumberValue?.self, forKey: .max) {
                 max = Variable(value)
             }
-        case ..<18:
-            position = .zero
-            isLocked = false
-            min = try container.decode(Variable<Double>?.self, forKey: .min)
-            max = try container.decode(Variable<Double>?.self, forKey: .max)
         default:
-            position = try container.decode(CGPoint.self, forKey: .position)
-            isLocked = try container.decode(Bool.self, forKey: .isLocked)
             min = try container.decode(Variable<Double>?.self, forKey: .min)
             max = try container.decode(Variable<Double>?.self, forKey: .max)
         }
@@ -95,8 +76,6 @@ public struct LineLimitModifier: Modifier {
         try container.encode(id, forKey: .id)
         try container.encodeIfPresent(name, forKey: .name)
         try container.encodeNodes(children, forKey: .children)
-        try container.encode(position, forKey: .position)
-        try container.encode(isLocked, forKey: .isLocked)
         try container.encode(min, forKey: .min)
         try container.encode(max, forKey: .max)
     }

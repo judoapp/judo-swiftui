@@ -18,7 +18,36 @@ import SwiftUI
 
 struct NavigationStackView: SwiftUI.View {
 
-    var navigationStack: JudoDocument.NavigationStackNode
+    var navigationStack: JudoDocument.NavigationStackLayer
+
+    var body: some SwiftUI.View {
+        if #available(iOS 16.0, *) {
+            NavigationStack_iOS16_View(navigationStack: navigationStack)
+        } else {
+            NavigationStack_Legacy_View(navigationStack: navigationStack)
+        }
+    }
+}
+
+@available(iOS 16.0, *)
+private struct NavigationStack_iOS16_View: View {
+    var navigationStack: JudoDocument.NavigationStackLayer
+
+    var body: some SwiftUI.View {
+        NavigationStack {
+            SwiftUI.VStack(spacing: 0) {
+                ForEach(navigationStack.children, id: \.id
+                ) {
+                    NodeView(node: $0)
+                }
+            }
+        }
+    }
+}
+
+
+private struct NavigationStack_Legacy_View: View {
+    var navigationStack: JudoDocument.NavigationStackLayer
 
     var body: some SwiftUI.View {
         NavigationView {

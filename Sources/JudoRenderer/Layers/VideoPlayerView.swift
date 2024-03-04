@@ -18,25 +18,32 @@ import JudoDocument
 import SwiftUI
 
 struct VideoPlayerView: SwiftUI.View {
-    var videoPlayer: JudoDocument.VideoPlayerNode
-    @State private var player: AVPlayer = AVPlayer()
+    @Environment(\.data) private var data
+    @EnvironmentObject private var componentState: ComponentState
+    
+    var videoPlayer: JudoDocument.VideoPlayerLayer
 
     var body: some View {
-        RealizeText(Variable("", binding: .property(name: videoPlayer.propertyName))) { urlString in
-            if let url = URL(string: urlString) {
-                VideoPlayer(videoPlayer: videoPlayer, url: url)
-            } else {
-                AVKit.VideoPlayer(player: nil)
-            }
+        if let url = URL(string: video.url) {
+            VideoPlayer(videoPlayer: videoPlayer, url: url)
+        } else {
+            AVKit.VideoPlayer(player: nil)
         }
+    }
+    
+    private var video: Video {
+        videoPlayer.video.forceResolve(
+            propertyValues: componentState.propertyValues, 
+            data: data
+        )
     }
 }
 
 private struct VideoPlayer: SwiftUI.View {
-    var videoPlayer: JudoDocument.VideoPlayerNode
+    var videoPlayer: JudoDocument.VideoPlayerLayer
     @State private var player: AVPlayer
 
-    init(videoPlayer: JudoDocument.VideoPlayerNode, url: URL) {
+    init(videoPlayer: JudoDocument.VideoPlayerLayer, url: URL) {
         self._player = State(initialValue: AVPlayer(url: url))
         self.videoPlayer = videoPlayer
     }

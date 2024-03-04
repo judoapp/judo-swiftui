@@ -21,16 +21,12 @@ public struct PresentationContentInteractionModifier: Modifier {
     public var id: UUID
     public var name: String?
     public var children: [Node]
-    public var position: CGPoint
-    public var isLocked: Bool
     public var interaction: PresentationContentInteraction
 
-    public init(id: UUID, name: String?, children: [Node], position: CGPoint, isLocked: Bool, interaction: PresentationContentInteraction) {
+    public init(id: UUID, name: String?, children: [Node], interaction: PresentationContentInteraction) {
         self.id = id
         self.name = name
         self.children = children
-        self.position = position
-        self.isLocked = isLocked
         self.interaction = interaction
     }
 
@@ -41,8 +37,6 @@ public struct PresentationContentInteractionModifier: Modifier {
         case id
         case name
         case children
-        case position
-        case isLocked
         case detent
         case interaction
     }
@@ -52,8 +46,6 @@ public struct PresentationContentInteractionModifier: Modifier {
         id = try container.decode(UUID.self, forKey: .id)
         name = try container.decodeIfPresent(String.self, forKey: .name)
         children = try container.decodeNodes(forKey: .children)
-        position = try container.decode(CGPoint.self, forKey: .position)
-        isLocked = try container.decode(Bool.self, forKey: .isLocked)
         interaction = try container.decode(PresentationContentInteraction.self, forKey: .interaction)
     }
 
@@ -63,8 +55,6 @@ public struct PresentationContentInteractionModifier: Modifier {
         try container.encode(id, forKey: .id)
         try container.encodeIfPresent(name, forKey: .name)
         try container.encodeNodes(children, forKey: .children)
-        try container.encode(position, forKey: .position)
-        try container.encode(isLocked, forKey: .isLocked)
         try container.encode(interaction, forKey: .interaction)
     }
 }

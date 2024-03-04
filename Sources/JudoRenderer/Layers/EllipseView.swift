@@ -17,7 +17,7 @@ import JudoDocument
 import SwiftUI
 
 struct EllipseView: SwiftUI.View {
-    var ellipse: JudoDocument.EllipseNode
+    var ellipse: JudoDocument.EllipseLayer
 
     var body: some SwiftUI.View {
         SwiftUI.Ellipse().apply(model: ellipse)

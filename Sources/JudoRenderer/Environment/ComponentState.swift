@@ -18,7 +18,8 @@ import JudoDocument
 
 final class ComponentState: ObservableObject {
     @Published var bindings: [String: ComponentBinding]
-    
+    @Published var views: [String: any View]
+
     var propertyValues: [String: PropertyValue] {
         bindings.reduce(into: [String: PropertyValue]()) { partialResult, element in
             partialResult[element.key] = element.value.value
@@ -26,16 +27,38 @@ final class ComponentState: ObservableObject {
     }
 
     init(propertyValues: [String: PropertyValue], overrides: Overrides, data: Any?, fetchedImage: SwiftUI.Image?, parentState: ComponentState?) {
-        var result = propertyValues.mapValues {
-            ComponentBinding(value: $0)
+        var resultingBindings = propertyValues.mapValues {
+            ComponentBinding($0)
         }
-        
-        propertyValues.forEach { (key, value) in
+
+        var resultingViews: [String: any View] = [:]
+
+        for (key, value) in propertyValues {
             switch (value, overrides[key]) {
             case (.text, .text(let textValue)):
                 if case .property(let propertyName) = textValue.binding, let parentState, parentState.bindings.keys.contains(propertyName) {
-                    result[key] = ComponentBinding(binding: Binding {
-                        parentState.bindings[propertyName]!.value
+                    resultingBindings[key] = ComponentBinding(Binding {
+                        let binding = parentState.bindings[propertyName]!
+                        switch binding.value {
+                        case .computed(let computedValue):
+                            switch computedValue {
+                            case .text(let expression):
+                                if let resolvedValue = expression.resolve(propertyValues: parentState.propertyValues, data: data) {
+                                    return .text(resolvedValue)
+                                }
+                            case .number(let expression):
+                                if let resolvedValue = expression.resolve(propertyValues: parentState.propertyValues, data: data) {
+                                    return .number(resolvedValue)
+                                }
+                            case .boolean(let expression):
+                                if let resolvedValue = expression.resolve(propertyValues: parentState.propertyValues, data: data) {
+                                    return .boolean(resolvedValue)
+                                }
+                            }
+                            return binding.value
+                        default:
+                            return binding.value
+                        }
                     } set: { newValue in
                         parentState.bindings[propertyName]!.value = newValue
                     })
@@ -45,12 +68,32 @@ final class ComponentState: ObservableObject {
                         data: data
                     )
                     
-                    result[key] = ComponentBinding(value: .text(resolvedValue))
+                    resultingBindings[key] = ComponentBinding(.text(resolvedValue))
                 }
             case (.number(let defaultValue), .number(let numberValue)):
                 if case .property(let propertyName) = numberValue.binding, let parentState, parentState.bindings.keys.contains(propertyName) {
-                    result[key] = ComponentBinding(binding: Binding {
-                        parentState.bindings[propertyName]!.value
+                    resultingBindings[key] = ComponentBinding(Binding {
+                        let binding = parentState.bindings[propertyName]!
+                        switch binding.value {
+                        case .computed(let computedValue):
+                            switch computedValue {
+                            case .text(let expression):
+                                if let resolvedValue = expression.resolve(propertyValues: parentState.propertyValues, data: data) {
+                                    return .text(resolvedValue)
+                                }
+                            case .number(let expression):
+                                if let resolvedValue = expression.resolve(propertyValues: parentState.propertyValues, data: data) {
+                                    return .number(resolvedValue)
+                                }
+                            case .boolean(let expression):
+                                if let resolvedValue = expression.resolve(propertyValues: parentState.propertyValues, data: data) {
+                                    return .boolean(resolvedValue)
+                                }
+                            }
+                            return binding.value
+                        default:
+                            return binding.value
+                        }
                     } set: { newValue in
                         parentState.bindings[propertyName]!.value = newValue
                     })
@@ -59,12 +102,32 @@ final class ComponentState: ObservableObject {
                         propertyValues: propertyValues,
                         data: data
                     )
-                    result[key] = ComponentBinding(value: .number(resolvedValue ?? defaultValue))
+                    resultingBindings[key] = ComponentBinding(.number(resolvedValue ?? defaultValue))
                 }
             case (.boolean, .boolean(let booleanValue)):
                 if case .property(let propertyName) = booleanValue.binding, let parentState, parentState.bindings.keys.contains(propertyName) {
-                    result[key] = ComponentBinding(binding: Binding {
-                        parentState.bindings[propertyName]!.value
+                    resultingBindings[key] = ComponentBinding(Binding {
+                        let binding = parentState.bindings[propertyName]!
+                        switch binding.value {
+                        case .computed(let computedValue):
+                            switch computedValue {
+                            case .text(let expression):
+                                if let resolvedValue = expression.resolve(propertyValues: parentState.propertyValues, data: data) {
+                                    return .text(resolvedValue)
+                                }
+                            case .number(let expression):
+                                if let resolvedValue = expression.resolve(propertyValues: parentState.propertyValues, data: data) {
+                                    return .number(resolvedValue)
+                                }
+                            case .boolean(let expression):
+                                if let resolvedValue = expression.resolve(propertyValues: parentState.propertyValues, data: data) {
+                                    return .boolean(resolvedValue)
+                                }
+                            }
+                            return binding.value
+                        default:
+                            return binding.value
+                        }
                     } set: { newValue in
                         parentState.bindings[propertyName]!.value = newValue
                     })
@@ -73,11 +136,11 @@ final class ComponentState: ObservableObject {
                         propertyValues: propertyValues,
                         data: data
                     )
-                    result[key] = ComponentBinding(value: .boolean(resolvedValue))
+                    resultingBindings[key] = ComponentBinding(.boolean(resolvedValue))
                 }
             case (.image, .image(let value)):
                 if case .property(let propertyName) = value.binding, let parentState, parentState.bindings.keys.contains(propertyName) {
-                    result[key] = ComponentBinding(binding: Binding {
+                    resultingBindings[key] = ComponentBinding(Binding {
                         parentState.bindings[propertyName]!.value
                     } set: { newValue in
                         parentState.bindings[propertyName]!.value = newValue
@@ -89,11 +152,11 @@ final class ComponentState: ObservableObject {
                         fetchedImage: fetchedImage
                     )
                     
-                    result[key] = ComponentBinding(value: .image(resolvedValue))
+                    resultingBindings[key] = ComponentBinding(.image(resolvedValue))
                 }
             case (.component(let defaultValue), .component(let value)):
                 if case .property(let propertyName) = value.binding, let parentState, parentState.bindings.keys.contains(propertyName) {
-                    result[key] = ComponentBinding(binding: Binding {
+                    resultingBindings[key] = ComponentBinding(Binding {
                         parentState.bindings[propertyName]!.value
                     } set: { newValue in
                         parentState.bindings[propertyName]!.value = newValue
@@ -104,12 +167,13 @@ final class ComponentState: ObservableObject {
                         data: data
                     )
                     
-                    result[key] = ComponentBinding(value: .component(resolvedValue ?? defaultValue))
+                    resultingBindings[key] = ComponentBinding(.component(resolvedValue ?? defaultValue))
                 }
 
+                resultingViews[key] = parentState?.views[key]
             case (.video, .video(let videoValue)):
                 if case .property(let propertyName) = videoValue.binding, let parentState, parentState.bindings.keys.contains(propertyName) {
-                    result[key] = ComponentBinding(binding: Binding {
+                    resultingBindings[key] = ComponentBinding(Binding {
                         parentState.bindings[propertyName]!.value
                     } set: { newValue in
                         parentState.bindings[propertyName]!.value = newValue
@@ -120,28 +184,31 @@ final class ComponentState: ObservableObject {
                         data: data
                     )
 
-                    result[key] = ComponentBinding(value: .video(resolvedValue))
+                    resultingBindings[key] = ComponentBinding(.video(resolvedValue))
                 }
             default:
                 break
             }
         }
 
-        self.bindings = result
+        self.bindings = resultingBindings
+        self.views = resultingViews
     }
     
     init(propertyValues: [String: PropertyValue]) {
-        self.bindings = propertyValues.mapValues({ ComponentBinding(value: $0) })
+        self.bindings = propertyValues.mapValues({ ComponentBinding($0) })
+        self.views = [:]
     }
 
-    init(bindings: [String: ComponentBinding]) {
+    init(bindings: [String: ComponentBinding], views: [String: any View]) {
         self.bindings = bindings
+        self.views = views
     }
 }
 
 struct ComponentBinding {
     private var ownedValue: PropertyValue?
-    private var binding: Binding<PropertyValue>?
+    private var propertyBinding: Binding<PropertyValue>?
 
     var value: PropertyValue {
         get {
@@ -149,27 +216,27 @@ struct ComponentBinding {
                 return ownedValue
             }
 
-            if let binding {
-                return binding.wrappedValue
+            if let propertyBinding {
+                return propertyBinding.wrappedValue
             }
 
             fatalError()
         }
 
         set {
-            if let binding {
-                binding.wrappedValue = newValue
+            if let propertyBinding {
+                propertyBinding.wrappedValue = newValue
             } else {
                 ownedValue = newValue
             }
         }
     }
 
-    init(value: PropertyValue) {
+    init(_ value: PropertyValue) {
         self.ownedValue = value
     }
 
-    init(binding: Binding<PropertyValue>) {
-        self.binding = binding
+    init(_ propertyBinding: Binding<PropertyValue>) {
+        self.propertyBinding = propertyBinding
     }
 }

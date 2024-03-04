@@ -21,6 +21,8 @@ extension Decodable {
         
         if typeName.hasSuffix("Node") {
             return String(typeName.dropLast("Node".count))
+        } else if typeName.hasSuffix("Layer") {
+            return String(typeName.dropLast("Layer".count))
         } else {
             return typeName
         }

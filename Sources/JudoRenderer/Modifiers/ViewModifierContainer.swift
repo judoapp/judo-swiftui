@@ -214,6 +214,9 @@ private struct JudoViewModifier: SwiftUI.ViewModifier {
         case let modifier as MaskModifier:
             content.modifier(MaskViewModifier(modifier: modifier))
 
+        case let modifier as MinimumScaleFactorModifier:
+            content.modifier(MinimumScaleFactorViewModifier(modifier: modifier))
+
         case let modifier as MultiLineTextAlignmentModifier:
             content.modifier(MultilineTextAlignmentViewModifier(modifier: modifier))
 
@@ -269,8 +272,11 @@ private struct JudoViewModifier: SwiftUI.ViewModifier {
             content.modifier(PresentationCornerRadiusViewModifier(modifier: modifier))
 
         case let modifier as PresentationDetentsModifier:
+            #if !os(visionOS)
             content.modifier(PresentationDetentsViewModifier(modifier: modifier))
-
+            #else
+            content
+            #endif
         case let modifier as PresentationDragIndicatorModifier:
             content.modifier(PresentationDragIndicatorViewModifier(modifier: modifier))
 

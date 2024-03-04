@@ -19,17 +19,13 @@ public struct FixedSizeModifier: Modifier {
     public var id: UUID
     public var name: String?
     public var children: [Node]
-    public var position: CGPoint
-    public var isLocked: Bool
     public var horizontal: Variable<Bool>
     public var vertical: Variable<Bool>
 
-    public init(id: UUID, name: String?, children: [Node], position: CGPoint, isLocked: Bool, horizontal: Variable<Bool>, vertical: Variable<Bool>) {
+    public init(id: UUID, name: String?, children: [Node], horizontal: Variable<Bool>, vertical: Variable<Bool>) {
         self.id = id
         self.name = name
         self.children = children
-        self.position = position
-        self.isLocked = isLocked
         self.horizontal = horizontal
         self.vertical = vertical
     }
@@ -41,8 +37,6 @@ public struct FixedSizeModifier: Modifier {
         case id
         case name
         case children
-        case position
-        case isLocked
         case horizontal
         case vertical
     }
@@ -52,17 +46,6 @@ public struct FixedSizeModifier: Modifier {
         id = try container.decode(UUID.self, forKey: .id)
         name = try container.decodeIfPresent(String.self, forKey: .name)
         children = try container.decodeNodes(forKey: .children)
-        
-        let meta = decoder.userInfo[.meta] as! Meta
-        switch meta.version {
-        case ..<18:
-            position = .zero
-            isLocked = false
-        default:
-            position = try container.decode(CGPoint.self, forKey: .position)
-            isLocked = try container.decode(Bool.self, forKey: .isLocked)
-        }
-        
         horizontal = try container.decode(Variable<Bool>.self, forKey: .horizontal)
         vertical = try container.decode(Variable<Bool>.self, forKey: .vertical)
     }
@@ -73,8 +56,6 @@ public struct FixedSizeModifier: Modifier {
         try container.encode(id, forKey: .id)
         try container.encodeIfPresent(name, forKey: .name)
         try container.encodeNodes(children, forKey: .children)
-        try container.encode(position, forKey: .position)
-        try container.encode(isLocked, forKey: .isLocked)
         try container.encode(horizontal, forKey: .horizontal)
         try container.encode(vertical, forKey: .vertical)
     }

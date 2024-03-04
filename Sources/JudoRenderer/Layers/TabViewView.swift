@@ -18,9 +18,9 @@ import SwiftUI
 
 struct TabViewView: SwiftUI.View {
 
-    var tabView: JudoDocument.TabViewNode
+    var tabView: JudoDocument.TabViewLayer
 
-    init(tabView: JudoDocument.TabViewNode) {
+    init(tabView: JudoDocument.TabViewLayer) {
         self.tabView = tabView
     }
 

@@ -19,19 +19,15 @@ public struct UnderlineModifier: Modifier {
     public var id: UUID
     public var name: String?
     public var children: [Node]
-    public var position: CGPoint
-    public var isLocked: Bool
     public var color: ColorReference
     public var isActive: Variable<Bool>
     public var pattern: TextLineStylePattern
 
 
-    public init(id: UUID, name: String?, children: [Node], position: CGPoint, isLocked: Bool, color: ColorReference, isActive: Variable<Bool>, pattern: TextLineStylePattern) {
+    public init(id: UUID, name: String?, children: [Node], color: ColorReference, isActive: Variable<Bool>, pattern: TextLineStylePattern) {
         self.id = id
         self.name = name
         self.children = children
-        self.position = position
-        self.isLocked = isLocked
         self.color = color
         self.isActive = isActive
         self.pattern = pattern
@@ -44,8 +40,6 @@ public struct UnderlineModifier: Modifier {
         case id
         case name
         case children
-        case position
-        case isLocked
         case color
         case isActive
         case pattern
@@ -56,8 +50,6 @@ public struct UnderlineModifier: Modifier {
         id = try container.decode(UUID.self, forKey: .id)
         name = try container.decodeIfPresent(String.self, forKey: .name)
         children = try container.decodeNodes(forKey: .children)
-        position = try container.decode(CGPoint.self, forKey: .position)
-        isLocked = try container.decode(Bool.self, forKey: .isLocked)
         color = try container.decode(ColorReference.self, forKey: .color)
         isActive = try container.decode(Variable<Bool>.self, forKey: .isActive)
         pattern = try container.decode(TextLineStylePattern.self, forKey: .pattern)
@@ -69,8 +61,6 @@ public struct UnderlineModifier: Modifier {
         try container.encode(id, forKey: .id)
         try container.encodeIfPresent(name, forKey: .name)
         try container.encodeNodes(children, forKey: .children)
-        try container.encode(position, forKey: .position)
-        try container.encode(isLocked, forKey: .isLocked)
         try container.encode(color, forKey: .color)
         try container.encode(isActive, forKey: .isActive)
         try container.encode(pattern, forKey: .pattern)

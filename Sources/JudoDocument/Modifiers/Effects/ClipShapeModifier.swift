@@ -19,18 +19,14 @@ public struct ClipShapeModifier: Modifier {
     public var id: UUID
     public var name: String?
     public var children: [Node]
-    public var position: CGPoint
-    public var isLocked: Bool
     public var shape: Shape
     public var isEvenOddRule: Variable<Bool>
     public var isAntialiased: Variable<Bool>
 
-    public init(id: UUID, name: String?, children: [Node], position: CGPoint, isLocked: Bool, shape: Shape, isEvenOddRule: Variable<Bool>, isAntialiased: Variable<Bool>) {
+    public init(id: UUID, name: String?, children: [Node], shape: Shape, isEvenOddRule: Variable<Bool>, isAntialiased: Variable<Bool>) {
         self.id = id
         self.name = name
         self.children = children
-        self.position = position
-        self.isLocked = isLocked
         self.shape = shape
         self.isEvenOddRule = isEvenOddRule
         self.isAntialiased = isAntialiased
@@ -43,8 +39,6 @@ public struct ClipShapeModifier: Modifier {
         case id
         case name
         case children
-        case position
-        case isLocked
         case shape
         case evenOddRule
         case antialiased
@@ -55,18 +49,7 @@ public struct ClipShapeModifier: Modifier {
         id = try container.decode(UUID.self, forKey: .id)
         name = try container.decodeIfPresent(String.self, forKey: .name)
         children = try container.decodeNodes(forKey: .children)
-        
-        let meta = decoder.userInfo[.meta] as! Meta
-        switch meta.version {
-        case ..<18:
-            position = .zero
-            isLocked = false
-        default:
-            position = try container.decode(CGPoint.self, forKey: .position)
-            isLocked = try container.decode(Bool.self, forKey: .isLocked)
-        }
-        
-        
+
         if let shape = try container.decodeNode(for: .shape) as? Shape {
             self.shape = shape
         } else {
@@ -88,8 +71,6 @@ public struct ClipShapeModifier: Modifier {
         try container.encode(id, forKey: .id)
         try container.encodeIfPresent(name, forKey: .name)
         try container.encodeNodes(children, forKey: .children)
-        try container.encode(position, forKey: .position)
-        try container.encode(isLocked, forKey: .isLocked)
         try container.encode(shape, forKey: .shape)
         try container.encode(isEvenOddRule, forKey: .evenOddRule)
         try container.encode(isAntialiased, forKey: .antialiased)

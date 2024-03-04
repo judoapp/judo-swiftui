@@ -20,7 +20,7 @@ struct RoundedRectangleView: SwiftUI.View {
     @EnvironmentObject private var componentState: ComponentState
     @Environment(\.data) private var data
 
-    var roundedRectangle: JudoDocument.RoundedRectangleNode
+    var roundedRectangle: JudoDocument.RoundedRectangleLayer
 
     var body: some SwiftUI.View {
         SwiftUI.RoundedRectangle(cornerRadius: cornerRadius, style: style)

@@ -32,67 +32,69 @@ struct NodeView: SwiftUI.View {
     
     @ViewBuilder private var content: some SwiftUI.View {
         switch node {
-        case let button as JudoDocument.ButtonNode:
+        case let button as JudoDocument.ButtonLayer:
             ButtonView(button: button)
-        case let capsule as JudoDocument.CapsuleNode:
+        case let capsule as JudoDocument.CapsuleLayer:
             CapsuleView(capsule: capsule)
-        case let circle as JudoDocument.CircleNode:
+        case let circle as JudoDocument.CircleLayer:
             CircleView(circle: circle)
-        case let collection as CollectionNode:
-          CollectionView(collection: collection)
-        case let componentInstance as ComponentInstanceNode:
+        case let collection as CollectionLayer:
+            CollectionView(collection: collection)
+        case let combinedText as CombinedTextLayer:
+            CombinedTextView(combinedText: combinedText)
+        case let componentInstance as ComponentInstanceLayer:
             ComponentInstanceView(componentInstance: componentInstance)
-        case let conditional as ConditionalNode:
-          ConditionalView(conditional: conditional)
-        case let dataSource as DataSourceNode:
-          DataSourceView(dataSource: dataSource)
-        case let divider as JudoDocument.DividerNode:
+        case let conditional as ConditionalLayer:
+            ConditionalView(conditional: conditional)
+        case let dataSource as DataSourceLayer:
+            DataSourceView(dataSource: dataSource)
+        case let divider as JudoDocument.DividerLayer:
             DividerView(divider: divider)
-        case let ellipse as JudoDocument.EllipseNode:
+        case let ellipse as JudoDocument.EllipseLayer:
             EllipseView(ellipse: ellipse)
-        case let form as JudoDocument.FormNode:
+        case let form as JudoDocument.FormLayer:
             FormView(form: form)
-        case let stack as JudoDocument.HStackNode:
+        case let stack as JudoDocument.HStackLayer:
             HStackView(stack: stack)
-        case let image as JudoDocument.ImageNode:
+        case let image as JudoDocument.ImageLayer:
             ImageView(image: image)
-        case let image as JudoDocument.AsyncImageNode:
+        case let image as JudoDocument.AsyncImageLayer:
             AsyncImageView(image: image)
-        case let navigationLink as JudoDocument.NavigationLinkNode:
+        case let navigationLink as JudoDocument.NavigationLinkLayer:
             NavigationLinkView(navigationLink: navigationLink)
-        case let navigationStack as JudoDocument.NavigationStackNode:
+        case let navigationStack as JudoDocument.NavigationStackLayer:
             NavigationStackView(navigationStack: navigationStack)
-        case let picker as JudoDocument.PickerNode:
+        case let picker as JudoDocument.PickerLayer:
             PickerView(picker: picker)
-        case let rectangle as JudoDocument.RectangleNode:
+        case let rectangle as JudoDocument.RectangleLayer:
             RectangleView(rectangle: rectangle)
-        case let roundedRectangle as JudoDocument.RoundedRectangleNode:
+        case let roundedRectangle as JudoDocument.RoundedRectangleLayer:
             RoundedRectangleView(roundedRectangle: roundedRectangle)
-        case let secureField as JudoDocument.SecureFieldNode:
+        case let secureField as JudoDocument.SecureFieldLayer:
             SecureFieldView(secureField: secureField)
-        case let section as JudoDocument.SectionNode:
+        case let section as JudoDocument.SectionLayer:
             SectionView(section: section)
-        case let scrollView as JudoDocument.ScrollViewNode:
+        case let scrollView as JudoDocument.ScrollViewLayer:
             ScrollViewView(scrollView: scrollView)
-        case let slider as JudoDocument.SliderNode:
+        case let slider as JudoDocument.SliderLayer:
             SliderView(slider: slider)
-        case let spacer as JudoDocument.SpacerNode:
+        case let spacer as JudoDocument.SpacerLayer:
             SpacerView(spacer: spacer)
-        case let stepper as JudoDocument.StepperNode:
+        case let stepper as JudoDocument.StepperLayer:
             StepperView(stepper: stepper)
-        case let tabView as JudoDocument.TabViewNode:
+        case let tabView as JudoDocument.TabViewLayer:
             TabViewView(tabView: tabView)
-        case let text as JudoDocument.TextNode:
+        case let text as JudoDocument.TextLayer:
             TextView(text: text)
-        case let textField as JudoDocument.TextFieldNode:
+        case let textField as JudoDocument.TextFieldLayer:
             TextFieldView(textField: textField)
-        case let toggle as JudoDocument.ToggleNode:
+        case let toggle as JudoDocument.ToggleLayer:
             ToggleView(toggle: toggle)
-        case let videoPlayer as JudoDocument.VideoPlayerNode:
+        case let videoPlayer as JudoDocument.VideoPlayerLayer:
             VideoPlayerView(videoPlayer: videoPlayer)
-        case let stack as JudoDocument.VStackNode:
+        case let stack as JudoDocument.VStackLayer:
             VStackView(stack: stack)
-        case let stack as JudoDocument.ZStackNode:
+        case let stack as JudoDocument.ZStackLayer:
             ZStackView(stack: stack)
         default:
             EmptyView()

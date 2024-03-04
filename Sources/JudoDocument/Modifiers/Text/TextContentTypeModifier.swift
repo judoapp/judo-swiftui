@@ -19,16 +19,12 @@ public struct TextContentTypeModifier: Modifier {
     public var id: UUID
     public var name: String?
     public var children: [Node]
-    public var position: CGPoint
-    public var isLocked: Bool
     public var textContentType: TextContentType
 
-    public init(id: UUID, name: String?, children: [Node], position: CGPoint, isLocked: Bool, textContentType: TextContentType) {
+    public init(id: UUID, name: String?, children: [Node], textContentType: TextContentType) {
         self.id = id
         self.name = name
         self.children = children
-        self.position = position
-        self.isLocked = isLocked
         self.textContentType = textContentType
     }
     
@@ -39,8 +35,6 @@ public struct TextContentTypeModifier: Modifier {
         case id
         case name
         case children
-        case position
-        case isLocked
         case textContentType
     }
 
@@ -53,18 +47,12 @@ public struct TextContentTypeModifier: Modifier {
         let meta = decoder.userInfo[.meta] as! Meta
         switch meta.version {
         case ..<18:
-            position = .zero
-            isLocked = false
             let textContentType = try container.decode(TextContentType?.self, forKey: .textContentType)
             self.textContentType = textContentType ?? .none
         case ..<19:
-            position = try container.decode(CGPoint.self, forKey: .position)
-            isLocked = try container.decode(Bool.self, forKey: .isLocked)
             let textContentType = try container.decode(TextContentType?.self, forKey: .textContentType)
             self.textContentType = textContentType ?? .none
         default:
-            position = try container.decode(CGPoint.self, forKey: .position)
-            isLocked = try container.decode(Bool.self, forKey: .isLocked)
             self.textContentType = try container.decode(TextContentType.self, forKey: .textContentType)
         }
     }
@@ -75,8 +63,6 @@ public struct TextContentTypeModifier: Modifier {
         try container.encode(id, forKey: .id)
         try container.encodeIfPresent(name, forKey: .name)
         try container.encodeNodes(children, forKey: .children)
-        try container.encode(position, forKey: .position)
-        try container.encode(isLocked, forKey: .isLocked)
         try container.encode(textContentType, forKey: .textContentType)
     }
 }

@@ -95,7 +95,8 @@ public struct JudoView: View {
             if let component = document.initialComponent(preferring: componentName) {
                 MainComponentView(
                     component: component,
-                    userBindings: userBindings
+                    userBindings: userBindings,
+                    userViews: userViews
                 )
                 .id(userBindings.mapValues(\.value))
                 .environment(\.document, document)
@@ -108,7 +109,20 @@ public struct JudoView: View {
             JudoErrorView(error)
         }
     }
-    
+
+    private var userViews: [String: any View] {
+        var result: [String: any View] = [:]
+        for (key, anyValue) in properties {
+            switch anyValue {
+            case let value as any View:
+                result[key.rawValue] = value
+            default:
+                break
+            }
+        }
+        return result
+    }
+
     /// Convert user provided properties (Any), to corresponding ComponentBinding
     private var userBindings: [String: ComponentBinding] {
         var result: [String: ComponentBinding] = [:]
@@ -116,7 +130,7 @@ public struct JudoView: View {
         for (key, anyValue) in properties {
             switch anyValue {
             case let value as IntegerLiteralType:
-                result[key.rawValue] = ComponentBinding(value: .number(Double(value)))
+                result[key.rawValue] = ComponentBinding(.number(Double(value)))
             case let bindingValue as Binding<Int>:
                 let propertyValueBinding = Binding {
                     PropertyValue.number(Double(bindingValue.wrappedValue))
@@ -125,9 +139,9 @@ public struct JudoView: View {
                         bindingValue.wrappedValue = Int(value)
                     }
                 }
-                result[key.rawValue] = ComponentBinding(binding: propertyValueBinding)
+                result[key.rawValue] = ComponentBinding(propertyValueBinding)
             case let value as FloatLiteralType:
-                result[key.rawValue] = ComponentBinding(value: .number(value))
+                result[key.rawValue] = ComponentBinding(.number(value))
             case let bindingValue as Binding<Double>:
                 let propertyValueBinding = Binding {
                     PropertyValue.number(bindingValue.wrappedValue)
@@ -136,9 +150,9 @@ public struct JudoView: View {
                         bindingValue.wrappedValue = value
                     }
                 }
-                result[key.rawValue] = ComponentBinding(binding: propertyValueBinding)
+                result[key.rawValue] = ComponentBinding(propertyValueBinding)
             case let value as BooleanLiteralType:
-                result[key.rawValue] = ComponentBinding(value: .boolean(value))
+                result[key.rawValue] = ComponentBinding(.boolean(value))
             case let bindingValue as Binding<Bool>:
                 let propertyValueBinding = Binding {
                     PropertyValue.boolean(bindingValue.wrappedValue)
@@ -147,9 +161,9 @@ public struct JudoView: View {
                         bindingValue.wrappedValue = value
                     }
                 }
-                result[key.rawValue] = ComponentBinding(binding: propertyValueBinding)
+                result[key.rawValue] = ComponentBinding(propertyValueBinding)
             case let value as StringLiteralType:
-                result[key.rawValue] = ComponentBinding(value: .text(value))
+                result[key.rawValue] = ComponentBinding(.text(value))
             case let bindingValue as Binding<String>:
                 let propertyValueBinding = Binding {
                     PropertyValue.text(bindingValue.wrappedValue)
@@ -158,12 +172,14 @@ public struct JudoView: View {
                         bindingValue.wrappedValue = value
                     }
                 }
-                result[key.rawValue] = ComponentBinding(binding: propertyValueBinding)
+                result[key.rawValue] = ComponentBinding(propertyValueBinding)
             case let value as SwiftUI.Image:
-                result[key.rawValue] = ComponentBinding(value: .image(.inline(image: value)))
+                result[key.rawValue] = ComponentBinding(.image(.inline(image: value)))
             case let value as UIImage:
                 let image = SwiftUI.Image(uiImage: value)
-                result[key.rawValue] = ComponentBinding(value: .image(.inline(image: image)))
+                result[key.rawValue] = ComponentBinding(.image(.inline(image: image)))
+            case is any View:
+                break
             default:
                 logger.warning("Invalid value for property \"\(key)\". Property unused.")
                 break

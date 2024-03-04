@@ -17,7 +17,7 @@ import JudoDocument
 import SwiftUI
 
 struct DividerView: SwiftUI.View {
-    var divider: JudoDocument.DividerNode
+    var divider: JudoDocument.DividerLayer
     
     var body: some SwiftUI.View {
         SwiftUI.Divider()

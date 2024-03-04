@@ -20,7 +20,7 @@ struct StepperView: SwiftUI.View {
     @EnvironmentObject private var componentState: ComponentState
     @Environment(\.data) private var data
 
-    var stepper: JudoDocument.StepperNode
+    var stepper: JudoDocument.StepperLayer
 
     var body: some SwiftUI.View {
         RealizeText(stepper.label) { label in

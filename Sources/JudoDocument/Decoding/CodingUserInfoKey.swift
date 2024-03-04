@@ -21,4 +21,5 @@ extension CodingUserInfoKey {
     static let strings = CodingUserInfoKey(rawValue: "strings")!
     static let fonts = CodingUserInfoKey(rawValue: "fonts")!
     static let userData = CodingUserInfoKey(rawValue: "userData")!
+    static let legacyUserData = CodingUserInfoKey(rawValue: "legacyUserData")!
 }

@@ -23,8 +23,6 @@ public struct DocumentNode: Node {
     public var id: UUID
     public var name: String?
     public var children: [Node]
-    public var position: CGPoint
-    public var isLocked: Bool
     public var deletedNodes: [Node]
     public var colors: [DocumentColor]
     public var gradients: [DocumentGradient]
@@ -38,8 +36,6 @@ public struct DocumentNode: Node {
         self.id = UUID()
         self.name = nil
         self.children = []
-        self.position = .zero
-        self.isLocked = false
         self.deletedNodes = []
         self.colors = []
         self.gradients = []
@@ -50,12 +46,10 @@ public struct DocumentNode: Node {
         self.userData = UserData()
     }
     
-    public init(id: UUID, name: String?, children: [Node], position: CGPoint, isLocked: Bool, deletedNodes: [Node], colors: [DocumentColor], gradients: [DocumentGradient], fonts: [DocumentFont], assets: XCAssetCatalog, strings: StringsCatalog, importedFonts: Set<FontValue>, userData: UserData) {
+    public init(id: UUID, name: String?, children: [Node], deletedNodes: [Node], colors: [DocumentColor], gradients: [DocumentGradient], fonts: [DocumentFont], assets: XCAssetCatalog, strings: StringsCatalog, importedFonts: Set<FontValue>, userData: UserData) {
         self.id = id
         self.name = name
         self.children = children
-        self.position = position
-        self.isLocked = isLocked
         self.deletedNodes = deletedNodes
         self.colors = colors
         self.gradients = gradients
@@ -73,9 +67,7 @@ public struct DocumentNode: Node {
     // MARK: Read and Write
     
     public static func read(from data: Data, errorOnForwardsCompatibility: Bool = false) throws -> DocumentNode {
-        guard let archive = Archive(data: data, accessMode: .read) else {
-            throw CocoaError(.fileReadCorruptFile)
-        }
+        let archive = try Archive.init(data: data, accessMode: .read)
 
         let decoder = JSONDecoder()
         decoder.nonConformingFloatDecodingStrategy = .convertFromString(
@@ -114,16 +106,14 @@ public struct DocumentNode: Node {
         
         // User Data
         decoder.userInfo[.userData] = try archive.extractUserData(with: decoder)
-        
+
         // Document
         return try archive.extractDocumentNode(with: decoder)
     }
     
     #if os(macOS)
     public func data(previewImage: NSImage?) throws -> Data {
-        guard let archive = Archive(accessMode: .create) else {
-            throw CocoaError(.fileWriteOutOfSpace)
-        }
+        let archive = try Archive(accessMode: .create)
         
         if let previewImage {
             try archive.insertPreviewImage(previewImage)
@@ -133,10 +123,7 @@ public struct DocumentNode: Node {
     }
     #else
     public func data(previewImage: UIImage?) throws -> Data {
-        guard let archive = Archive(accessMode: .create) else {
-            throw CocoaError(.fileWriteOutOfSpace)
-        }
-        
+        let archive = try Archive(accessMode: .create)
         if let previewImage {
             try archive.insertPreviewImage(previewImage)
         }
@@ -216,8 +203,6 @@ public struct DocumentNode: Node {
             id = UUID()
             name = nil
             children = try container.decodeNodes(forKey: .nodes)
-            position = .zero
-            isLocked = false
             
             if container.contains(.deletedNodes) {
                 deletedNodes = try container.decodeNodes(forKey: .deletedNodes)
@@ -228,8 +213,6 @@ public struct DocumentNode: Node {
             id = try container.decode(UUID.self, forKey: .id)
             name = try container.decodeIfPresent(String.self, forKey: .name)
             children = try container.decodeNodes(forKey: .children)
-            position = try container.decode(CGPoint.self, forKey: .position)
-            isLocked = try container.decode(Bool.self, forKey: .isLocked)
             deletedNodes = try container.decodeNodes(forKey: .deletedNodes)
         }
 
@@ -250,8 +233,6 @@ public struct DocumentNode: Node {
         try container.encode(id, forKey: .id)
         try container.encodeIfPresent(name, forKey: .name)
         try container.encodeNodes(children, forKey: .children)
-        try container.encode(position, forKey: .position)
-        try container.encode(isLocked, forKey: .isLocked)
         try container.encodeNodes(deletedNodes, forKey: .deletedNodes)
         try container.encode(colors, forKey: .colors)
         try container.encode(gradients, forKey: .gradients)

@@ -17,8 +17,9 @@ import Backport
 import JudoDocument
 import SwiftUI
 
+@available(visionOS, unavailable)
 extension Backport where Wrapped: SwiftUI.View {
-    
+
     /// Presentation detents are only available in SwiftUI in iOS 16+, they were first introduced in UIKit in iOS 15.
     /// It is possible to Backport them so that they are available on iOS 15 in SwiftUI.
     @ViewBuilder
@@ -36,6 +37,7 @@ extension Backport where Wrapped: SwiftUI.View {
 }
 
 @available(iOS 16.0, *)
+@available(visionOS, unavailable)
 private extension JudoDocument.PresentationDetent {
     var swiftUIValue: SwiftUI.PresentationDetent? {
         switch standardDetent {
@@ -60,7 +62,9 @@ private extension JudoDocument.PresentationDetent {
 }
 
 @available(iOS 15, *)
+@available(visionOS, unavailable)
 private extension Backport<Any> {
+
     struct Representable: UIViewControllerRepresentable {
         let detents: [JudoDocument.PresentationDetent]
 
@@ -75,6 +79,7 @@ private extension Backport<Any> {
 }
 
 @available(iOS 15, *)
+@available(visionOS, unavailable)
 private extension Backport.Representable {
     final class Controller: UIViewController, UISheetPresentationControllerDelegate {
 

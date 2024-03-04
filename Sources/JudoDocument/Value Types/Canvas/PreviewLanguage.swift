@@ -16,7 +16,7 @@
 import Foundation
 
 /// A list of supported languages given as BCP-47 locale identifiers.
-public enum PreviewLanguage: String, Codable, CaseIterable, CustomStringConvertible {
+public enum PreviewLanguage: String, Codable, CaseIterable, CustomStringConvertible, Hashable {
     case english = "en"
     case arabic = "ar"
     case chineseSimplified = "zh-CN"

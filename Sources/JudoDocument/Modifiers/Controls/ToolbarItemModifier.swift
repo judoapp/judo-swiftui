@@ -19,19 +19,15 @@ public struct ToolbarItemModifier: Modifier {
     public var id: UUID
     public var name: String?
     public var children: [Node]
-    public var position: CGPoint
-    public var isLocked: Bool
     public var title: Variable<String>?
     public var icon: NamedIcon?
     public var placement: ToolbarItemPlacement
     public var actions: [Action]
         
-    public init(id: UUID, name: String?, children: [Node], position: CGPoint, isLocked: Bool, title: Variable<String>?, icon: NamedIcon?, placement: ToolbarItemPlacement, actions: [Action]) {
+    public init(id: UUID, name: String?, children: [Node], title: Variable<String>?, icon: NamedIcon?, placement: ToolbarItemPlacement, actions: [Action]) {
         self.id = id
         self.name = name
         self.children = children
-        self.position = position
-        self.isLocked = isLocked
         self.title = title
         self.icon = icon
         self.placement = placement
@@ -45,8 +41,6 @@ public struct ToolbarItemModifier: Modifier {
         case id
         case name
         case children
-        case position
-        case isLocked
         case title
         case icon
         case placement
@@ -65,9 +59,7 @@ public struct ToolbarItemModifier: Modifier {
         let meta = decoder.userInfo[.meta] as! Meta
         switch meta.version {
         case ..<15:
-            position = .zero
-            isLocked = false
-            
+
             let legacyToolbarItem = try container.decode(LegacyToolbarItem.self, forKey: .toolbarItem)
             if let title = legacyToolbarItem.title {
                 self.title = Variable(title)
@@ -77,22 +69,11 @@ public struct ToolbarItemModifier: Modifier {
             placement = legacyToolbarItem.placement
             actions = legacyToolbarItem.actions
         case ..<17:
-            position = .zero
-            isLocked = false
             title = try Variable(container.decode(LegacyTextValue.self, forKey: .title))
             icon = try container.decode(NamedIcon?.self, forKey: .icon)
             placement = try container.decode(ToolbarItemPlacement.self, forKey: .placement)
             actions = try container.decodeActions(forKey: .actions)
-        case ..<18:
-            title = try container.decode(Variable<String>?.self, forKey: .title)
-            icon = try container.decode(NamedIcon?.self, forKey: .icon)
-            placement = try container.decode(ToolbarItemPlacement.self, forKey: .placement)
-            actions = try container.decodeActions(forKey: .actions)
-            position = .zero
-            isLocked = false
         default:
-            position = try container.decode(CGPoint.self, forKey: .position)
-            isLocked = try container.decode(Bool.self, forKey: .isLocked)
             title = try container.decode(Variable<String>?.self, forKey: .title)
             icon = try container.decode(NamedIcon?.self, forKey: .icon)
             placement = try container.decode(ToolbarItemPlacement.self, forKey: .placement)
@@ -106,8 +87,6 @@ public struct ToolbarItemModifier: Modifier {
         try container.encode(id, forKey: .id)
         try container.encodeIfPresent(name, forKey: .name)
         try container.encodeNodes(children, forKey: .children)
-        try container.encode(position, forKey: .position)
-        try container.encode(isLocked, forKey: .isLocked)
         try container.encode(title, forKey: .title)
         try container.encode(icon, forKey: .icon)
         try container.encode(placement, forKey: .placement)

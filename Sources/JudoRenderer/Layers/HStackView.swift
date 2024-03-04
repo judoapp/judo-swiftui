@@ -17,7 +17,7 @@ import JudoDocument
 import SwiftUI
 
 struct HStackView: SwiftUI.View {
-    var stack: JudoDocument.HStackNode
+    var stack: JudoDocument.HStackLayer
 
     var body: some SwiftUI.View {
         SwiftUI.HStack(alignment: alignment, spacing: stack.spacing) {
@@ -28,15 +28,6 @@ struct HStackView: SwiftUI.View {
     }
     
     private var alignment: SwiftUI.VerticalAlignment {
-        switch stack.alignment {
-        case .top:
-            return .top
-        case .center:
-            return .center
-        case .bottom:
-            return .bottom
-        case .firstTextBaseline:
-            return .firstTextBaseline
-        }
+        stack.alignment.swiftUIValue
     }
 }

@@ -17,7 +17,7 @@ import SwiftUI
 import JudoDocument
 
 struct ZStackView: SwiftUI.View {
-    var stack: JudoDocument.ZStackNode
+    var stack: JudoDocument.ZStackLayer
     
     var body: some SwiftUI.View {
         SwiftUI.ZStack(alignment: alignment) {

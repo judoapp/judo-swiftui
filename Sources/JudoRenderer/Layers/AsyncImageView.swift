@@ -24,9 +24,9 @@ struct AsyncImageView: SwiftUI.View {
     @Environment(\.data) private var data
     @EnvironmentObject private var componentState: ComponentState
 
-    private var image: JudoDocument.AsyncImageNode
+    private var image: JudoDocument.AsyncImageLayer
 
-    init(image: JudoDocument.AsyncImageNode) {
+    init(image: JudoDocument.AsyncImageLayer) {
         self.image = image
     }
 
@@ -59,15 +59,24 @@ struct AsyncImageView: SwiftUI.View {
     
     @ViewBuilder
     private var imageView: some View {
-        ForEach(image.children[0].children, id: \.id) {
+        ForEach(imageChildren, id: \.id) {
             NodeView(node: $0)
         }
     }
+
     @ViewBuilder
     private var placeholderView: some View {
-        ForEach(image.children[1].children, id: \.id) {
+        ForEach(placeholderChildren, id: \.id) {
             NodeView(node: $0)
         }
+    }
+
+    private var imageChildren: [Node] {
+        (image.children.first(where: { $0 is ContainerNode }) as! ContainerNode).children
+    }
+
+    private var placeholderChildren: [Node] {
+        (image.children.last(where: { $0 is ContainerNode }) as! ContainerNode).children
     }
 
     private var resolvedURL: String {

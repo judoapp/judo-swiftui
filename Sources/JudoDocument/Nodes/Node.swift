@@ -19,6 +19,4 @@ public protocol Node: Codable {
     var id: UUID { get set }
     var name: String? { get set }
     var children: [any Node] { get set }
-    var position: CGPoint { get set }
-    var isLocked: Bool { get set }
 }

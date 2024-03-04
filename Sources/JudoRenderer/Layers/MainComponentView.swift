@@ -25,17 +25,16 @@ struct MainComponentView: SwiftUI.View {
     @StateObject private var componentState: ComponentState
 
     /// Initialize with MainComponentNode and user provided bindings (parameters)
-    init(component: MainComponentNode, userBindings: [String: ComponentBinding]) {
+    init(component: MainComponentNode, userBindings: [String: ComponentBinding], userViews: [String: any View]) {
         self.component = component
         self._componentState = StateObject(
             wrappedValue: ComponentState(
                 bindings: component.properties
                     .reduce(into: [:]) { partialResult, property in
-                        partialResult[property.name] = ComponentBinding(
-                            value: property.value
-                        )
+                        partialResult[property.name] = ComponentBinding(property.value)
                     }
-                    .merging(userBindings, uniquingKeysWith: { (_, new) in new })
+                    .merging(userBindings, uniquingKeysWith: { (_, new) in new }),
+                views: userViews
             )
         )
     }
@@ -44,17 +43,10 @@ struct MainComponentView: SwiftUI.View {
         ForEach(orderedNodes, id: \.id) { node in
             NodeView(node: node)
         }
-        .modifier(
-            /// On iOS 12 when content is wrapped in ZStack
-            /// the TabView does not properly expand to full screen
-            /// To workaround, we only wrap in ZStack if there's
-            /// more than one node on the root of the component
-            ZStackContentIfNeededModifier(for: orderedNodes)
-        )
         .environmentObject(componentState)
     }
     
     private var orderedNodes: [Node] {
-        component.children.reversed()
+        component.children
     }
 }

@@ -19,17 +19,13 @@ public struct IgnoresSafeAreaModifier: Modifier {
     public var id: UUID
     public var name: String?
     public var children: [Node]
-    public var position: CGPoint
-    public var isLocked: Bool
     public var regions: Set<SafeAreaRegion>
     public var edges: Set<Edge>
     
-    public init(id: UUID, name: String?, children: [Node], position: CGPoint, isLocked: Bool, regions: Set<SafeAreaRegion>, edges: Set<Edge>) {
+    public init(id: UUID, name: String?, children: [Node], regions: Set<SafeAreaRegion>, edges: Set<Edge>) {
         self.id = id
         self.name = name
         self.children = children
-        self.position = position
-        self.isLocked = isLocked
         self.regions = regions
         self.edges = edges
     }
@@ -41,8 +37,6 @@ public struct IgnoresSafeAreaModifier: Modifier {
         case id
         case name
         case children
-        case position
-        case isLocked
         case regions
         case edges
     }
@@ -52,17 +46,6 @@ public struct IgnoresSafeAreaModifier: Modifier {
         id = try container.decode(UUID.self, forKey: .id)
         name = try container.decodeIfPresent(String.self, forKey: .name)
         children = try container.decodeNodes(forKey: .children)
-        
-        let meta = decoder.userInfo[.meta] as! Meta
-        switch meta.version {
-        case ..<18:
-            position = .zero
-            isLocked = false
-        default:
-            position = try container.decode(CGPoint.self, forKey: .position)
-            isLocked = try container.decode(Bool.self, forKey: .isLocked)
-        }
-        
         regions = try container.decode(Set<SafeAreaRegion>.self, forKey: .regions)
         edges = try container.decode(Set<Edge>.self, forKey: .edges)
     }
@@ -73,8 +56,6 @@ public struct IgnoresSafeAreaModifier: Modifier {
         try container.encode(id, forKey: .id)
         try container.encodeIfPresent(name, forKey: .name)
         try container.encodeNodes(children, forKey: .children)
-        try container.encode(position, forKey: .position)
-        try container.encode(isLocked, forKey: .isLocked)
         try container.encode(regions, forKey: .regions)
         try container.encode(edges, forKey: .edges)
     }

@@ -28,26 +28,10 @@ extension Backport where Wrapped: SwiftUI.View {
     func underline(_ isActive: Bool = true, pattern: TextLineStylePattern , color: Color?) -> some SwiftUI.View {
         if #available(iOS 16, macOS 13, *) {
             wrapped
-                .underline(isActive, pattern: Backport.getPattern(from: pattern), color: color)
+                .underline(isActive, pattern: pattern.swiftUIValue, color: color)
         } else {
             wrapped
                 .environment(\.isUnderlined, (isActive, color))
-        }
-    }
-
-    @available(iOS 15.0, *)
-    private static func getPattern(from pattern: TextLineStylePattern) -> SwiftUI.Text.LineStyle.Pattern {
-        switch pattern {
-        case .solid:
-            return .solid
-        case .dot:
-            return .dot
-        case .dash:
-            return .dash
-        case .dashDot:
-            return .dashDot
-        case .dashDotDot:
-            return .dashDotDot
         }
     }
 }

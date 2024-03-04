@@ -23,7 +23,7 @@ struct DataSourceView: SwiftUI.View {
     @State private var fetchedData: Any?
     @State private var refreshTimer: Timer?
 
-    var dataSource: DataSourceNode
+    var dataSource: DataSourceLayer
 
     var body: some SwiftUI.View {
         if fetchedData == nil {

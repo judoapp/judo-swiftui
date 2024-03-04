@@ -17,7 +17,7 @@ import SwiftUI
 import JudoDocument
 
 struct VStackView: SwiftUI.View {
-    var stack: JudoDocument.VStackNode
+    var stack: JudoDocument.VStackLayer
     
     var body: some SwiftUI.View {
         SwiftUI.VStack(alignment: alignment, spacing: stack.spacing) {
@@ -28,13 +28,6 @@ struct VStackView: SwiftUI.View {
     }
     
     private var alignment: SwiftUI.HorizontalAlignment {
-        switch stack.alignment {
-        case .center:
-            return .center
-        case .leading:
-            return .leading
-        case .trailing:
-            return .trailing
-        }
+        stack.alignment.swiftUIValue
     }
 }

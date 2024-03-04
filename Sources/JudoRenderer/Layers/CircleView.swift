@@ -17,7 +17,7 @@ import JudoDocument
 import SwiftUI
 
 struct CircleView: SwiftUI.View {
-    var circle: JudoDocument.CircleNode
+    var circle: JudoDocument.CircleLayer
 
     var body: some SwiftUI.View {
         SwiftUI.Circle().apply(model: circle)

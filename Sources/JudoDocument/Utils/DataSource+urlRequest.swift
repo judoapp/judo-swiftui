@@ -15,7 +15,7 @@
 
 import Foundation
 
-extension DataSourceNode {
+extension DataSourceLayer {
     public func urlRequest(data: Any?, propertyValues: [String: PropertyValue]) throws -> URLRequest {
         let urlString = try url.evaluatingExpressions(
             data: data,

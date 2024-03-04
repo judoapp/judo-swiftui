@@ -25,9 +25,9 @@ struct TextView: SwiftUI.View {
     @Environment(\.kerning) private var kerning
     @Environment(\.tracking) private var tracking
 
-    private var text: JudoDocument.TextNode
+    private var text: JudoDocument.TextLayer
 
-    init(text: JudoDocument.TextNode) {
+    init(text: JudoDocument.TextLayer) {
         self.text = text
     }
 
@@ -93,32 +93,5 @@ private extension SwiftUI.Text {
 
     func conditionalTracking(_ tracking: CGFloat) -> Self {
         self.tracking(tracking)
-    }
-}
-
-private extension FontWeight {
-    var swiftUIValue: SwiftUI.Font.Weight? {
-        switch self {
-        case .none:
-            return nil
-        case .ultraLight:
-            return .ultraLight
-        case .thin:
-            return .thin
-        case .light:
-            return .light
-        case .regular:
-            return .regular
-        case .medium:
-            return .medium
-        case .semibold:
-            return .semibold
-        case .bold:
-            return .bold
-        case .heavy:
-            return .heavy
-        case .black:
-            return .black
-        }
     }
 }

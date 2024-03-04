@@ -64,8 +64,39 @@ public struct Variable<T: Codable & Hashable & CustomStringConvertible>: Codable
                     return id as? T
 
                 // Video
-                case (.video(let value), is String.Type):
+                case (.video(let value), is Video.Type):
                     return value as? T
+
+                case (.computed(let value), is String.Type):
+                    switch value {
+                    case .text(let expression):
+                        return expression.resolve(propertyValues: propertyValues, data: data) as? T
+                    case .number(let expression):
+                        let resolvedValue = expression.resolve(propertyValues: propertyValues, data: data)
+                        if #available(macOS 12.0, iOS 15.0, *) {
+                            return resolvedValue?.formatted() as? T
+                        } else {
+                            return resolvedValue?.description as? T
+                        }
+                    case .boolean(let expression):
+                        return expression.resolve(propertyValues: propertyValues, data: data)?.description as? T
+                    }
+
+                case (.computed(let value), is Double.Type):
+                    switch value {
+                    case .number(let expression):
+                        return expression.resolve(propertyValues: propertyValues, data: data) as? T
+                    case .text, .boolean:
+                        return nil
+                    }
+
+                case (.computed(let value), is Bool.Type):
+                    switch value {
+                    case .boolean(let expression):
+                        return expression.resolve(propertyValues: propertyValues, data: data) as? T
+                    case .text, .number:
+                        return nil
+                    }
 
                 default:
                     return nil
@@ -106,6 +137,10 @@ public struct Variable<T: Codable & Hashable & CustomStringConvertible>: Codable
                 // ImageReference
                 case (let string as String, is ImageReference.Type):
                     return ImageReference.document(imageName: string) as? T
+
+                // Video
+                case (let string as String, is Video.Type):
+                    return Video(url: string) as? T
 
                 default:
                     return nil
@@ -350,6 +385,15 @@ extension Variable<ImageReference> {
 
 extension Variable<UUID> {
     public init(_ constant: UUID, binding: Binding? = nil) {
+        self.constant = constant
+        self.binding = binding
+    }
+}
+
+// Video
+
+extension Variable<Video> {
+    public init(_ constant: Video, binding: Binding? = nil) {
         self.constant = constant
         self.binding = binding
     }

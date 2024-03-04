@@ -20,12 +20,46 @@ import SwiftUI
 struct ComponentInstanceView: SwiftUI.View {
     @Environment(\.document) private var document
     @EnvironmentObject private var componentState: ComponentState
-    var componentInstance: ComponentInstanceNode
+    var componentInstance: ComponentInstanceLayer
 
     @Environment(\.data) private var data
     @Environment(\.fetchedImage) private var fetchedImage
 
-    init(componentInstance: ComponentInstanceNode) {
+    init(componentInstance: ComponentInstanceLayer) {
+        self.componentInstance = componentInstance
+    }
+
+    var body: some SwiftUI.View {
+        if let userView {
+            userView
+        } else {
+            ComponentBody(componentInstance: componentInstance)
+        }
+    }
+
+    /// User view is provided in parameters and override component body
+    private var userView: AnyView? {
+        if let binding = componentInstance.value.binding,
+           case .property(let propertyName) = binding,
+           let userView = componentState.views[propertyName]
+        {
+            return AnyView(userView)
+        }
+
+        return nil
+    }
+
+}
+
+private struct ComponentBody: View {
+    @Environment(\.document) private var document
+    @EnvironmentObject private var componentState: ComponentState
+    var componentInstance: ComponentInstanceLayer
+
+    @Environment(\.data) private var data
+    @Environment(\.fetchedImage) private var fetchedImage
+
+    init(componentInstance: ComponentInstanceLayer) {
         self.componentInstance = componentInstance
     }
 
@@ -33,9 +67,6 @@ struct ComponentInstanceView: SwiftUI.View {
         ForEach(orderedNodes, id: \.id) {
             NodeView(node: $0)
         }
-        .modifier(
-            ZStackContentIfNeededModifier(for: orderedNodes)
-        )
         .environmentObject(
             ComponentState(
                 propertyValues: mainComponent?.properties.reduce(into: [:]) { partialResult, property in
@@ -48,13 +79,13 @@ struct ComponentInstanceView: SwiftUI.View {
             )
         )
     }
-    
+
     private var mainComponent: MainComponentNode? {
         let mainComponentID = componentInstance.value.forceResolve(
             propertyValues: componentState.propertyValues,
             data: data
         )
-        
+
         return document.children.first { node in
             switch node {
             case let mainComponent as MainComponentNode:
@@ -64,8 +95,8 @@ struct ComponentInstanceView: SwiftUI.View {
             }
         } as? MainComponentNode
     }
-    
+
     private var orderedNodes: [Node] {
-        mainComponent?.children.reversed() ?? []
+        mainComponent?.children ?? []
     }
 }

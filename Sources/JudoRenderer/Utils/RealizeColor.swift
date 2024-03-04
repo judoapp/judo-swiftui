@@ -140,3 +140,27 @@ private extension ColorValue {
         UIColor(displayP3Red: CGFloat(red), green: CGFloat(green), blue: CGFloat(blue), alpha: CGFloat(alpha))
     }
 }
+
+func realizeColor(_ colorReference: ColorReference?, documentNode: DocumentNode, colorScheme: SwiftUI.ColorScheme, colorSchemeContrast: SwiftUI.ColorSchemeContrast) -> SwiftUI.Color {
+    colorReference?.realizeColor(documentNode: documentNode, darkMode: colorScheme == .dark, highContrast: colorSchemeContrast == .increased) ?? .clear
+}
+
+private extension ColorReference {
+    func realizeColor(documentNode: DocumentNode, darkMode: Bool, highContrast: Bool) -> Color {
+        if referenceType == .system, let systemName = colorName {
+            return Color.named(systemName)
+        }
+
+        if referenceType == .document, let colorID = documentColorID,
+           let documentColor = documentNode.colors.first(where: { $0.id == colorID })
+        {
+            return documentColor.resolveColor(darkMode: darkMode, highContrast: highContrast).swiftUIColor
+        }
+
+        if referenceType == .custom, let customColor = self.customColor {
+            return customColor.swiftUIColor
+        }
+
+        return .clear
+    }
+}

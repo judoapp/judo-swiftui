@@ -19,8 +19,6 @@ public struct FrameModifier: Modifier {
     public var id: UUID
     public var name: String?
     public var children: [Node]
-    public var position: CGPoint
-    public var isLocked: Bool
     public var frameType: FrameType
     public var width: Variable<Double>?
     public var minWidth: Variable<Double>?
@@ -30,12 +28,10 @@ public struct FrameModifier: Modifier {
     public var maxHeight: Variable<Double>?
     public var alignment: Alignment
 
-    public init(id: UUID, name: String?, children: [Node], position: CGPoint, isLocked: Bool, frameType: FrameType, width: Variable<Double>?, minWidth: Variable<Double>?, maxWidth: Variable<Double>?, height: Variable<Double>?, minHeight: Variable<Double>?, maxHeight: Variable<Double>?, alignment: Alignment) {
+    public init(id: UUID, name: String?, children: [Node], frameType: FrameType, width: Variable<Double>?, minWidth: Variable<Double>?, maxWidth: Variable<Double>?, height: Variable<Double>?, minHeight: Variable<Double>?, maxHeight: Variable<Double>?, alignment: Alignment) {
         self.id = id
         self.name = name
         self.children = children
-        self.position = position
-        self.isLocked = isLocked
         self.frameType = frameType
         self.width = width
         self.minWidth = minWidth
@@ -77,9 +73,6 @@ public struct FrameModifier: Modifier {
         let meta = decoder.userInfo[.meta] as! Meta
         switch meta.version {
         case ..<16:
-            position = .zero
-            isLocked = false
-            
             let frame = try container.decode(LegacyFrame.self, forKey: .frame)
 
             let isFlexible = frame.minWidth != nil || frame.maxWidth != nil || frame.minHeight != nil || frame.maxHeight != nil
@@ -100,9 +93,6 @@ public struct FrameModifier: Modifier {
 
             alignment = frame.alignment
         case ..<17:
-            position = .zero
-            isLocked = false
-            
             var minWidthOrNil: Variable<Double>?
             var maxWidthOrNil: Variable<Double>?
             var minHeightOrNil: Variable<Double>?
@@ -148,20 +138,7 @@ public struct FrameModifier: Modifier {
             }
             
             alignment = try container.decode(Alignment.self, forKey: .alignment)
-        case ..<18:
-            position = .zero
-            isLocked = false
-            frameType = try container.decode(FrameType.self, forKey: .frameType)
-            width = try container.decode(Variable<Double>?.self, forKey: .width)
-            maxWidth = try container.decode(Variable<Double>?.self, forKey: .maxWidth)
-            minWidth = try container.decode(Variable<Double>?.self, forKey: .minWidth)
-            height = try container.decode(Variable<Double>?.self, forKey: .height)
-            maxHeight = try container.decode(Variable<Double>?.self, forKey: .maxHeight)
-            minHeight = try container.decode(Variable<Double>?.self, forKey: .minHeight)
-            alignment = try container.decode(Alignment.self, forKey: .alignment)
         default:
-            position = try container.decode(CGPoint.self, forKey: .position)
-            isLocked = try container.decode(Bool.self, forKey: .isLocked)
             frameType = try container.decode(FrameType.self, forKey: .frameType)
             width = try container.decode(Variable<Double>?.self, forKey: .width)
             maxWidth = try container.decode(Variable<Double>?.self, forKey: .maxWidth)
@@ -179,8 +156,6 @@ public struct FrameModifier: Modifier {
         try container.encode(id, forKey: .id)
         try container.encodeIfPresent(name, forKey: .name)
         try container.encodeNodes(children, forKey: .children)
-        try container.encode(position, forKey: .position)
-        try container.encode(isLocked, forKey: .isLocked)
         try container.encode(frameType, forKey: .frameType)
         try container.encode(width, forKey: .width)
         try container.encode(maxWidth, forKey: .maxWidth)

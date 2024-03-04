@@ -77,9 +77,9 @@ public enum ImageReference: Codable, Hashable, CustomStringConvertible {
             
             _ = try container.nestedContainer(keyedBy: ImageReference.InlineCodingKeys.self, forKey: ImageReference.CodingKeys.inline)
             
-            #if canImport(AppKit)
+            #if os(macOS)
             let emptyImage = SwiftUI.Image(nsImage: NSImage(size: .zero))
-            #elseif canImport(UIKit)
+            #else
             let emptyImage = SwiftUI.Image(uiImage: UIImage())
             #endif
             self = ImageReference.inline(image: emptyImage)

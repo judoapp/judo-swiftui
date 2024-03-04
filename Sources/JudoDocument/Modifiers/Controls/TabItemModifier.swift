@@ -19,17 +19,13 @@ public struct TabItemModifier: Modifier {
     public var id: UUID
     public var name: String?
     public var children: [Node]
-    public var position: CGPoint
-    public var isLocked: Bool
     public var title: Variable<String>?
     public var icon: NamedIcon?
 
-    public init(id: UUID, name: String?, children: [Node], position: CGPoint, isLocked: Bool, title: Variable<String>?, icon: NamedIcon?) {
+    public init(id: UUID, name: String?, children: [Node], title: Variable<String>?, icon: NamedIcon?) {
         self.id = id
         self.name = name
         self.children = children
-        self.position = position
-        self.isLocked = isLocked
         self.title = title
         self.icon = icon
     }
@@ -41,8 +37,6 @@ public struct TabItemModifier: Modifier {
         case id
         case name
         case children
-        case position
-        case isLocked
         case title
         case icon
         
@@ -59,15 +53,10 @@ public struct TabItemModifier: Modifier {
         let meta = decoder.userInfo[.meta] as! Meta
         switch meta.version {
         case ..<18:
-            position = .zero
-            isLocked = false
-            
             let tabItem = try container.decode(LegacyTabItem.self, forKey: .tabItem)
             title = tabItem.title
             icon = tabItem.icon
         default:
-            position = try container.decode(CGPoint.self, forKey: .position)
-            isLocked = try container.decode(Bool.self, forKey: .isLocked)
             title = try container.decode(Variable<String>?.self, forKey: .title)
             icon = try container.decode(NamedIcon?.self, forKey: .icon)
         }
@@ -79,8 +68,6 @@ public struct TabItemModifier: Modifier {
         try container.encode(id, forKey: .id)
         try container.encodeIfPresent(name, forKey: .name)
         try container.encodeNodes(children, forKey: .children)
-        try container.encode(position, forKey: .position)
-        try container.encode(isLocked, forKey: .isLocked)
         try container.encode(title, forKey: .title)
         try container.encode(icon, forKey: .icon)
     }

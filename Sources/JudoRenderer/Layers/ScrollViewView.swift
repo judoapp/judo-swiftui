@@ -17,7 +17,7 @@ import JudoDocument
 import SwiftUI
 
 struct ScrollViewView: SwiftUI.View {
-    var scrollView: JudoDocument.ScrollViewNode
+    var scrollView: JudoDocument.ScrollViewLayer
     
     var body: some SwiftUI.View {
         SwiftUI.ScrollView(axis, showsIndicators: scrollView.showsIndicators) {

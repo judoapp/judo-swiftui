@@ -19,17 +19,13 @@ public struct OffsetModifier: Modifier {
     public var id: UUID
     public var name: String?
     public var children: [Node]
-    public var position: CGPoint
-    public var isLocked: Bool
     public var width: Variable<Double>
     public var height: Variable<Double>
 
-    public init(id: UUID, name: String?, children: [Node], position: CGPoint, isLocked: Bool, width: Variable<Double>, height: Variable<Double>) {
+    public init(id: UUID, name: String?, children: [Node], width: Variable<Double>, height: Variable<Double>) {
         self.id = id
         self.name = name
         self.children = children
-        self.position = position
-        self.isLocked = isLocked
         self.width = width
         self.height = height
     }
@@ -41,8 +37,6 @@ public struct OffsetModifier: Modifier {
         case id
         case name
         case children
-        case position
-        case isLocked
         case width
         case height
 
@@ -59,24 +53,13 @@ public struct OffsetModifier: Modifier {
         let meta = decoder.userInfo[.meta] as! Meta
         switch meta.version {
         case ..<15:
-            position = .zero
-            isLocked = false
             let size = try container.decode(CGSize.self, forKey: .size)
             width = Variable(LegacyNumberValue(size.width))
             height = Variable(LegacyNumberValue(size.height))
         case ..<17:
-            position = .zero
-            isLocked = false
             width = try Variable(container.decode(LegacyNumberValue.self, forKey: .width))
             height = try Variable(container.decode(LegacyNumberValue.self, forKey: .height))
-        case ..<18:
-            position = .zero
-            isLocked = false
-            width = try container.decode(Variable<Double>.self, forKey: .width)
-            height = try container.decode(Variable<Double>.self, forKey: .height)
         default:
-            position = try container.decode(CGPoint.self, forKey: .position)
-            isLocked = try container.decode(Bool.self, forKey: .isLocked)
             width = try container.decode(Variable<Double>.self, forKey: .width)
             height = try container.decode(Variable<Double>.self, forKey: .height)
         }
@@ -88,8 +71,6 @@ public struct OffsetModifier: Modifier {
         try container.encode(id, forKey: .id)
         try container.encodeIfPresent(name, forKey: .name)
         try container.encodeNodes(children, forKey: .children)
-        try container.encode(position, forKey: .position)
-        try container.encode(isLocked, forKey: .isLocked)
         try container.encode(width, forKey: .width)
         try container.encode(height, forKey: .height)
     }

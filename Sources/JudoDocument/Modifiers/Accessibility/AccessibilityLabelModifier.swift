@@ -19,16 +19,12 @@ public struct AccessibilityLabelModifier: Modifier {
     public var id: UUID
     public var name: String?
     public var children: [Node]
-    public var position: CGPoint
-    public var isLocked: Bool
     public var label: Variable<String>
 
-    public init(id: UUID, name: String?, children: [Node], position: CGPoint, isLocked: Bool, label: Variable<String>) {
+    public init(id: UUID, name: String?, children: [Node], label: Variable<String>) {
         self.id = id
         self.name = name
         self.children = children
-        self.position = position
-        self.isLocked = isLocked
         self.label = label
     }
     
@@ -39,8 +35,6 @@ public struct AccessibilityLabelModifier: Modifier {
         case id
         case name
         case children
-        case position
-        case isLocked
         case label
     }
 
@@ -53,17 +47,9 @@ public struct AccessibilityLabelModifier: Modifier {
         let meta = decoder.userInfo[.meta] as! Meta
         switch meta.version {
         case ..<17:
-            position = .zero
-            isLocked = false
             label = try Variable(container.decode(LegacyTextValue.self, forKey: .label))
-        case ..<18:
-            label = try container.decode(Variable<String>.self, forKey: .label)
-            position = .zero
-            isLocked = false
         default:
             label = try container.decode(Variable<String>.self, forKey: .label)
-            position = try container.decode(CGPoint.self, forKey: .position)
-            isLocked = try container.decode(Bool.self, forKey: .isLocked)
         }
     }
 
@@ -73,8 +59,6 @@ public struct AccessibilityLabelModifier: Modifier {
         try container.encode(id, forKey: .id)
         try container.encodeIfPresent(name, forKey: .name)
         try container.encodeNodes(children, forKey: .children)
-        try container.encode(position, forKey: .position)
-        try container.encode(isLocked, forKey: .isLocked)
         try container.encode(label, forKey: .label)
     }
 }

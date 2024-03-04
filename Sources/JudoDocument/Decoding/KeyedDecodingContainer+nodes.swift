@@ -37,82 +37,78 @@ private struct NodeWrapper: Decodable {
         let typeName = try container.decode(String.self, forKey: .typeName)
         
         switch typeName {
-        // ..<18
-        case "CollectionLayer":
-            node = try CollectionNode(from: decoder)
-        
-        // Main Component
+        case ArtboardNode.typeName:
+            node = try ArtboardNode(from: decoder)
+        case ContainerNode.typeName:
+            node = try ContainerNode(from: decoder)
         case MainComponentNode.typeName:
             node = try MainComponentNode(from: decoder)
             
         // Layers
-        case ButtonNode.typeName:
-            node = try ButtonNode(from: decoder)
-        case CapsuleNode.typeName:
-            node = try CapsuleNode(from: decoder)
-        case CircleNode.typeName:
-            node = try CircleNode(from: decoder)
-        case CollectionNode.typeName:
-            node = try CollectionNode(from: decoder)
-        case ComponentInstanceNode.typeName:
-            node = try ComponentInstanceNode(from: decoder)
-        case ConditionalNode.typeName:
-            node = try ConditionalNode(from: decoder)
-        case DataSourceNode.typeName:
-            node = try DataSourceNode(from: decoder)
-        case DividerNode.typeName:
-            node = try DividerNode(from: decoder)
-        case EllipseNode.typeName:
-            node = try EllipseNode(from: decoder)
-        case FormNode.typeName:
-            node = try FormNode(from: decoder)
-        case HStackNode.typeName:
-            node = try HStackNode(from: decoder)
-        case ImageNode.typeName:
-            node = try ImageNode(from: decoder)
-        case AsyncImageNode.typeName:
-            node = try AsyncImageNode(from: decoder)
-        case NavigationLinkNode.typeName:
-            node = try NavigationLinkNode(from: decoder)
-        case NavigationStackNode.typeName:
-            node = try NavigationStackNode(from: decoder)
-        case PickerNode.typeName:
-            node = try PickerNode(from: decoder)
-        case RectangleNode.typeName:
-            node = try RectangleNode(from: decoder)
-        case RoundedRectangleNode.typeName:
-            node = try RoundedRectangleNode(from: decoder)
-        case SecureFieldNode.typeName:
-            node = try SecureFieldNode(from: decoder)
-        case SectionNode.typeName:
-            node = try SectionNode(from: decoder)
-        case ScrollViewNode.typeName:
-            node = try ScrollViewNode(from: decoder)
-        case SliderNode.typeName:
-            node = try SliderNode(from: decoder)
-        case SpacerNode.typeName:
-            node = try SpacerNode(from: decoder)
-        case StepperNode.typeName:
-            node = try StepperNode(from: decoder)
-        case TabViewNode.typeName:
-            node = try TabViewNode(from: decoder)
-        case TextNode.typeName:
-            node = try TextNode(from: decoder)
-        case TextFieldNode.typeName:
-            node = try TextFieldNode(from: decoder)
-        case ToggleNode.typeName:
-            node = try ToggleNode(from: decoder)
-        case VideoPlayerNode.typeName:
-            node = try VideoPlayerNode(from: decoder)
-        case VStackNode.typeName:
-            node = try VStackNode(from: decoder)
-        case ZStackNode.typeName:
-            node = try ZStackNode(from: decoder)
-
-            
-        // Container
-        case ContainerNode.typeName:
-            node = try ContainerNode(from: decoder)
+        case AsyncImageLayer.typeName:
+            node = try AsyncImageLayer(from: decoder)
+        case ButtonLayer.typeName:
+            node = try ButtonLayer(from: decoder)
+        case CapsuleLayer.typeName:
+            node = try CapsuleLayer(from: decoder)
+        case CircleLayer.typeName:
+            node = try CircleLayer(from: decoder)
+        case CollectionLayer.typeName, "CollectionLayer":
+            node = try CollectionLayer(from: decoder)
+        case CombinedTextLayer.typeName:
+            node = try CombinedTextLayer(from: decoder)
+        case ComponentInstanceLayer.typeName:
+            node = try ComponentInstanceLayer(from: decoder)
+        case ConditionalLayer.typeName:
+            node = try ConditionalLayer(from: decoder)
+        case DataSourceLayer.typeName:
+            node = try DataSourceLayer(from: decoder)
+        case DividerLayer.typeName:
+            node = try DividerLayer(from: decoder)
+        case EllipseLayer.typeName:
+            node = try EllipseLayer(from: decoder)
+        case FormLayer.typeName:
+            node = try FormLayer(from: decoder)
+        case HStackLayer.typeName:
+            node = try HStackLayer(from: decoder)
+        case ImageLayer.typeName:
+            node = try ImageLayer(from: decoder)
+        case NavigationLinkLayer.typeName:
+            node = try NavigationLinkLayer(from: decoder)
+        case NavigationStackLayer.typeName:
+            node = try NavigationStackLayer(from: decoder)
+        case PickerLayer.typeName:
+            node = try PickerLayer(from: decoder)
+        case RectangleLayer.typeName:
+            node = try RectangleLayer(from: decoder)
+        case RoundedRectangleLayer.typeName:
+            node = try RoundedRectangleLayer(from: decoder)
+        case SecureFieldLayer.typeName:
+            node = try SecureFieldLayer(from: decoder)
+        case SectionLayer.typeName:
+            node = try SectionLayer(from: decoder)
+        case ScrollViewLayer.typeName:
+            node = try ScrollViewLayer(from: decoder)
+        case SliderLayer.typeName:
+            node = try SliderLayer(from: decoder)
+        case SpacerLayer.typeName:
+            node = try SpacerLayer(from: decoder)
+        case StepperLayer.typeName:
+            node = try StepperLayer(from: decoder)
+        case TabViewLayer.typeName:
+            node = try TabViewLayer(from: decoder)
+        case TextLayer.typeName:
+            node = try TextLayer(from: decoder)
+        case TextFieldLayer.typeName:
+            node = try TextFieldLayer(from: decoder)
+        case ToggleLayer.typeName:
+            node = try ToggleLayer(from: decoder)
+        case VideoPlayerLayer.typeName:
+            node = try VideoPlayerLayer(from: decoder)
+        case VStackLayer.typeName:
+            node = try VStackLayer(from: decoder)
+        case ZStackLayer.typeName:
+            node = try ZStackLayer(from: decoder)
             
         // Modifiers
         case AccessibilityAddTraitsModifier.typeName:
@@ -181,6 +177,8 @@ private struct NodeWrapper: Decodable {
             node = try LineLimitModifier(from: decoder)
         case MaskModifier.typeName:
             node = try MaskModifier(from: decoder)
+        case MinimumScaleFactorModifier.typeName:
+            node = try MinimumScaleFactorModifier(from: decoder)
         case MultiLineTextAlignmentModifier.typeName:
             node = try MultiLineTextAlignmentModifier(from: decoder)
         case NavigationBarBackButtonHiddenModifier.typeName:

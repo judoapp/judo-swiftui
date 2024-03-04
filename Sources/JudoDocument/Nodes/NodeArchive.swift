@@ -38,10 +38,7 @@ public struct NodeArchive: Codable {
     // MARK: Read and Write
     
     public static func read(from data: Data) throws -> NodeArchive {
-        guard let archive = ZIPFoundation.Archive(data: data, accessMode: .read) else {
-            throw CocoaError(.fileReadCorruptFile)
-        }
-
+        let archive = try ZIPFoundation.Archive(data: data, accessMode: .read)
         let decoder = JSONDecoder()
         decoder.nonConformingFloatDecodingStrategy = .convertFromString(
             positiveInfinity: "inf",
@@ -70,10 +67,7 @@ public struct NodeArchive: Codable {
     }
 
     public func data() throws -> Data {
-        guard let archive = Archive(accessMode: .create) else {
-            throw CocoaError(.fileWriteOutOfSpace)
-        }
-        
+        let archive = try Archive(accessMode: .create)
         let encoder = JSONEncoder()
         encoder.nonConformingFloatEncodingStrategy = .convertToString(
             positiveInfinity: "inf",

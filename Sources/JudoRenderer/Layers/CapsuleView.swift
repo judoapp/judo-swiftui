@@ -17,7 +17,7 @@ import JudoDocument
 import SwiftUI
 
 struct CapsuleView: SwiftUI.View {
-    var capsule: JudoDocument.CapsuleNode
+    var capsule: JudoDocument.CapsuleLayer
 
     var body: some SwiftUI.View {
         SwiftUI.Capsule(style: style)

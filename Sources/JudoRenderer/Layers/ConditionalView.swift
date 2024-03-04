@@ -19,7 +19,7 @@ import SwiftUI
 struct ConditionalView: SwiftUI.View {
     @Environment(\.data) private var data
     @EnvironmentObject private var componentState: ComponentState
-    var conditional: ConditionalNode
+    var conditional: ConditionalLayer
 
     var body: some SwiftUI.View {
         if allConditionsSatisfied {

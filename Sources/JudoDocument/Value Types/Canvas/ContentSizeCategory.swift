@@ -16,7 +16,7 @@
 import Foundation
 import SwiftUI
 
-public enum ContentSizeCategory: Codable, RawRepresentable {
+public enum ContentSizeCategory: Codable, Hashable, RawRepresentable {
     case accessibilityExtraExtraExtraLarge
     case accessibilityExtraExtraLarge
     case accessibilityExtraLarge

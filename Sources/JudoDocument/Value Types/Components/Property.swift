@@ -19,7 +19,14 @@ public struct Property: Codable {
     public var id: UUID
     public var name: String
     public var value: PropertyValue
-    
+
+    public var isComputed: Bool {
+        if case .computed = value {
+            return true
+        }
+        return false
+    }
+
     public init(id: UUID, name: String, value: PropertyValue) {
         self.id = id
         self.name = name

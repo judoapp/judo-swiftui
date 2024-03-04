@@ -19,16 +19,12 @@ public struct OpacityModifier: Modifier {
     public var id: UUID
     public var name: String?
     public var children: [Node]
-    public var position: CGPoint
-    public var isLocked: Bool
     public var opacity: Variable<Double>
 
-    public init(id: UUID, name: String?, children: [Node], position: CGPoint, isLocked: Bool, opacity: Variable<Double>) {
+    public init(id: UUID, name: String?, children: [Node], opacity: Variable<Double>) {
         self.id = id
         self.name = name
         self.children = children
-        self.position = position
-        self.isLocked = isLocked
         self.opacity = opacity
     }
     
@@ -39,8 +35,6 @@ public struct OpacityModifier: Modifier {
         case id
         case name
         case children
-        case position
-        case isLocked
         case opacity
     }
 
@@ -53,21 +47,11 @@ public struct OpacityModifier: Modifier {
         let meta = decoder.userInfo[.meta] as! Meta
         switch meta.version {
         case ..<15:
-            position = .zero
-            isLocked = false
             let doubleValue = try container.decode(Double.self, forKey: .opacity)
             opacity = Variable(LegacyNumberValue(doubleValue))
         case ..<17:
-            position = .zero
-            isLocked = false
             opacity = try Variable(container.decode(LegacyNumberValue.self, forKey: .opacity))
-        case ..<18:
-            position = .zero
-            isLocked = false
-            opacity = try container.decode(Variable<Double>.self, forKey: .opacity)
         default:
-            position = try container.decode(CGPoint.self, forKey: .position)
-            isLocked = try container.decode(Bool.self, forKey: .isLocked)
             opacity = try container.decode(Variable<Double>.self, forKey: .opacity)
         }
     }
@@ -78,8 +62,6 @@ public struct OpacityModifier: Modifier {
         try container.encode(id, forKey: .id)
         try container.encodeIfPresent(name, forKey: .name)
         try container.encodeNodes(children, forKey: .children)
-        try container.encode(position, forKey: .position)
-        try container.encode(isLocked, forKey: .isLocked)
         try container.encode(opacity, forKey: .opacity)
     }
 }

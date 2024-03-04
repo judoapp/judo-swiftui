@@ -19,16 +19,12 @@ public struct AutocorrectionDisabledModifier: Modifier {
     public var id: UUID
     public var name: String?
     public var children: [Node]
-    public var position: CGPoint
-    public var isLocked: Bool
     public var isDisabled: Variable<Bool>
 
-    public init(id: UUID, name: String?, children: [Node], position: CGPoint, isLocked: Bool, isDisabled: Variable<Bool>) {
+    public init(id: UUID, name: String?, children: [Node], isDisabled: Variable<Bool>) {
         self.id = id
         self.name = name
         self.children = children
-        self.position = position
-        self.isLocked = isLocked
         self.isDisabled = isDisabled
     }
     
@@ -39,8 +35,6 @@ public struct AutocorrectionDisabledModifier: Modifier {
         case id
         case name
         case children
-        case position
-        case isLocked
         case isDisabled
     }
 
@@ -53,16 +47,8 @@ public struct AutocorrectionDisabledModifier: Modifier {
         let meta = decoder.userInfo[.meta] as! Meta
         switch meta.version {
         case ..<17:
-            position = .zero
-            isLocked = false
             isDisabled = try Variable(container.decode(LegacyBooleanValue.self, forKey: .isDisabled))
-        case ..<18:
-            position = .zero
-            isLocked = false
-            isDisabled = try container.decode(Variable<Bool>.self, forKey: .isDisabled)
         default:
-            position = try container.decode(CGPoint.self, forKey: .position)
-            isLocked = try container.decode(Bool.self, forKey: .isLocked)
             isDisabled = try container.decode(Variable<Bool>.self, forKey: .isDisabled)
         }
     }
@@ -73,8 +59,6 @@ public struct AutocorrectionDisabledModifier: Modifier {
         try container.encode(id, forKey: .id)
         try container.encodeIfPresent(name, forKey: .name)
         try container.encodeNodes(children, forKey: .children)
-        try container.encode(position, forKey: .position)
-        try container.encode(isLocked, forKey: .isLocked)
         try container.encode(isDisabled, forKey: .isDisabled)
     }
 }

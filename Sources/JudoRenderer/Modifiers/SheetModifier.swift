@@ -74,17 +74,14 @@ private struct Sheet_iOS15_Modifier: ViewModifier {
 
     private var isPresented: Binding<Bool> {
         Binding {
-            if let name = modifier.isPresentedPropertyName, 
-                let value = componentState.bindings[name]?.value,
-                case let .boolean(booleanValue) = value {
-                return booleanValue
-            } else {
-                return false
-            }
-
+            modifier.isPresented.forceResolve(
+                propertyValues: componentState.propertyValues,
+                data: data
+            )
         } set: { newValue in
-            guard let name = modifier.isPresentedPropertyName else { return }
-            componentState.bindings[name]?.value = .boolean(newValue)
+            if case .property(let name) = modifier.isPresented.binding {
+                componentState.bindings[name]?.value = .boolean(newValue)
+            }
         }
     }
 }
@@ -127,17 +124,14 @@ private struct Sheet_Legacy_Modifier: ViewModifier {
 
     private var isPresented: Binding<Bool> {
         Binding {
-            if let name = modifier.isPresentedPropertyName,
-                let value = componentState.bindings[name]?.value,
-                case let .boolean(booleanValue) = value {
-                return booleanValue
-            } else {
-                return false
-            }
-
+            modifier.isPresented.forceResolve(
+                propertyValues: componentState.propertyValues,
+                data: data
+            )
         } set: { newValue in
-            guard let name = modifier.isPresentedPropertyName else { return }
-            componentState.bindings[name]?.value = .boolean(newValue)
+            if case .property(let name) = modifier.isPresented.binding {
+                componentState.bindings[name]?.value = .boolean(newValue)
+            }
         }
     }
 }

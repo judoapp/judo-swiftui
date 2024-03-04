@@ -19,7 +19,7 @@ import SwiftUI
 struct CollectionView: SwiftUI.View {
     @Environment(\.data) private var data
     @EnvironmentObject private var componentState: ComponentState
-    var collection: CollectionNode
+    var collection: CollectionLayer
 
     var body: some SwiftUI.View {
         if let items = items {
@@ -41,7 +41,7 @@ struct CollectionView: SwiftUI.View {
     }
 }
 
-private extension CollectionNode {
+private extension CollectionLayer {
     func items(data: Any?, propertyValues: [String: PropertyValue]) -> [Any] {
         guard var result = JSONSerialization.value(forKeyPath: keyPath, data: data, propertyValues: propertyValues) as? [Any] else {
             return []

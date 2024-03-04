@@ -40,7 +40,7 @@ extension JSONSerialization {
                 partialResult[element.key] = value
             case .video(let value):
                 partialResult[element.key] = value
-            case .image, .component:
+            case .image, .component, .computed:
                 break
             }
         })

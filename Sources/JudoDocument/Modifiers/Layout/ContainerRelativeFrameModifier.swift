@@ -19,8 +19,6 @@ public struct ContainerRelativeFrameModifier: Modifier {
     public var id: UUID
     public var name: String?
     public var children: [Node]
-    public var position: CGPoint
-    public var isLocked: Bool
     public var axes: Axes
     public var count: Variable<Double>
     public var span: Variable<Double>
@@ -28,12 +26,10 @@ public struct ContainerRelativeFrameModifier: Modifier {
     public var alignment: Alignment
 
 
-    public init(id: UUID, name: String?, children: [Node], position: CGPoint, isLocked: Bool, axes: Axes, count: Variable<Double>, span: Variable<Double>, spacing: Variable<Double>, alignment: Alignment) {
+    public init(id: UUID, name: String?, children: [Node], axes: Axes, count: Variable<Double>, span: Variable<Double>, spacing: Variable<Double>, alignment: Alignment) {
         self.id = id
         self.name = name
         self.children = children
-        self.position = position
-        self.isLocked = isLocked
         self.axes = axes
         self.count = count
         self.span = span
@@ -47,8 +43,6 @@ public struct ContainerRelativeFrameModifier: Modifier {
         case id
         case name
         case children
-        case position
-        case isLocked
         case axes
         case count
         case span
@@ -61,8 +55,6 @@ public struct ContainerRelativeFrameModifier: Modifier {
         id = try container.decode(UUID.self, forKey: .id)
         name = try container.decodeIfPresent(String.self, forKey: .name)
         children = try container.decodeNodes(forKey: .children)
-        position = try container.decode(CGPoint.self, forKey: .position)
-        isLocked = try container.decode(Bool.self, forKey: .isLocked)
         axes = try container.decode(Axes.self, forKey: .axes)
         count = try container.decode(Variable<Double>.self, forKey: .count)
         span = try container.decode(Variable<Double>.self, forKey: .span)
@@ -76,8 +68,6 @@ public struct ContainerRelativeFrameModifier: Modifier {
         try container.encode(id, forKey: .id)
         try container.encodeIfPresent(name, forKey: .name)
         try container.encodeNodes(children, forKey: .children)
-        try container.encode(position, forKey: .position)
-        try container.encode(isLocked, forKey: .isLocked)
         try container.encode(axes, forKey: .axes)
         try container.encode(count, forKey: .count)
         try container.encode(span, forKey: .span)

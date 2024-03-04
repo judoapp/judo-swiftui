@@ -20,7 +20,7 @@ struct TextFieldView: SwiftUI.View {
     @EnvironmentObject private var componentState: ComponentState
     @Environment(\.data) private var data
 
-    var textField: JudoDocument.TextFieldNode
+    var textField: JudoDocument.TextFieldLayer
 
     var body: some SwiftUI.View {
         // Get the realizedText for the Label

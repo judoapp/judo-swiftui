@@ -23,9 +23,9 @@ struct PickerView: SwiftUI.View {
     private var isTextBinding: Bool
     private var options: [PickerOption]
 
-    var picker: JudoDocument.PickerNode
+    var picker: JudoDocument.PickerLayer
 
-    init(picker: JudoDocument.PickerNode) {
+    init(picker: JudoDocument.PickerLayer) {
         self.picker = picker
         self.isTextBinding = picker.textSelection != nil
         self.options = picker.options

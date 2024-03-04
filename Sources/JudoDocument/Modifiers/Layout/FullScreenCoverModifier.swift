@@ -19,19 +19,15 @@ public struct FullScreenCoverModifier: Modifier {
     public var id: UUID
     public var name: String?
     public var children: [Node]
-    public var position: CGPoint
-    public var isLocked: Bool
     public var onDismissActions: [Action]
-    public var isPresentedPropertyName: String?
+    public var isPresented: Variable<Bool>
 
-    public init(id: UUID, name: String?, children: [Node], position: CGPoint, isLocked: Bool, onDismissActions: [Action], isPresentedPropertyName: String?) {
+    public init(id: UUID, name: String?, children: [Node], onDismissActions: [Action], isPresented: Variable<Bool>) {
         self.id = id
         self.name = name
         self.children = children
-        self.position = position
-        self.isLocked = isLocked
         self.onDismissActions = onDismissActions
-        self.isPresentedPropertyName = isPresentedPropertyName
+        self.isPresented = isPresented
     }
 
     // MARK: Codable
@@ -41,9 +37,10 @@ public struct FullScreenCoverModifier: Modifier {
         case id
         case name
         case children
-        case position
-        case isLocked
         case onDismissActions
+        case isPresented
+
+        // Legacy
         case isPresentedPropertyName
     }
 
@@ -52,10 +49,19 @@ public struct FullScreenCoverModifier: Modifier {
         id = try container.decode(UUID.self, forKey: .id)
         name = try container.decodeIfPresent(String.self, forKey: .name)
         children = try container.decodeNodes(forKey: .children)
-        position = try container.decode(CGPoint.self, forKey: .position)
-        isLocked = try container.decode(Bool.self, forKey: .isLocked)
         onDismissActions = try container.decodeActions(forKey: .onDismissActions)
-        isPresentedPropertyName = try container.decode(String?.self, forKey: .isPresentedPropertyName)
+        
+        let meta = decoder.userInfo[.meta] as! Meta
+        switch meta.version {
+        case ..<21:
+            if let propertyName = try container.decode(String?.self, forKey: .isPresentedPropertyName) {
+                isPresented = Variable<Bool>(false, binding: .property(name: propertyName))
+            } else {
+                isPresented = Variable<Bool>(false, binding: .none)
+            }
+        default:
+            isPresented = try container.decode(Variable<Bool>.self, forKey: .isPresented)
+        }
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -64,10 +70,8 @@ public struct FullScreenCoverModifier: Modifier {
         try container.encode(id, forKey: .id)
         try container.encodeIfPresent(name, forKey: .name)
         try container.encodeNodes(children, forKey: .children)
-        try container.encode(position, forKey: .position)
-        try container.encode(isLocked, forKey: .isLocked)
         try container.encodeActions(onDismissActions, forKey: .onDismissActions)
-        try container.encode(isPresentedPropertyName, forKey: .isPresentedPropertyName)
+        try container.encode(isPresented, forKey: .isPresented)
     }
 }
 

@@ -20,7 +20,7 @@ struct SpacerView: SwiftUI.View {
     @EnvironmentObject private var componentState: ComponentState
     @Environment(\.data) private var data
 
-    var spacer: JudoDocument.SpacerNode
+    var spacer: JudoDocument.SpacerLayer
 
     var body: some SwiftUI.View {
         SwiftUI.Spacer(

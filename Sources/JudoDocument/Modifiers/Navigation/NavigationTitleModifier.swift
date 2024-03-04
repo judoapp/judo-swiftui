@@ -19,16 +19,12 @@ public struct NavigationTitleModifier: Modifier {
     public var id: UUID
     public var name: String?
     public var children: [Node]
-    public var position: CGPoint
-    public var isLocked: Bool
     public var title: Variable<String>
 
-    public init(id: UUID, name: String?, children: [Node], position: CGPoint, isLocked: Bool, title: Variable<String>) {
+    public init(id: UUID, name: String?, children: [Node], title: Variable<String>) {
         self.id = id
         self.name = name
         self.children = children
-        self.position = position
-        self.isLocked = isLocked
         self.title = title
     }
     
@@ -39,8 +35,6 @@ public struct NavigationTitleModifier: Modifier {
         case id
         case name
         case children
-        case position
-        case isLocked
         case title
     }
 
@@ -53,16 +47,8 @@ public struct NavigationTitleModifier: Modifier {
         let meta = decoder.userInfo[.meta] as! Meta
         switch meta.version {
         case ..<17:
-            position = .zero
-            isLocked = false
             title = try Variable(container.decode(LegacyTextValue.self, forKey: .title))
-        case ..<18:
-            position = .zero
-            isLocked = false
-            title = try container.decode(Variable<String>.self, forKey: .title)
         default:
-            position = try container.decode(CGPoint.self, forKey: .position)
-            isLocked = try container.decode(Bool.self, forKey: .isLocked)
             title = try container.decode(Variable<String>.self, forKey: .title)
         }
     }
@@ -73,8 +59,6 @@ public struct NavigationTitleModifier: Modifier {
         try container.encode(id, forKey: .id)
         try container.encodeIfPresent(name, forKey: .name)
         try container.encodeNodes(children, forKey: .children)
-        try container.encode(position, forKey: .position)
-        try container.encode(isLocked, forKey: .isLocked)
         try container.encode(title, forKey: .title)
     }
 }

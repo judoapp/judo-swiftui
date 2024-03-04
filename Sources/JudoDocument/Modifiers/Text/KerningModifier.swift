@@ -19,16 +19,12 @@ public struct KerningModifier: Modifier {
     public var id: UUID
     public var name: String?
     public var children: [Node]
-    public var position: CGPoint
-    public var isLocked: Bool
     public var kerning: Variable<Double>
 
-    public init(id: UUID, name: String?, children: [Node], position: CGPoint, isLocked: Bool, kerning: Variable<Double>) {
+    public init(id: UUID, name: String?, children: [Node], kerning: Variable<Double>) {
         self.id = id
         self.name = name
         self.children = children
-        self.position = position
-        self.isLocked = isLocked
         self.kerning = kerning
     }
 
@@ -39,8 +35,6 @@ public struct KerningModifier: Modifier {
         case id
         case name
         case children
-        case position
-        case isLocked
         case kerning
     }
 
@@ -49,8 +43,6 @@ public struct KerningModifier: Modifier {
         id = try container.decode(UUID.self, forKey: .id)
         name = try container.decodeIfPresent(String.self, forKey: .name)
         children = try container.decodeNodes(forKey: .children)
-        position = try container.decode(CGPoint.self, forKey: .position)
-        isLocked = try container.decode(Bool.self, forKey: .isLocked)
         kerning = try container.decode(Variable<Double>.self, forKey: .kerning)
     }
 
@@ -60,8 +52,6 @@ public struct KerningModifier: Modifier {
         try container.encode(id, forKey: .id)
         try container.encodeIfPresent(name, forKey: .name)
         try container.encodeNodes(children, forKey: .children)
-        try container.encode(position, forKey: .position)
-        try container.encode(isLocked, forKey: .isLocked)
         try container.encode(kerning, forKey: .kerning)
     }
 }

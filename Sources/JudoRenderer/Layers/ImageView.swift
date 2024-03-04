@@ -24,9 +24,9 @@ struct ImageView: SwiftUI.View {
     @Environment(\.fetchedImage) private var fetchedImage
     @EnvironmentObject private var componentState: ComponentState
     
-    private var image: JudoDocument.ImageNode
-    
-    init(image: JudoDocument.ImageNode) {
+    private var image: JudoDocument.ImageLayer
+
+    init(image: JudoDocument.ImageLayer) {
         self.image = image
     }
     

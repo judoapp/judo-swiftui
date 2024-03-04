@@ -16,6 +16,7 @@
 import JudoDocument
 import SwiftUI
 
+@available(visionOS, unavailable)
 struct PresentationDetentsViewModifier: SwiftUI.ViewModifier {
 
     var modifier: PresentationDetentsModifier

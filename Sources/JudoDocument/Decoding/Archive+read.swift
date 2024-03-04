@@ -14,6 +14,7 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import Foundation
+import os.log
 import XCAssetsKit
 import ZIPFoundation
 
@@ -29,6 +30,7 @@ extension Archive {
             metaData = try self.extract(entry: metaFile)
             meta = try decoder.decode(Meta.self, from: metaData)
         } catch {
+            os_log("Failed to decode meta data: %@ %@", type: .error, error.localizedDescription, (error as NSError).userInfo.debugDescription)
             throw CocoaError(.fileReadUnknown)
         }
         return meta
@@ -95,8 +97,22 @@ extension Archive {
 
         do {
             let data = try self.extract(entry: userFile)
-            return try decoder.decode(UserData.self, from: data)
+            let meta = decoder.userInfo[.meta] as! Meta
+            switch meta.version {
+            case ..<21:
+                let legacyUserData = try decoder.decode(LegacyUserData.self, from: data)
+                decoder.userInfo[.legacyUserData] = legacyUserData
+                return UserData(
+                    expandedNodeIDs: legacyUserData.expandedNodeIDs,
+                    zoomScale: legacyUserData.zoomScale,
+                    scrollOffset: legacyUserData.scrollOffset,
+                    simulateSlowNetwork: legacyUserData.simulateSlowNetwork
+                )
+            default:
+                return try decoder.decode(UserData.self, from: data)
+            }
         } catch {
+            os_log("Failed to decode user data: %@ %@", type: .error, error.localizedDescription, (error as NSError).userInfo.debugDescription)
             throw CocoaError(.fileReadUnknown)
         }
     }
@@ -110,6 +126,7 @@ extension Archive {
             let data = try self.extract(entry: documentFile)
             return try decoder.decode(DocumentNode.self, from: data)
         } catch {
+            os_log("Failed to decode document: %@ %@", type: .error, error.localizedDescription, (error as NSError).userInfo.debugDescription)
             throw CocoaError(.fileReadUnknown)
         }
     }
@@ -123,6 +140,7 @@ extension Archive {
             let data = try self.extract(entry: documentFile)
             return try decoder.decode(NodeArchive.self, from: data)
         } catch {
+            os_log("Failed to decode node archive: %@ %@", type: .error, error.localizedDescription, (error as NSError).userInfo.debugDescription)
             throw CocoaError(.fileReadUnknown)
         }
     }

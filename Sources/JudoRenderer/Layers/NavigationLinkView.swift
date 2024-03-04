@@ -25,10 +25,10 @@ struct NavigationLinkView: SwiftUI.View {
     
     @EnvironmentObject private var componentState: ComponentState
 
-    var navigationLink: JudoDocument.NavigationLinkNode
+    var navigationLink: JudoDocument.NavigationLinkLayer
     var body: some SwiftUI.View {
         NavigationLink {
-            ForEach(navigationLink.children[1].children, id: \.id) {
+            ForEach(destinationChildren, id: \.id) {
                 NodeView(node: $0)
             }
             .environment(\.assetManager, assetManager)
@@ -38,9 +38,17 @@ struct NavigationLinkView: SwiftUI.View {
             .environment(\.fetchedImage, fetchedImage)
             .environmentObject(componentState)
         } label: {
-            ForEach(navigationLink.children[0].children, id: \.id) {
+            ForEach(labelChildren, id: \.id) {
                 NodeView(node: $0)
             }
         }
+    }
+
+    private var labelChildren: [Node] {
+        (navigationLink.children.first(where: { $0 is ContainerNode }) as! ContainerNode).children
+    }
+
+    private var destinationChildren: [Node] {
+        (navigationLink.children.last(where: { $0 is ContainerNode }) as! ContainerNode).children
     }
 }

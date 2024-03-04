@@ -20,71 +20,77 @@ extension KeyedEncodingContainer {
         var container = self.nestedUnkeyedContainer(forKey: key)
         for node in nodes {
             switch node {
-            case let node as AsyncImageNode:
+            case let node as ArtboardNode:
                 try container.encode(node)
-            case let node as ButtonNode:
-                try container.encode(node)
-            case let node as CapsuleNode:
-                try container.encode(node)
-            case let node as CircleNode:
-                try container.encode(node)
-            case let node as CollectionNode:
-                try container.encode(node)
-            case let node as ComponentInstanceNode:
-                try container.encode(node)
-            case let node as ConditionalNode:
-                try container.encode(node)
-            case let node as DataSourceNode:
-                try container.encode(node)
-            case let node as DividerNode:
-                try container.encode(node)
-            case let node as EllipseNode:
-                try container.encode(node)
-            case let node as FormNode:
-                try container.encode(node)
-            case let node as HStackNode:
-                try container.encode(node)
-            case let node as ImageNode:
+            case let node as ContainerNode:
                 try container.encode(node)
             case let node as MainComponentNode:
                 try container.encode(node)
-            case let node as NavigationLinkNode:
+            
+            // Layers
+            case let node as AsyncImageLayer:
                 try container.encode(node)
-            case let node as NavigationStackNode:
+            case let node as ButtonLayer:
                 try container.encode(node)
-            case let node as PickerNode:
+            case let node as CapsuleLayer:
                 try container.encode(node)
-            case let node as RectangleNode:
+            case let node as CircleLayer:
                 try container.encode(node)
-            case let node as RoundedRectangleNode:
+            case let node as CollectionLayer:
                 try container.encode(node)
-            case let node as SecureFieldNode:
+            case let node as CombinedTextLayer:
                 try container.encode(node)
-            case let node as SectionNode:
+            case let node as ComponentInstanceLayer:
                 try container.encode(node)
-            case let node as ScrollViewNode:
+            case let node as ConditionalLayer:
                 try container.encode(node)
-            case let node as SliderNode:
+            case let node as DataSourceLayer:
                 try container.encode(node)
-            case let node as SpacerNode:
+            case let node as DividerLayer:
                 try container.encode(node)
-            case let node as StepperNode:
+            case let node as EllipseLayer:
                 try container.encode(node)
-            case let node as TabViewNode:
+            case let node as FormLayer:
                 try container.encode(node)
-            case let node as TextNode:
+            case let node as HStackLayer:
                 try container.encode(node)
-            case let node as TextFieldNode:
+            case let node as ImageLayer:
                 try container.encode(node)
-            case let node as ToggleNode:
+            case let node as NavigationLinkLayer:
                 try container.encode(node)
-            case let node as VideoPlayerNode:
+            case let node as NavigationStackLayer:
                 try container.encode(node)
-            case let node as VStackNode:
+            case let node as PickerLayer:
                 try container.encode(node)
-            case let node as ZStackNode:
+            case let node as RectangleLayer:
                 try container.encode(node)
-            case let node as ContainerNode:
+            case let node as RoundedRectangleLayer:
+                try container.encode(node)
+            case let node as SecureFieldLayer:
+                try container.encode(node)
+            case let node as SectionLayer:
+                try container.encode(node)
+            case let node as ScrollViewLayer:
+                try container.encode(node)
+            case let node as SliderLayer:
+                try container.encode(node)
+            case let node as SpacerLayer:
+                try container.encode(node)
+            case let node as StepperLayer:
+                try container.encode(node)
+            case let node as TabViewLayer:
+                try container.encode(node)
+            case let node as TextLayer:
+                try container.encode(node)
+            case let node as TextFieldLayer:
+                try container.encode(node)
+            case let node as ToggleLayer:
+                try container.encode(node)
+            case let node as VideoPlayerLayer:
+                try container.encode(node)
+            case let node as VStackLayer:
+                try container.encode(node)
+            case let node as ZStackLayer:
                 try container.encode(node)
 
             // Modifiers
@@ -153,6 +159,8 @@ extension KeyedEncodingContainer {
             case let node as LineLimitModifier:
                 try container.encode(node)
             case let node as MaskModifier:
+                try container.encode(node)
+            case let node as MinimumScaleFactorModifier:
                 try container.encode(node)
             case let node as MultiLineTextAlignmentModifier:
                 try container.encode(node)
