@@ -23,12 +23,52 @@ extension DocumentNode {
     func component(named componentName: ComponentName) -> MainComponentNode? {
         components.first { $0.name == componentName.rawValue }
     }
-    
-    func initialComponent(preferring componentName: ComponentName?) -> MainComponentNode? {
+
+    func startPoint(preferring componentName: ComponentName?) -> StartingPoint? {
         if let componentName, let component = component(named: componentName) {
-            return component
+            return .component(component)
         }
-        
-        return components.first
+        return startingPoint
+    }
+
+    var startingPoint: StartingPoint? {
+        // Find the first node that can be used as a StartingPoint
+        let startingNode = children.first { node in
+            switch node {
+            case let artboard as ArtboardNode:
+                return artboard.isStartingPoint
+            case let component as MainComponentNode:
+                return component.isStartingPoint
+            default:
+                return false
+            }
+        }
+
+        if let startingPoint = getStartingPoint(from: startingNode) {
+            return startingPoint
+        }
+
+        // Find the first ArtboardNode or MainComponentNode
+        guard let first = children.first(where: { $0 is ArtboardNode || $0 is MainComponentNode }) else {
+            return nil
+        }
+
+        return getStartingPoint(from: first)
+    }
+
+    func getStartingPoint(from node: Node?) -> StartingPoint? {
+        switch node {
+        case let artboard as ArtboardNode:
+            return .artboard(artboard)
+        case let component as MainComponentNode:
+            return .component(component)
+        default:
+            return nil
+        }
+    }
+
+    enum StartingPoint {
+        case artboard(ArtboardNode)
+        case component(MainComponentNode)
     }
 }

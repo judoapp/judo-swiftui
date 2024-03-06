@@ -22,14 +22,16 @@ public struct ArtboardNode: CanvasNode {
     public var position: CGPoint
     public var frame: Frame
     public var previewSettings: PreviewSettings
-    
-    public init(id: UUID, name: String? = nil, children: [Node], position: CGPoint, frame: Frame, previewSettings: PreviewSettings) {
+    public var isStartingPoint: Bool
+
+    public init(id: UUID, name: String? = nil, children: [Node], position: CGPoint, frame: Frame, previewSettings: PreviewSettings, isStartingPoint: Bool) {
         self.id = id
         self.name = name
         self.children = children
         self.position = position
         self.frame = frame
         self.previewSettings = previewSettings
+        self.isStartingPoint = isStartingPoint
     }
     
     // MARK: Codable
@@ -42,6 +44,7 @@ public struct ArtboardNode: CanvasNode {
         case position
         case frame
         case previewSettings
+        case isStartingPoint
     }
         
     public init(from decoder: Decoder) throws {
@@ -52,6 +55,14 @@ public struct ArtboardNode: CanvasNode {
         position = try container.decode(CGPoint.self, forKey: .position)
         frame = try container.decode(Frame.self, forKey: .frame)
         previewSettings = try container.decode(PreviewSettings.self, forKey: .previewSettings)
+
+        let meta = decoder.userInfo[.meta] as! Meta
+        switch meta.version {
+        case ..<22:
+            isStartingPoint = false
+        default:
+            isStartingPoint = try container.decode(Bool.self, forKey: .isStartingPoint)
+        }
     }
     
     public func encode(to encoder: Encoder) throws {
@@ -63,5 +74,6 @@ public struct ArtboardNode: CanvasNode {
         try container.encode(position, forKey: .position)
         try container.encode(frame, forKey: .frame)
         try container.encode(previewSettings, forKey: .previewSettings)
+        try container.encode(isStartingPoint, forKey: .isStartingPoint)
     }
 }

@@ -25,8 +25,9 @@ public struct MainComponentNode: CanvasNode {
     public var previewSettings: PreviewSettings
     public var properties: [Property]
     public var showInMenu: Bool
-    
-    public init(id: UUID, name: String?, children: [Node], position: CGPoint, frame: Frame, previewSettings: PreviewSettings, properties: [Property], showInMenu: Bool) {
+    public var isStartingPoint: Bool
+
+    public init(id: UUID, name: String?, children: [Node], position: CGPoint, frame: Frame, previewSettings: PreviewSettings, properties: [Property], showInMenu: Bool, isStartingPoint: Bool) {
         self.id = id
         self.name = name
         self.children = children
@@ -35,6 +36,7 @@ public struct MainComponentNode: CanvasNode {
         self.previewSettings = previewSettings
         self.properties = properties
         self.showInMenu = showInMenu
+        self.isStartingPoint = isStartingPoint
     }
     
     // MARK: Codable
@@ -49,7 +51,8 @@ public struct MainComponentNode: CanvasNode {
         case previewSettings
         case properties
         case showInMenu
-        
+        case isStartingPoint
+
         // Legacy
         case artboardSize
         case canvasPreview
@@ -158,6 +161,7 @@ public struct MainComponentNode: CanvasNode {
             properties = legacyProperties.properties
             showInMenu = try container.decode(Bool.self, forKey: .showInMenu)
             children = try wrapChildrenInZStackIfNeeded()
+            isStartingPoint = false
         case ..<20:
             let canvasPreview = try container.decode(LegacyCanvasPreview.self, forKey: .canvasPreview)
             let legacyUserData = decoder.userInfo[.legacyUserData] as! LegacyUserData
@@ -167,6 +171,7 @@ public struct MainComponentNode: CanvasNode {
             properties = legacyProperties.properties
             showInMenu = try container.decode(Bool.self, forKey: .showInMenu)
             children = try wrapChildrenInZStackIfNeeded()
+            isStartingPoint = false
         case ..<21:
             let canvasPreview = try container.decode(LegacyCanvasPreview.self, forKey: .canvasPreview)
             let legacyUserData = decoder.userInfo[.legacyUserData] as! LegacyUserData
@@ -175,12 +180,21 @@ public struct MainComponentNode: CanvasNode {
             properties = try container.decode([Property].self, forKey: .properties)
             showInMenu = try container.decode(Bool.self, forKey: .showInMenu)
             children = try wrapChildrenInZStackIfNeeded()
+            isStartingPoint = false
+        case ..<22:
+            frame = try container.decode(Frame.self, forKey: .frame)
+            previewSettings = try container.decode(PreviewSettings.self, forKey: .previewSettings)
+            properties = try container.decode([Property].self, forKey: .properties)
+            showInMenu = try container.decode(Bool.self, forKey: .showInMenu)
+            children = try container.decodeNodes(forKey: .children)
+            isStartingPoint = false
         default:
             frame = try container.decode(Frame.self, forKey: .frame)
             previewSettings = try container.decode(PreviewSettings.self, forKey: .previewSettings)
             properties = try container.decode([Property].self, forKey: .properties)
             showInMenu = try container.decode(Bool.self, forKey: .showInMenu)
             children = try container.decodeNodes(forKey: .children)
+            isStartingPoint = try container.decode(Bool.self, forKey: .isStartingPoint)
         }
     }
 
@@ -195,6 +209,7 @@ public struct MainComponentNode: CanvasNode {
         try container.encode(previewSettings, forKey: .previewSettings)
         try container.encode(properties, forKey: .properties)
         try container.encode(showInMenu, forKey: .showInMenu)
+        try container.encode(isStartingPoint, forKey: .isStartingPoint)
     }
 }
 

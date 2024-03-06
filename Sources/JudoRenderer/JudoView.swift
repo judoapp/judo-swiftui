@@ -92,16 +92,30 @@ public struct JudoView: View {
     public var body: some SwiftUI.View {
         switch result {
         case .success(let document):
-            if let component = document.initialComponent(preferring: componentName) {
-                MainComponentView(
-                    component: component,
-                    userBindings: userBindings,
-                    userViews: userViews
-                )
-                .id(userBindings.mapValues(\.value))
-                .environment(\.document, document)
-                .environment(\.assetManager, AssetManager(assets: document.assets))
-                .environment(\.actionHandlers, actionHandlers)
+            if let startPoint = document.startPoint(preferring: componentName) {
+                switch startPoint {
+                case .artboard(let artboard):
+                    ArtboardView(
+                        artboard: artboard,
+                        userBindings: userBindings,
+                        userViews: userViews
+                    )
+                    .id(userBindings.mapValues(\.value))
+                    .environment(\.document, document)
+                    .environment(\.assetManager, AssetManager(assets: document.assets))
+                    .environment(\.actionHandlers, actionHandlers)
+
+                case .component(let component):
+                    MainComponentView(
+                        component: component,
+                        userBindings: userBindings,
+                        userViews: userViews
+                    )
+                    .id(userBindings.mapValues(\.value))
+                    .environment(\.document, document)
+                    .environment(\.assetManager, AssetManager(assets: document.assets))
+                    .environment(\.actionHandlers, actionHandlers)
+                }
             } else {
                 JudoErrorView(.emptyFile)
             }
