@@ -20,16 +20,18 @@ public struct TextFieldLayer: Layer {
     public var name: String?
     public var children: [Node]
     public var position: CGPoint
+    public var frame: Frame
     public var isLocked: Bool
     public var title: Variable<String>
     public var text: Variable<String>
     public var axis: Axis
 
-    public init(id: UUID, name: String?, children: [Node], position: CGPoint, isLocked: Bool, title: Variable<String>, text: Variable<String>, axis: Axis) {
+    public init(id: UUID, name: String?, children: [Node], position: CGPoint, frame: Frame, isLocked: Bool, title: Variable<String>, text: Variable<String>, axis: Axis) {
         self.id = id
         self.name = name
         self.children = children
         self.position = position
+        self.frame = frame
         self.isLocked = isLocked
         self.title = title
         self.text = text
@@ -44,6 +46,7 @@ public struct TextFieldLayer: Layer {
         case name
         case children
         case position
+        case frame
         case isLocked
         case title
         case text
@@ -56,9 +59,17 @@ public struct TextFieldLayer: Layer {
         name = try container.decodeIfPresent(String.self, forKey: .name)
         children = try container.decodeNodes(forKey: .children)
         position = try container.decode(CGPoint.self, forKey: .position)
-        isLocked = try container.decodeIfPresent(Bool.self, forKey: .isLocked) ?? false
 
         let meta = decoder.userInfo[.meta] as! Meta
+        switch meta.version {
+        case ..<23:
+            frame = Frame()
+        default:
+            frame = try container.decode(Frame.self, forKey: .frame)
+        }
+
+        isLocked = try container.decodeIfPresent(Bool.self, forKey: .isLocked) ?? false
+
         switch meta.version {
         case ..<17:
             title = try Variable(container.decode(LegacyTextValue.self, forKey: .title))
@@ -82,6 +93,7 @@ public struct TextFieldLayer: Layer {
         try container.encodeIfPresent(name, forKey: .name)
         try container.encodeNodes(children, forKey: .children)
         try container.encode(position, forKey: .position)
+        try container.encode(frame, forKey: .frame)
         try container.encode(isLocked, forKey: .isLocked)
         try container.encode(title, forKey: .title)
         try container.encode(text, forKey: .text)

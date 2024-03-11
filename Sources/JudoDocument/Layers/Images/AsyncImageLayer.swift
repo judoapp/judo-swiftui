@@ -22,16 +22,18 @@ public struct AsyncImageLayer: Layer {
     public var name: String?
     public var children: [Node]
     public var position: CGPoint
+    public var frame: Frame
     public var isLocked: Bool
     public var url: Variable<String>
     public var scale: ImageScale
     public var errorState: Bool
     
-    public init(id: UUID, name: String?, children: [Node], position: CGPoint, isLocked: Bool, url: Variable<String>, scale: ImageScale, errorState: Bool) {
+    public init(id: UUID, name: String?, children: [Node], position: CGPoint, frame: Frame, isLocked: Bool, url: Variable<String>, scale: ImageScale, errorState: Bool) {
         self.id = id
         self.name = name
         self.children = children
         self.position = position
+        self.frame = frame
         self.isLocked = isLocked
         self.url = url
         self.scale = scale
@@ -46,6 +48,7 @@ public struct AsyncImageLayer: Layer {
         case name
         case children
         case position
+        case frame
         case isLocked
         case scale
         case url
@@ -58,9 +61,17 @@ public struct AsyncImageLayer: Layer {
         name = try container.decodeIfPresent(String.self, forKey: .name)
         children = try container.decodeNodes(forKey: .children)
         position = try container.decode(CGPoint.self, forKey: .position)
-        isLocked = try container.decodeIfPresent(Bool.self, forKey: .isLocked) ?? false
 
         let meta = decoder.userInfo[.meta] as! Meta
+        switch meta.version {
+        case ..<23:
+            frame = Frame()
+        default:
+            frame = try container.decode(Frame.self, forKey: .frame)
+        }
+
+        isLocked = try container.decodeIfPresent(Bool.self, forKey: .isLocked) ?? false
+
         switch meta.version {
         case ..<17:
             url = try Variable(container.decode(LegacyTextValue.self, forKey: .url))
@@ -81,6 +92,7 @@ public struct AsyncImageLayer: Layer {
         try container.encodeIfPresent(name, forKey: .name)
         try container.encodeNodes(children, forKey: .children)
         try container.encode(position, forKey: .position)
+        try container.encode(frame, forKey: .frame)
         try container.encode(isLocked, forKey: .isLocked)
         try container.encode(scale, forKey: .scale)
         try container.encode(url, forKey: .url)

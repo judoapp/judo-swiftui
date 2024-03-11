@@ -20,15 +20,17 @@ public struct ButtonLayer: Layer {
     public var name: String?
     public var children: [Node]
     public var position: CGPoint
+    public var frame: Frame
     public var isLocked: Bool
     public var role: ButtonRole
     public var actions: [Action]
 
-    public init(id: UUID, name: String?, children: [Node], position: CGPoint, isLocked: Bool, role: ButtonRole, actions: [Action]) {
+    public init(id: UUID, name: String?, children: [Node], position: CGPoint, frame: Frame, isLocked: Bool, role: ButtonRole, actions: [Action]) {
         self.id = id
         self.name = name
         self.children = children
         self.position = position
+        self.frame = frame
         self.isLocked = isLocked
         self.role = role
         self.actions = actions
@@ -42,6 +44,7 @@ public struct ButtonLayer: Layer {
         case name
         case children
         case position
+        case frame
         case isLocked
         case role
         case actions
@@ -56,10 +59,18 @@ public struct ButtonLayer: Layer {
         name = try container.decodeIfPresent(String.self, forKey: .name)
         children = try container.decodeNodes(forKey: .children)
         position = try container.decode(CGPoint.self, forKey: .position)
+
+        let meta = decoder.userInfo[.meta] as! Meta
+        switch meta.version {
+        case ..<23:
+            frame = Frame()
+        default:
+            frame = try container.decode(Frame.self, forKey: .frame)
+        }
+
         isLocked = try container.decodeIfPresent(Bool.self, forKey: .isLocked) ?? false
         role = try container.decode(ButtonRole.self, forKey: .role)
 
-        let meta = decoder.userInfo[.meta] as! Meta
         switch meta.version {
         case ..<14:
             let legacyAction = try container.decode(LegacyAction.self, forKey: .buttonAction)
@@ -79,6 +90,7 @@ public struct ButtonLayer: Layer {
         try container.encodeIfPresent(name, forKey: .name)
         try container.encodeNodes(children, forKey: .children)
         try container.encode(position, forKey: .position)
+        try container.encode(frame, forKey: .frame)
         try container.encode(isLocked, forKey: .isLocked)
         try container.encode(role, forKey: .role)
         try container.encodeActions(actions, forKey: .actions)

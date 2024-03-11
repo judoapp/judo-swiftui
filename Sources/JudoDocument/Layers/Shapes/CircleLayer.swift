@@ -20,16 +20,18 @@ public struct CircleLayer: Shape {
     public var name: String?
     public var children: [Node]
     public var position: CGPoint
+    public var frame: Frame
     public var isLocked: Bool
     public var rasterizationStyle: RasterizationStyle
     public var shapeStyle: ShapeStyle
     public var lineWidth: CGFloat
     
-    public init(id: UUID, name: String?, children: [Node], position: CGPoint, isLocked: Bool, rasterizationStyle: RasterizationStyle, shapeStyle: ShapeStyle, lineWidth: CGFloat) {
+    public init(id: UUID, name: String?, children: [Node], position: CGPoint, frame: Frame, isLocked: Bool, rasterizationStyle: RasterizationStyle, shapeStyle: ShapeStyle, lineWidth: CGFloat) {
         self.id = id
         self.name = name
         self.children = children
         self.position = position
+        self.frame = frame
         self.isLocked = isLocked
         self.rasterizationStyle = rasterizationStyle
         self.shapeStyle = shapeStyle
@@ -44,6 +46,7 @@ public struct CircleLayer: Shape {
         case name
         case children
         case position
+        case frame
         case isLocked
         case rasterizationStyle
         case shapeStyle
@@ -56,6 +59,15 @@ public struct CircleLayer: Shape {
         name = try container.decodeIfPresent(String.self, forKey: .name)
         children = try container.decodeNodes(forKey: .children)
         position = try container.decode(CGPoint.self, forKey: .position)
+
+        let meta = decoder.userInfo[.meta] as! Meta
+        switch meta.version {
+        case ..<23:
+            frame = Frame()
+        default:
+            frame = try container.decode(Frame.self, forKey: .frame)
+        }
+
         isLocked = try container.decodeIfPresent(Bool.self, forKey: .isLocked) ?? false
         rasterizationStyle = try container.decode(RasterizationStyle.self, forKey: .rasterizationStyle)
         shapeStyle = try container.decode(ShapeStyle.self, forKey: .shapeStyle)
@@ -69,6 +81,7 @@ public struct CircleLayer: Shape {
         try container.encodeIfPresent(name, forKey: .name)
         try container.encodeNodes(children, forKey: .children)
         try container.encode(position, forKey: .position)
+        try container.encode(frame, forKey: .frame)
         try container.encode(isLocked, forKey: .isLocked)
         try container.encode(rasterizationStyle, forKey: .rasterizationStyle)
         try container.encode(shapeStyle, forKey: .shapeStyle)

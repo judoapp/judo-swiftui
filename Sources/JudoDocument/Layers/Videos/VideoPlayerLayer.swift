@@ -20,14 +20,16 @@ public struct VideoPlayerLayer: Layer {
     public var name: String?
     public var children: [Node]
     public var position: CGPoint
+    public var frame: Frame
     public var isLocked: Bool
     public var video: Variable<Video>
 
-    public init(id: UUID, name: String?, children: [Node], position: CGPoint, isLocked: Bool, video: Variable<Video>) {
+    public init(id: UUID, name: String?, children: [Node], position: CGPoint, frame: Frame, isLocked: Bool, video: Variable<Video>) {
         self.id = id
         self.name = name
         self.children = children
         self.position = position
+        self.frame = frame
         self.isLocked = isLocked
         self.video = video
     }
@@ -40,6 +42,7 @@ public struct VideoPlayerLayer: Layer {
         case name
         case children
         case position
+        case frame
         case isLocked
         case video
 
@@ -53,9 +56,17 @@ public struct VideoPlayerLayer: Layer {
         name = try container.decodeIfPresent(String.self, forKey: .name)
         children = try container.decodeNodes(forKey: .children)
         position = try container.decode(CGPoint.self, forKey: .position)
+
+        let meta = decoder.userInfo[.meta] as! Meta
+        switch meta.version {
+        case ..<23:
+            frame = Frame()
+        default:
+            frame = try container.decode(Frame.self, forKey: .frame)
+        }
+
         isLocked = try container.decodeIfPresent(Bool.self, forKey: .isLocked) ?? false
         
-        let meta = decoder.userInfo[.meta] as! Meta
         switch meta.version {
         case ..<21:
             let propertyName = try container.decode(String.self, forKey: .propertyName)
@@ -72,6 +83,7 @@ public struct VideoPlayerLayer: Layer {
         try container.encodeIfPresent(name, forKey: .name)
         try container.encodeNodes(children, forKey: .children)
         try container.encode(position, forKey: .position)
+        try container.encode(frame, forKey: .frame)
         try container.encode(isLocked, forKey: .isLocked)
         try container.encode(video, forKey: .video)
     }

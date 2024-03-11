@@ -20,14 +20,16 @@ public struct ZStackLayer: Layer {
     public var name: String?
     public var children: [Node]
     public var position: CGPoint
+    public var frame: Frame
     public var isLocked: Bool
     public var alignment: Alignment
 
-    public init(id: UUID, name: String?, children: [Node], position: CGPoint, isLocked: Bool, alignment: Alignment) {
+    public init(id: UUID, name: String?, children: [Node], position: CGPoint, frame: Frame, isLocked: Bool, alignment: Alignment) {
         self.id = id
         self.name = name
         self.children = children
         self.position = position
+        self.frame = frame
         self.isLocked = isLocked
         self.alignment = alignment
     }
@@ -40,6 +42,7 @@ public struct ZStackLayer: Layer {
         case name
         case children
         case position
+        case frame
         case isLocked
         case alignment
     }
@@ -50,6 +53,15 @@ public struct ZStackLayer: Layer {
         name = try container.decodeIfPresent(String.self, forKey: .name)
         children = try container.decodeNodes(forKey: .children)
         position = try container.decode(CGPoint.self, forKey: .position)
+
+        let meta = decoder.userInfo[.meta] as! Meta
+        switch meta.version {
+        case ..<23:
+            frame = Frame()
+        default:
+            frame = try container.decode(Frame.self, forKey: .frame)
+        }
+
         isLocked = try container.decodeIfPresent(Bool.self, forKey: .isLocked) ?? false
         alignment = try container.decode(Alignment.self, forKey: .alignment)
     }
@@ -61,6 +73,7 @@ public struct ZStackLayer: Layer {
         try container.encodeIfPresent(name, forKey: .name)
         try container.encodeNodes(children, forKey: .children)
         try container.encode(position, forKey: .position)
+        try container.encode(frame, forKey: .frame)
         try container.encode(isLocked, forKey: .isLocked)
         try container.encode(alignment, forKey: .alignment)
     }

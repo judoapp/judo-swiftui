@@ -17,4 +17,5 @@ import Foundation
 
 public protocol CanvasNode: Node {
     var position: CGPoint { get set }
+    var frame: Frame { get set }
 }

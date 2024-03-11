@@ -20,17 +20,19 @@ public struct CollectionLayer: Layer {
     public var name: String?
     public var children: [Node]
     public var position: CGPoint
+    public var frame: Frame
     public var isLocked: Bool
     public var keyPath: String
     public var filters: [Condition]
     public var sortDescriptors: [SortDescriptor]
     public var limit: Limit?
     
-    public init(id: UUID, name: String?, children: [Node], position: CGPoint, isLocked: Bool, keyPath: String, filters: [Condition], sortDescriptors: [SortDescriptor], limit: Limit?) {
+    public init(id: UUID, name: String?, children: [Node], position: CGPoint, frame: Frame, isLocked: Bool, keyPath: String, filters: [Condition], sortDescriptors: [SortDescriptor], limit: Limit?) {
         self.id = id
         self.name = name
         self.children = children
         self.position = position
+        self.frame = frame
         self.isLocked = isLocked
         self.keyPath = keyPath
         self.filters = filters
@@ -46,6 +48,7 @@ public struct CollectionLayer: Layer {
         case name
         case children
         case position
+        case frame
         case isLocked
         case keyPath
         case filters
@@ -59,6 +62,15 @@ public struct CollectionLayer: Layer {
         name = try container.decodeIfPresent(String.self, forKey: .name)
         children = try container.decodeNodes(forKey: .children)
         position = try container.decode(CGPoint.self, forKey: .position)
+
+        let meta = decoder.userInfo[.meta] as! Meta
+        switch meta.version {
+        case ..<23:
+            frame = Frame()
+        default:
+            frame = try container.decode(Frame.self, forKey: .frame)
+        }
+
         isLocked = try container.decodeIfPresent(Bool.self, forKey: .isLocked) ?? false
         keyPath = try container.decode(String.self, forKey: .keyPath)
         filters = try container.decode([Condition].self, forKey: .filters)
@@ -73,6 +85,7 @@ public struct CollectionLayer: Layer {
         try container.encodeIfPresent(name, forKey: .name)
         try container.encodeNodes(children, forKey: .children)
         try container.encode(position, forKey: .position)
+        try container.encode(frame, forKey: .frame)
         try container.encode(isLocked, forKey: .isLocked)
         try container.encode(keyPath, forKey: .keyPath)
         try container.encode(filters, forKey: .filters)

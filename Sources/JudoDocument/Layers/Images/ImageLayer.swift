@@ -22,6 +22,7 @@ public struct ImageLayer: Layer {
     public var name: String?
     public var children: [Node]
     public var position: CGPoint
+    public var frame: Frame
     public var isLocked: Bool
     public var value: Variable<ImageReference>
     public var label: Variable<String>
@@ -30,11 +31,12 @@ public struct ImageLayer: Layer {
     public var renderingMode: TemplateRenderingMode
     public var symbolRenderingMode: SymbolRenderingMode
     
-    public init(id: UUID, name: String?, children: [Node], position: CGPoint, isLocked: Bool, value: Variable<ImageReference>, label: Variable<String>, isDecorative: Bool, resizing: ResizingMode, renderingMode: TemplateRenderingMode, symbolRenderingMode: SymbolRenderingMode) {
+    public init(id: UUID, name: String?, children: [Node], position: CGPoint, frame: Frame, isLocked: Bool, value: Variable<ImageReference>, label: Variable<String>, isDecorative: Bool, resizing: ResizingMode, renderingMode: TemplateRenderingMode, symbolRenderingMode: SymbolRenderingMode) {
         self.id = id
         self.name = name
         self.children = children
         self.position = position
+        self.frame = frame
         self.isLocked = isLocked
         self.value = value
         self.label = label
@@ -52,6 +54,7 @@ public struct ImageLayer: Layer {
         case name
         case children
         case position
+        case frame
         case isLocked
         case value
         case label
@@ -70,6 +73,15 @@ public struct ImageLayer: Layer {
         name = try container.decodeIfPresent(String.self, forKey: .name)
         children = try container.decodeNodes(forKey: .children)
         position = try container.decode(CGPoint.self, forKey: .position)
+
+        let meta = decoder.userInfo[.meta] as! Meta
+        switch meta.version {
+        case ..<23:
+            frame = Frame()
+        default:
+            frame = try container.decode(Frame.self, forKey: .frame)
+        }
+
         isLocked = try container.decodeIfPresent(Bool.self, forKey: .isLocked) ?? false
 
         enum ImageKind: Codable {
@@ -128,6 +140,7 @@ public struct ImageLayer: Layer {
         try container.encodeIfPresent(name, forKey: .name)
         try container.encodeNodes(children, forKey: .children)
         try container.encode(position, forKey: .position)
+        try container.encode(frame, forKey: .frame)
         try container.encode(isLocked, forKey: .isLocked)
         try container.encode(value, forKey: .value)
         try container.encode(label, forKey: .label)

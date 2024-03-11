@@ -49,8 +49,6 @@ public struct FrameModifier: Modifier {
         case id
         case name
         case children
-        case position
-        case isLocked
         case frameType
         case width
         case minWidth

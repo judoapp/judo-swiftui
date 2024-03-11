@@ -35,8 +35,6 @@ public struct ScrollTargetBehaviorModifier: Modifier {
         case id
         case name
         case children
-        case position
-        case isLocked
         case behavior
     }
 

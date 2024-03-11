@@ -20,6 +20,7 @@ public struct PickerLayer: Layer {
     public var name: String?
     public var children: [Node]
     public var position: CGPoint
+    public var frame: Frame
     public var isLocked: Bool
     public var label: Variable<String>
     public var textSelection: Variable<String>?
@@ -27,11 +28,12 @@ public struct PickerLayer: Layer {
     public var options: [PickerOption]
     public var pickerType: PickerType
 
-    public init(id: UUID, name: String?, children: [Node], position: CGPoint, isLocked: Bool, label: Variable<String>, textSelection: Variable<String>?, numberSelection: Variable<Double>?, options: [PickerOption], pickerType: PickerType) {
+    public init(id: UUID, name: String?, children: [Node], position: CGPoint, frame: Frame, isLocked: Bool, label: Variable<String>, textSelection: Variable<String>?, numberSelection: Variable<Double>?, options: [PickerOption], pickerType: PickerType) {
         self.id = id
         self.name = name
         self.children = children
         self.position = position
+        self.frame = frame
         self.isLocked = isLocked
         self.label = label
         self.textSelection = textSelection
@@ -48,6 +50,7 @@ public struct PickerLayer: Layer {
         case name
         case children
         case position
+        case frame
         case isLocked
         case label
         case textSelection
@@ -62,9 +65,17 @@ public struct PickerLayer: Layer {
         name = try container.decodeIfPresent(String.self, forKey: .name)
         children = try container.decodeNodes(forKey: .children)
         position = try container.decode(CGPoint.self, forKey: .position)
-        isLocked = try container.decodeIfPresent(Bool.self, forKey: .isLocked) ?? false
 
         let meta = decoder.userInfo[.meta] as! Meta
+        switch meta.version {
+        case ..<23:
+            frame = Frame()
+        default:
+            frame = try container.decode(Frame.self, forKey: .frame)
+        }
+
+        isLocked = try container.decodeIfPresent(Bool.self, forKey: .isLocked) ?? false
+
         switch meta.version {
         case ..<17:
             label = try Variable(container.decode(LegacyTextValue.self, forKey: .label))
@@ -98,6 +109,7 @@ public struct PickerLayer: Layer {
         try container.encodeIfPresent(name, forKey: .name)
         try container.encodeNodes(children, forKey: .children)
         try container.encode(position, forKey: .position)
+        try container.encode(frame, forKey: .frame)
         try container.encode(isLocked, forKey: .isLocked)
         try container.encode(label, forKey: .label)
         try container.encode(textSelection, forKey: .textSelection)

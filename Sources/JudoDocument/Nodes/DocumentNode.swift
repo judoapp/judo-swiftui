@@ -184,8 +184,6 @@ public struct DocumentNode: Node {
         case id
         case name
         case children
-        case position
-        case isLocked
         case deletedNodes
         case colors
         case gradients

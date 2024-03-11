@@ -77,6 +77,7 @@ public struct MainComponentNode: CanvasNode {
                     name: "ZStack",
                     children: children,
                     position: .zero,
+                    frame: Frame(),
                     isLocked: false,
                     alignment: .center
                 )
