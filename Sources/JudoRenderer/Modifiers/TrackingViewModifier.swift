@@ -18,7 +18,7 @@ import SwiftUI
 
 
 struct TrackingViewModifier: SwiftUI.ViewModifier {
-    @EnvironmentObject private var componentState: ComponentState
+    @Environment(\.componentBindings) private var componentBindings
     @Environment(\.data) private var data
     
     var modifier: JudoDocument.TrackingModifier
@@ -30,7 +30,7 @@ struct TrackingViewModifier: SwiftUI.ViewModifier {
 
     private var trackingValue: CGFloat {
         modifier.tracking.forceResolve(
-            propertyValues: componentState.propertyValues,
+            propertyValues: componentBindings.propertyValues,
             data: data
         )
     }

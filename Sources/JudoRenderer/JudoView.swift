@@ -92,115 +92,28 @@ public struct JudoView: View {
     public var body: some SwiftUI.View {
         switch result {
         case .success(let document):
-            if let startPoint = document.startPoint(preferring: componentName) {
-                switch startPoint {
-                case .artboard(let artboard):
-                    ArtboardView(
-                        artboard: artboard,
-                        userBindings: userBindings,
-                        userViews: userViews
-                    )
-                    .id(userBindings.mapValues(\.value))
+            switch document.startPoint(preferring: componentName) {
+            case .artboard(let artboard):
+                ArtboardView(artboard: artboard)
                     .environment(\.document, document)
                     .environment(\.assetManager, AssetManager(assets: document.assets))
                     .environment(\.actionHandlers, actionHandlers)
-
-                case .component(let component):
-                    MainComponentView(
-                        component: component,
-                        userBindings: userBindings,
-                        userViews: userViews
-                    )
-                    .id(userBindings.mapValues(\.value))
-                    .environment(\.document, document)
-                    .environment(\.assetManager, AssetManager(assets: document.assets))
-                    .environment(\.actionHandlers, actionHandlers)
-                }
-            } else {
+            case .component(let mainComponent):
+                MainComponentView(
+                    mainComponent: mainComponent,
+                    userProperties: properties.reduce(into: [:]) { partialResult, element in
+                        partialResult[element.key.rawValue] = element.value
+                    }
+                )
+                .environment(\.document, document)
+                .environment(\.assetManager, AssetManager(assets: document.assets))
+                .environment(\.actionHandlers, actionHandlers)
+            case .none:
                 JudoErrorView(.emptyFile)
             }
         case .failure(let error):
             JudoErrorView(error)
         }
-    }
-
-    private var userViews: [String: any View] {
-        var result: [String: any View] = [:]
-        for (key, anyValue) in properties {
-            switch anyValue {
-            case let value as any View:
-                result[key.rawValue] = value
-            default:
-                break
-            }
-        }
-        return result
-    }
-
-    /// Convert user provided properties (Any), to corresponding ComponentBinding
-    private var userBindings: [String: ComponentBinding] {
-        var result: [String: ComponentBinding] = [:]
-
-        for (key, anyValue) in properties {
-            switch anyValue {
-            case let value as IntegerLiteralType:
-                result[key.rawValue] = ComponentBinding(.number(Double(value)))
-            case let bindingValue as Binding<Int>:
-                let propertyValueBinding = Binding {
-                    PropertyValue.number(Double(bindingValue.wrappedValue))
-                } set: { newValue in
-                    if case .number(let value) = newValue {
-                        bindingValue.wrappedValue = Int(value)
-                    }
-                }
-                result[key.rawValue] = ComponentBinding(propertyValueBinding)
-            case let value as FloatLiteralType:
-                result[key.rawValue] = ComponentBinding(.number(value))
-            case let bindingValue as Binding<Double>:
-                let propertyValueBinding = Binding {
-                    PropertyValue.number(bindingValue.wrappedValue)
-                } set: { newValue in
-                    if case .number(let value) = newValue {
-                        bindingValue.wrappedValue = value
-                    }
-                }
-                result[key.rawValue] = ComponentBinding(propertyValueBinding)
-            case let value as BooleanLiteralType:
-                result[key.rawValue] = ComponentBinding(.boolean(value))
-            case let bindingValue as Binding<Bool>:
-                let propertyValueBinding = Binding {
-                    PropertyValue.boolean(bindingValue.wrappedValue)
-                } set: { newValue in
-                    if case .boolean(let value) = newValue {
-                        bindingValue.wrappedValue = value
-                    }
-                }
-                result[key.rawValue] = ComponentBinding(propertyValueBinding)
-            case let value as StringLiteralType:
-                result[key.rawValue] = ComponentBinding(.text(value))
-            case let bindingValue as Binding<String>:
-                let propertyValueBinding = Binding {
-                    PropertyValue.text(bindingValue.wrappedValue)
-                } set: { newValue in
-                    if case .text(let value) = newValue {
-                        bindingValue.wrappedValue = value
-                    }
-                }
-                result[key.rawValue] = ComponentBinding(propertyValueBinding)
-            case let value as SwiftUI.Image:
-                result[key.rawValue] = ComponentBinding(.image(.inline(image: value)))
-            case let value as UIImage:
-                let image = SwiftUI.Image(uiImage: value)
-                result[key.rawValue] = ComponentBinding(.image(.inline(image: image)))
-            case is any View:
-                break
-            default:
-                logger.warning("Invalid value for property \"\(key)\". Property unused.")
-                break
-            }
-        }
-
-        return result
     }
 
     public func component(_ componentName: ComponentName) -> JudoView {

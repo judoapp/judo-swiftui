@@ -17,7 +17,7 @@ import JudoDocument
 import SwiftUI
 
 struct PickerView: SwiftUI.View {
-    @EnvironmentObject private var componentState: ComponentState
+    @Environment(\.componentBindings) private var componentBindings
     @Environment(\.data) private var data
 
     private var isTextBinding: Bool
@@ -55,7 +55,7 @@ struct PickerView: SwiftUI.View {
     @ViewBuilder
     private func row(for option: PickerOption) -> some View {
         RealizeText(option.title ?? "") { title in
-            if let imageReference = option.icon?.forceResolve(propertyValues: componentState.propertyValues, data: data) {
+            if let imageReference = option.icon?.forceResolve(propertyValues: componentBindings.propertyValues, data: data) {
                 if title.isEmpty {
                     ImageReferenceView(
                         imageReference: imageReference,
@@ -83,21 +83,21 @@ struct PickerView: SwiftUI.View {
 
     private var stringSelectionBinding: Binding<String?> {
         Binding {
-            picker.textSelection?.forceResolve(propertyValues: componentState.propertyValues, data: data)
+            picker.textSelection?.forceResolve(propertyValues: componentBindings.propertyValues, data: data)
         } set: { newValue in
             guard let newValue else {
                 return
             }
             
             if case let .property(name) = picker.textSelection?.binding {
-                componentState.bindings[name]?.value = .text(newValue)
+                componentBindings[name]?.wrappedValue = newValue
             }
         }
     }
 
     private func textTag(_ option: PickerOption) -> String? {
         if let textValue = option.textValue {
-            return textValue.forceResolve(propertyValues: componentState.propertyValues, data: data)
+            return textValue.forceResolve(propertyValues: componentBindings.propertyValues, data: data)
         }
 
         return nil
@@ -105,21 +105,21 @@ struct PickerView: SwiftUI.View {
 
     private var numberSelectionBinding: Binding<Double?> {
         Binding {
-            picker.numberSelection?.forceResolve(propertyValues: componentState.propertyValues, data: data)
+            picker.numberSelection?.forceResolve(propertyValues: componentBindings.propertyValues, data: data)
         } set: { newValue in
             guard let newValue else {
                 return
             }
             
             if case let .property(name) = picker.numberSelection?.binding {
-                componentState.bindings[name]?.value = .number(newValue)
+                componentBindings[name]?.wrappedValue = newValue
             }
         }
     }
 
     private func numberTag(_ option: PickerOption) -> Double? {
         if let numberValue = option.numberValue {
-            return numberValue.forceResolve(propertyValues: componentState.propertyValues, data: data)
+            return numberValue.forceResolve(propertyValues: componentBindings.propertyValues, data: data)
         }
 
         return nil

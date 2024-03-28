@@ -17,7 +17,7 @@ import JudoDocument
 import SwiftUI
 
 struct ContainerRelativeFrameViewModifier: SwiftUI.ViewModifier {
-    @EnvironmentObject private var componentState: ComponentState
+    @Environment(\.componentBindings) private var componentBindings
     @Environment(\.data) private var data
 
     var modifier: ContainerRelativeFrameModifier
@@ -51,21 +51,21 @@ struct ContainerRelativeFrameViewModifier: SwiftUI.ViewModifier {
 
     private var count: Int {
         Int(modifier.count.forceResolve(
-            propertyValues: componentState.propertyValues,
+            propertyValues: componentBindings.propertyValues,
             data: data
         ))
     }
 
     private var span: Int {
         Int(modifier.span.forceResolve(
-            propertyValues: componentState.propertyValues,
+            propertyValues: componentBindings.propertyValues,
             data: data
         ))
     }
 
     private var spacing: Double {
         modifier.spacing.forceResolve(
-            propertyValues: componentState.propertyValues,
+            propertyValues: componentBindings.propertyValues,
             data: data
         )
     }

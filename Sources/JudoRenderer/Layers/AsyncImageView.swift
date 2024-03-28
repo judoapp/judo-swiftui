@@ -22,7 +22,7 @@ struct AsyncImageView: SwiftUI.View {
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.displayScale) private var displayScale
     @Environment(\.data) private var data
-    @EnvironmentObject private var componentState: ComponentState
+    @Environment(\.componentBindings) private var componentBindings
 
     private var image: JudoDocument.AsyncImageLayer
 
@@ -72,16 +72,20 @@ struct AsyncImageView: SwiftUI.View {
     }
 
     private var imageChildren: [Node] {
-        (image.children.first(where: { $0 is ContainerNode }) as! ContainerNode).children
+        imageContainers[0].children
     }
 
     private var placeholderChildren: [Node] {
-        (image.children.last(where: { $0 is ContainerNode }) as! ContainerNode).children
+        imageContainers[1].children
+    }
+
+    private var imageContainers: [ContainerNode] {
+        image.children.compactMap({ $0 as? ContainerNode })
     }
 
     private var resolvedURL: String {
         image.url.forceResolve(
-            propertyValues: componentState.propertyValues,
+            propertyValues: componentBindings.propertyValues,
             data: data
         )
     }

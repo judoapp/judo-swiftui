@@ -25,13 +25,13 @@ private var numberFormatter: NumberFormatter = {
     return formatter
 }()
 
-public class Interpreter: ExpressionVisitor, StatementVisitor {
+public class JudoInterpreter: ExpressionVisitor, StatementVisitor {
 
     /// global variables
-    private let globalVariables: [ExpressionVariable]
-    private let globalFunctions: [ExpressionFunction]
+    private let globalVariables: [JudoExpressionVariable]
+    private let globalFunctions: [JudoExpressionFunction]
 
-    public init(variables: [ExpressionVariable] = [], functions: [ExpressionFunction] = []) {
+    public init(variables: [JudoExpressionVariable] = [], functions: [JudoExpressionFunction] = []) {
         self.globalVariables = variables
         self.globalFunctions = standardLibrary + functions
     }
@@ -88,7 +88,7 @@ public class Interpreter: ExpressionVisitor, StatementVisitor {
         /// Call function with callee instance as caller
         /// Wrap original function in a function (method) that
         /// set instance (caller) as a caller
-        return ExpressionFunction(methodName) { _, arguments in
+        return JudoExpressionFunction(methodName) { _, arguments in
             try function.call(self, caller: caller, arguments)
         }
     }
@@ -276,13 +276,13 @@ private extension Equatable {
     }
 }
 
-private extension Array<ExpressionVariable> {
+private extension Array<JudoExpressionVariable> {
     subscript<S: StringProtocol>(_ identifier: S) -> Any? {
         first(where: { $0.identifier == identifier })?.value
     }
 }
 
-private extension Array<ExpressionFunction> {
+private extension Array<JudoExpressionFunction> {
     subscript<S: StringProtocol>(_ identifier: S) -> Element? {
         first(where: { $0.selector == identifier })
     }

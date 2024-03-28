@@ -17,7 +17,7 @@ import JudoDocument
 import SwiftUI
 
 struct SliderView: SwiftUI.View {
-    @EnvironmentObject private var componentState: ComponentState
+    @Environment(\.componentBindings) private var componentBindings
     @Environment(\.data) private var data
 
     var slider: JudoDocument.SliderLayer
@@ -39,7 +39,7 @@ struct SliderView: SwiftUI.View {
     @ViewBuilder
     private var sliderView: some View {
         RealizeText(slider.label) { label in
-            switch (range, slider.step?.forceResolve(propertyValues: componentState.propertyValues, data: data)) {
+            switch (range, slider.step?.forceResolve(propertyValues: componentBindings.propertyValues, data: data)) {
             case (.some(let range), .some(let step)):
                 SwiftUI.Slider(value: valueBinding, in: range, step: step) {
                     SwiftUI.Text(label)
@@ -62,7 +62,7 @@ struct SliderView: SwiftUI.View {
         RealizeText(slider.label) { label in
             RealizeText(slider.minLabel ?? "") { minLabel in
                 RealizeText(slider.maxLabel ?? "") { maxLabel in
-                    switch (range, slider.step?.forceResolve(propertyValues: componentState.propertyValues, data: data)) {
+                    switch (range, slider.step?.forceResolve(propertyValues: componentBindings.propertyValues, data: data)) {
                     case (.some(let range), .some(let step)):
                         SwiftUI.Slider(value: valueBinding, in: range, step: step) {
                             SwiftUI.Text(label)
@@ -95,14 +95,14 @@ struct SliderView: SwiftUI.View {
 
     private var valueBinding: Binding<Double> {
         Binding {
-            slider.value.forceResolve(propertyValues: componentState.propertyValues, data: data)
+            slider.value.forceResolve(propertyValues: componentBindings.propertyValues, data: data)
         } set: { newValue in
             if case .property(let name) = slider.value.binding {
-                switch componentState.bindings[name]?.value {
-                case .number:
-                    componentState.bindings[name]?.value = .number(newValue)
-                case .text:
-                    componentState.bindings[name]?.value = .text(newValue.description)
+                switch componentBindings[name]?.wrappedValue {
+                case is Double:
+                    componentBindings[name]?.wrappedValue = newValue
+                case is String:
+                    componentBindings[name]?.wrappedValue = newValue.description
                 default:
                     break
                 }
@@ -111,7 +111,7 @@ struct SliderView: SwiftUI.View {
     }
 
     private var range: ClosedRange<Double>? {
-        guard let minValue = slider.minValue?.forceResolve(propertyValues: componentState.propertyValues, data: data), let maxValue = slider.maxValue?.forceResolve(propertyValues: componentState.propertyValues, data: data) else { return nil }
+        guard let minValue = slider.minValue?.forceResolve(propertyValues: componentBindings.propertyValues, data: data), let maxValue = slider.maxValue?.forceResolve(propertyValues: componentBindings.propertyValues, data: data) else { return nil }
         if minValue < maxValue {
             return minValue...maxValue
         } else {

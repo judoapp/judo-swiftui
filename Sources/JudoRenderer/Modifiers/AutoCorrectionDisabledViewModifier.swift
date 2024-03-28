@@ -18,7 +18,7 @@ import SwiftUI
 
 struct AutocorrectionDisabledViewModifier: SwiftUI.ViewModifier {
     @Environment(\.data) private var data
-    @EnvironmentObject private var componentState: ComponentState
+    @Environment(\.componentBindings) private var componentBindings
 
     var modifier: JudoDocument.AutocorrectionDisabledModifier
 
@@ -26,7 +26,7 @@ struct AutocorrectionDisabledViewModifier: SwiftUI.ViewModifier {
         content
             .autocorrectionDisabled(
                 modifier.isDisabled.forceResolve(
-                    propertyValues: componentState.propertyValues,
+                    propertyValues: componentBindings.propertyValues,
                     data: data
                 )
             )

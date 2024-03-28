@@ -17,7 +17,7 @@ import JudoDocument
 import SwiftUI
 
 struct FixedSizeViewModifier: SwiftUI.ViewModifier {
-    @EnvironmentObject private var componentState: ComponentState
+    @Environment(\.componentBindings) private var componentBindings
     @Environment(\.data) private var data
 
     var modifier: FixedSizeModifier
@@ -29,14 +29,14 @@ struct FixedSizeViewModifier: SwiftUI.ViewModifier {
 
     private var horizontal: Bool {
         modifier.horizontal.forceResolve(
-            propertyValues: componentState.propertyValues,
+            propertyValues: componentBindings.propertyValues,
             data: data
         )
     }
 
     private var vertical: Bool {
         modifier.vertical.forceResolve(
-            propertyValues: componentState.propertyValues,
+            propertyValues: componentBindings.propertyValues,
             data: data
         )
     }

@@ -4,7 +4,7 @@ import JudoExpressions
 final class InterpreterTests: XCTestCase {
 
     func testInterpreter() throws {
-        let interpreter = Interpreter()
+        let interpreter = JudoInterpreter()
         try XCTAssertEqual(interpreter.interpret("(3 + 3) + (2 * 4)") as? Double, 14.0)
         try XCTAssertEqual(interpreter.interpret("(3 + 3) + (-2 * 4)") as? Double, -2.0)
         try XCTAssertEqual(interpreter.interpret("1") as? Double, 1.0)
@@ -32,7 +32,7 @@ final class InterpreterTests: XCTestCase {
     }
 
     func testInterpreterInterpolation() throws {
-        let interpreter = Interpreter()
+        let interpreter = JudoInterpreter()
         try XCTAssertEqual(interpreter.interpret("\"1+\\(1 + 2)\"") as? String, "1+3")
         try XCTAssertEqual(interpreter.interpret("\"1\\(1 + 2)\"") as? String, "13")
         try XCTAssertEqual(interpreter.interpret("1+\"1\\(1 + 2)\"") as? String, "113") // "1" + "13"
@@ -45,25 +45,25 @@ final class InterpreterTests: XCTestCase {
 
     func testIdentifier() throws {
         let variables = [
-            ExpressionVariable("a", value: 2.0),
-            ExpressionVariable("padding", value: 4.0)
+            JudoExpressionVariable("a", value: 2.0),
+            JudoExpressionVariable("padding", value: 4.0)
         ]
 
-        let interpreter = Interpreter(variables: variables)
+        let interpreter = JudoInterpreter(variables: variables)
         try XCTAssertEqual(interpreter.interpret("2 + a") as? Double, 4.0)
         try XCTAssertEqual(interpreter.interpret("16.0 + padding") as? Double, 20.0)
     }
 
     func testMethodCall() throws {
         let variables = [
-            ExpressionVariable("a", value: 2.0),
-            ExpressionVariable("b", value: 5.0),
+            JudoExpressionVariable("a", value: 2.0),
+            JudoExpressionVariable("b", value: 5.0),
         ]
 
         let functions = [
 
             // Double.increment(Double)
-            ExpressionFunction("increment") { caller, arguments in
+            JudoExpressionFunction("increment") { caller, arguments in
                 guard arguments.count == 1,
                     let value = caller as? Double,
                     let incrementBy = arguments[0] as? Double
@@ -76,7 +76,7 @@ final class InterpreterTests: XCTestCase {
             },
 
             // Double.toString()
-            ExpressionFunction("toString") { caller, arguments in
+            JudoExpressionFunction("toString") { caller, arguments in
                 if let value = caller as? Double {
                     return "\(value)"
                 }
@@ -86,7 +86,7 @@ final class InterpreterTests: XCTestCase {
             },
 
             // Boolean.toggle()
-            ExpressionFunction("toggle") { caller, arguments in
+            JudoExpressionFunction("toggle") { caller, arguments in
                 guard let value = caller as? Bool else {
                     return caller
                 }
@@ -95,7 +95,7 @@ final class InterpreterTests: XCTestCase {
             }
         ]
 
-        let interpreter = Interpreter(
+        let interpreter = JudoInterpreter(
             variables: variables,
             functions: functions
         )
@@ -118,19 +118,19 @@ final class InterpreterTests: XCTestCase {
 
     func testInterpreterQuote() throws {
         let variables = [
-            ExpressionVariable("a", value: 2.0)
+            JudoExpressionVariable("a", value: 2.0)
         ]
-        let interpreter = Interpreter(variables: variables)
+        let interpreter = JudoInterpreter(variables: variables)
         let result = try interpreter.interpret(#""\"foo\(a)bar\"""#) as? String // "\"foo\(a)bar\""
         XCTAssertEqual(result, "\"foo2bar\"")
     }
 
     func testStringAddInt() throws {
         let variables = [
-            ExpressionVariable("a", value: "A"),
-            ExpressionVariable("b", value: 1)
+            JudoExpressionVariable("a", value: "A"),
+            JudoExpressionVariable("b", value: 1)
         ]
-        let interpreter = Interpreter(variables: variables)
+        let interpreter = JudoInterpreter(variables: variables)
         let result = try interpreter.interpret(#"a + b"#) as? String
         XCTAssertEqual(result, #"A1"#)
     }

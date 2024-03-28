@@ -17,7 +17,7 @@ import JudoDocument
 import SwiftUI
 
 struct ClipShapeViewModifier: SwiftUI.ViewModifier {
-    @EnvironmentObject private var componentState: ComponentState
+    @Environment(\.componentBindings) private var componentBindings
     @Environment(\.data) private var data
 
     var modifier: ClipShapeModifier
@@ -67,13 +67,13 @@ struct ClipShapeViewModifier: SwiftUI.ViewModifier {
     }
 
     private var fillStyle: SwiftUI.FillStyle {
-        let eoFill = modifier.isEvenOddRule.forceResolve(propertyValues: componentState.propertyValues, data: data)
-        let antialiased = modifier.isAntialiased.forceResolve(propertyValues: componentState.propertyValues, data: data)
+        let eoFill = modifier.isEvenOddRule.forceResolve(propertyValues: componentBindings.propertyValues, data: data)
+        let antialiased = modifier.isAntialiased.forceResolve(propertyValues: componentBindings.propertyValues, data: data)
         return FillStyle(eoFill: eoFill, antialiased: antialiased)
     }
 
     private func cornerRadius(_ cornerRadius: Variable<Double>) -> Double {
-        cornerRadius.forceResolve(propertyValues: componentState.propertyValues, data: data)
+        cornerRadius.forceResolve(propertyValues: componentBindings.propertyValues, data: data)
     }
 }
 

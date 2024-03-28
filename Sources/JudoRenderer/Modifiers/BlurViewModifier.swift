@@ -17,7 +17,7 @@ import JudoDocument
 import SwiftUI
 
 struct BlurViewModifier: SwiftUI.ViewModifier {
-    @EnvironmentObject private var componentState: ComponentState
+    @Environment(\.componentBindings) private var componentBindings
     @Environment(\.data) private var data
 
     var modifier: BlurModifier
@@ -29,14 +29,14 @@ struct BlurViewModifier: SwiftUI.ViewModifier {
 
     private var isOpaque: Bool {
         modifier.isOpaque.forceResolve(
-            propertyValues: componentState.propertyValues,
+            propertyValues: componentBindings.propertyValues,
             data: data
         )
     }
 
     private var radius: CGFloat {
         modifier.radius.forceResolve(
-            propertyValues: componentState.propertyValues,
+            propertyValues: componentBindings.propertyValues,
             data: data
         )
     }

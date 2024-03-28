@@ -18,7 +18,7 @@ import SwiftUI
 
 struct PaddingViewModifier: SwiftUI.ViewModifier {
     @Environment(\.data) private var data
-    @EnvironmentObject private var componentState: ComponentState
+    @Environment(\.componentBindings) private var componentBindings
     
     var modifier: JudoDocument.PaddingModifier
     
@@ -57,7 +57,7 @@ struct PaddingViewModifier: SwiftUI.ViewModifier {
     
     private var length: CGFloat? {
         let resolvedValue = modifier.length?.forceResolve(
-            propertyValues: componentState.propertyValues,
+            propertyValues: componentBindings.propertyValues,
             data: data
         )
         
@@ -74,19 +74,19 @@ struct PaddingViewModifier: SwiftUI.ViewModifier {
         
         return EdgeInsets(
             top: top.forceResolve(
-                propertyValues: componentState.propertyValues,
+                propertyValues: componentBindings.propertyValues,
                 data: data
             ),
             leading: leading.forceResolve(
-                propertyValues: componentState.propertyValues,
+                propertyValues: componentBindings.propertyValues,
                 data: data
             ),
             bottom: bottom.forceResolve(
-                propertyValues: componentState.propertyValues,
+                propertyValues: componentBindings.propertyValues,
                 data: data
             ),
             trailing: trailing.forceResolve(
-                propertyValues: componentState.propertyValues,
+                propertyValues: componentBindings.propertyValues,
                 data: data
             )
         )

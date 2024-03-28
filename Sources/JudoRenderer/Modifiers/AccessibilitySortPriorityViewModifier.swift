@@ -17,7 +17,7 @@ import JudoDocument
 import SwiftUI
 
 struct AccessibilitySortPriorityViewModifier: SwiftUI.ViewModifier {
-    @EnvironmentObject private var componentState: ComponentState
+    @Environment(\.componentBindings) private var componentBindings
     @Environment(\.data) private var data
 
     var modifier: AccessibilitySortPriorityModifier
@@ -29,7 +29,7 @@ struct AccessibilitySortPriorityViewModifier: SwiftUI.ViewModifier {
 
     private var value: Double {
         modifier.sortPriority.forceResolve(
-            propertyValues: componentState.propertyValues,
+            propertyValues: componentBindings.propertyValues,
             data: data
         )
     }

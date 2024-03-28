@@ -17,7 +17,7 @@ import JudoDocument
 import SwiftUI
 
 struct ScrollTargetLayoutViewModifier: SwiftUI.ViewModifier {
-    @EnvironmentObject private var componentState: ComponentState
+    @Environment(\.componentBindings) private var componentBindings
     @Environment(\.data) private var data
 
     var modifier: ScrollTargetLayoutModifier
@@ -33,7 +33,7 @@ struct ScrollTargetLayoutViewModifier: SwiftUI.ViewModifier {
 
     private var isEnabled: Bool {
         modifier.isEnabled.forceResolve(
-            propertyValues: componentState.propertyValues,
+            propertyValues: componentBindings.propertyValues,
             data: data
         )
     }

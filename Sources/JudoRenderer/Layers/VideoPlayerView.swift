@@ -19,7 +19,7 @@ import SwiftUI
 
 struct VideoPlayerView: SwiftUI.View {
     @Environment(\.data) private var data
-    @EnvironmentObject private var componentState: ComponentState
+    @Environment(\.componentBindings) private var componentBindings
     
     var videoPlayer: JudoDocument.VideoPlayerLayer
 
@@ -33,7 +33,7 @@ struct VideoPlayerView: SwiftUI.View {
     
     private var video: Video {
         videoPlayer.video.forceResolve(
-            propertyValues: componentState.propertyValues, 
+            propertyValues: componentBindings.propertyValues, 
             data: data
         )
     }

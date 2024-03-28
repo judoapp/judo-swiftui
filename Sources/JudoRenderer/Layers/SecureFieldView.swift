@@ -17,7 +17,7 @@ import JudoDocument
 import SwiftUI
 
 struct SecureFieldView: SwiftUI.View {
-    @EnvironmentObject private var componentState: ComponentState
+    @Environment(\.componentBindings) private var componentBindings
 
     var secureField: JudoDocument.SecureFieldLayer
 
@@ -34,7 +34,7 @@ struct SecureFieldView: SwiftUI.View {
             value
         } set: { newValue in
             if case .property(let name) = secureField.text.binding {
-                componentState.bindings[name]?.value = .text(newValue)
+                componentBindings[name]?.wrappedValue = newValue
             }
         }
     }

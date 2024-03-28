@@ -14,5 +14,5 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 protocol Callable {
-    func call(_ interpreter: Interpreter, caller: Any?, _ args: [Any?]) throws -> Any?
+    func call(_ interpreter: JudoInterpreter, caller: Any?, _ args: [Any?]) throws -> Any?
 }

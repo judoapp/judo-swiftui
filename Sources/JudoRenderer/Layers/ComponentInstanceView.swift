@@ -18,85 +18,32 @@ import SwiftUI
 
 /// A SwiftUI view for rendering a `ComponentInstance`.
 struct ComponentInstanceView: SwiftUI.View {
+    @Environment(\.componentBindings) private var componentBindings
+    @Environment(\.data) private var data
     @Environment(\.document) private var document
-    @EnvironmentObject private var componentState: ComponentState
+
     var componentInstance: ComponentInstanceLayer
 
-    @Environment(\.data) private var data
-    @Environment(\.fetchedImage) private var fetchedImage
-
-    init(componentInstance: ComponentInstanceLayer) {
-        self.componentInstance = componentInstance
-    }
-
-    var body: some SwiftUI.View {
-        if let userView {
-            userView
-        } else {
-            ComponentBody(componentInstance: componentInstance)
-        }
-    }
-
-    /// User view is provided in parameters and override component body
-    private var userView: AnyView? {
-        if let binding = componentInstance.value.binding,
-           case .property(let propertyName) = binding,
-           let userView = componentState.views[propertyName]
-        {
-            return AnyView(userView)
-        }
-
-        return nil
-    }
-
-}
-
-private struct ComponentBody: View {
-    @Environment(\.document) private var document
-    @EnvironmentObject private var componentState: ComponentState
-    var componentInstance: ComponentInstanceLayer
-
-    @Environment(\.data) private var data
-    @Environment(\.fetchedImage) private var fetchedImage
-
-    init(componentInstance: ComponentInstanceLayer) {
-        self.componentInstance = componentInstance
-    }
-
-    var body: some SwiftUI.View {
-        ForEach(orderedNodes, id: \.id) {
-            NodeView(node: $0)
-        }
-        .environmentObject(
-            ComponentState(
-                propertyValues: mainComponent?.properties.reduce(into: [:]) { partialResult, property in
-                    partialResult[property.name] = property.value
-                } ?? [:],
-                overrides: componentInstance.overrides,
-                data: data,
-                fetchedImage: fetchedImage,
-                parentState: componentState
+    var body: some View {
+        /// Special handling for custom views since resolve only works for property values.
+        if case .property(let propertyName) = componentInstance.value.binding,
+            let view = componentBindings[propertyName]?.wrappedValue as? any View {
+            AnyView(view)
+        } else if let mainComponent {
+            MainComponentView(
+                mainComponent: mainComponent,
+                overrides: componentInstance.overrides
             )
-        )
+        }
     }
 
     private var mainComponent: MainComponentNode? {
         let mainComponentID = componentInstance.value.forceResolve(
-            propertyValues: componentState.propertyValues,
+            propertyValues: componentBindings.propertyValues,
             data: data
         )
-
-        return document.children.first { node in
-            switch node {
-            case let mainComponent as MainComponentNode:
-                return mainComponent.id == mainComponentID
-            default:
-                return false
-            }
-        } as? MainComponentNode
-    }
-
-    private var orderedNodes: [Node] {
-        mainComponent?.children ?? []
+        
+        let node = document.allNodes.first(where: { $0.id == mainComponentID })
+        return node as? MainComponentNode
     }
 }

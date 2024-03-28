@@ -17,7 +17,7 @@ import JudoDocument
 import SwiftUI
 
 struct RealizeText<Content>: SwiftUI.View where Content: SwiftUI.View {
-    @EnvironmentObject private var componentState: ComponentState
+    @Environment(\.componentBindings) private var componentBindings
     @Environment(\.data) private var data
     @Environment(\.document) private var document
 
@@ -33,7 +33,7 @@ struct RealizeText<Content>: SwiftUI.View where Content: SwiftUI.View {
 
     var body: some View {
         content(
-            realizeText(value, localized: localized, strings: document.strings, propertyValues: componentState.propertyValues, data: data)
+            realizeText(value, localized: localized, strings: document.strings, propertyValues: componentBindings.propertyValues, data: data)
         )
     }
 }

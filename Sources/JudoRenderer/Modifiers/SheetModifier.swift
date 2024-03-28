@@ -38,14 +38,14 @@ private struct Sheet_iOS15_Modifier: ViewModifier {
     @Environment(\.dismiss) private var dismiss // Only available in iOS 15+
     @Environment(\.refresh) private var refresh // Only available in iOS 15+
     @Environment(\.data) private var data
-    @EnvironmentObject private var componentState: ComponentState
+    @Environment(\.componentBindings) private var componentBindings
 
     var modifier: SheetModifier
 
     func body(content: Content) -> some View {
         content
             .sheet(isPresented: isPresented, onDismiss: {
-                Actions.perform(actions: modifier.onDismissActions, componentState: componentState, data: data, actionHandlers: actionHandlers) {
+                Actions.perform(actions: modifier.onDismissActions, componentBindings: componentBindings, data: data, actionHandlers: actionHandlers) {
                     dismiss()
                 } openURL: { url in
                     openURL(url)
@@ -75,12 +75,12 @@ private struct Sheet_iOS15_Modifier: ViewModifier {
     private var isPresented: Binding<Bool> {
         Binding {
             modifier.isPresented.forceResolve(
-                propertyValues: componentState.propertyValues,
+                propertyValues: componentBindings.propertyValues,
                 data: data
             )
         } set: { newValue in
             if case .property(let name) = modifier.isPresented.binding {
-                componentState.bindings[name]?.value = .boolean(newValue)
+                componentBindings[name]?.wrappedValue = newValue
             }
         }
     }
@@ -90,7 +90,7 @@ private struct Sheet_Legacy_Modifier: ViewModifier {
     @Environment(\.openURL) private var openURL
     @Environment(\.actionHandlers) private var actionHandlers
     @Environment(\.presentationMode) private var presentationMode
-    @EnvironmentObject private var componentState: ComponentState
+    @Environment(\.componentBindings) private var componentBindings
     @Environment(\.data) private var data
 
     var modifier: SheetModifier
@@ -99,7 +99,7 @@ private struct Sheet_Legacy_Modifier: ViewModifier {
         content
             .sheet(isPresented: isPresented, onDismiss: {
                 Actions.perform(
-                    actions: modifier.onDismissActions, componentState: componentState, data: data, actionHandlers: actionHandlers) {
+                    actions: modifier.onDismissActions, componentBindings: componentBindings, data: data, actionHandlers: actionHandlers) {
                         presentationMode.wrappedValue.dismiss()
                     } openURL: { url in
                         openURL(url)
@@ -125,12 +125,12 @@ private struct Sheet_Legacy_Modifier: ViewModifier {
     private var isPresented: Binding<Bool> {
         Binding {
             modifier.isPresented.forceResolve(
-                propertyValues: componentState.propertyValues,
+                propertyValues: componentBindings.propertyValues,
                 data: data
             )
         } set: { newValue in
             if case .property(let name) = modifier.isPresented.binding {
-                componentState.bindings[name]?.value = .boolean(newValue)
+                componentBindings[name]?.wrappedValue = newValue
             }
         }
     }

@@ -17,7 +17,7 @@ import JudoDocument
 import SwiftUI
 
 struct PositionViewModifier: SwiftUI.ViewModifier {
-    @EnvironmentObject private var componentState: ComponentState
+    @Environment(\.componentBindings) private var componentBindings
     @Environment(\.data) private var data
 
     var modifier: PositionModifier
@@ -28,11 +28,11 @@ struct PositionViewModifier: SwiftUI.ViewModifier {
     }
 
     private var x: CGFloat {
-        modifier.x.forceResolve(propertyValues: componentState.propertyValues, data: data)
+        modifier.x.forceResolve(propertyValues: componentBindings.propertyValues, data: data)
     }
 
     private var y: CGFloat {
-        modifier.y.forceResolve(propertyValues: componentState.propertyValues, data: data)
+        modifier.y.forceResolve(propertyValues: componentBindings.propertyValues, data: data)
     }
 }
 

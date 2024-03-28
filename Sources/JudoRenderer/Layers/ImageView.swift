@@ -22,7 +22,7 @@ struct ImageView: SwiftUI.View {
     @Environment(\.displayScale) private var displayScale
     @Environment(\.data) private var data
     @Environment(\.fetchedImage) private var fetchedImage
-    @EnvironmentObject private var componentState: ComponentState
+    @Environment(\.componentBindings) private var componentBindings
     
     private var image: JudoDocument.ImageLayer
 
@@ -33,7 +33,7 @@ struct ImageView: SwiftUI.View {
     var body: some SwiftUI.View {
         ImageReferenceView(
             imageReference: image.value.forceResolve(
-                propertyValues: componentState.propertyValues,
+                propertyValues: componentBindings.propertyValues,
                 data: data,
                 fetchedImage: fetchedImage
             ),

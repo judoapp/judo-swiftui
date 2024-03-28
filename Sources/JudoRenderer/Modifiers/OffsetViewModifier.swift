@@ -17,7 +17,7 @@ import JudoDocument
 import SwiftUI
 
 struct OffsetViewModifier: SwiftUI.ViewModifier {
-    @EnvironmentObject private var componentState: ComponentState
+    @Environment(\.componentBindings) private var componentBindings
     @Environment(\.data) private var data
 
     var modifier: OffsetModifier
@@ -30,11 +30,11 @@ struct OffsetViewModifier: SwiftUI.ViewModifier {
     private var size: CGSize {
         CGSize(
             width: modifier.width.forceResolve(
-                propertyValues: componentState.propertyValues,
+                propertyValues: componentBindings.propertyValues,
                 data: data
             ),
             height: modifier.height.forceResolve(
-                propertyValues: componentState.propertyValues,
+                propertyValues: componentBindings.propertyValues,
                 data: data
             )
         )

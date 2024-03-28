@@ -19,7 +19,7 @@ import SwiftUI
 
 struct DataSourceView: SwiftUI.View {
     @Environment(\.data) private var data
-    @EnvironmentObject private var componentState: ComponentState
+    @Environment(\.componentBindings) private var componentBindings
     @State private var fetchedData: Any?
     @State private var refreshTimer: Timer?
 
@@ -72,7 +72,7 @@ struct DataSourceView: SwiftUI.View {
         }
 
         do {
-            let request = try dataSource.urlRequest(data: data, propertyValues: componentState.propertyValues)
+            let request = try dataSource.urlRequest(data: data, propertyValues: componentBindings.propertyValues)
             return URLSession.shared.dataPublisher(for: request)
         } catch {
             return Just(Result.failure(UnableToInterpolateDataSourceURLError())).eraseToAnyPublisher()

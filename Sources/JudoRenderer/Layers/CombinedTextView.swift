@@ -18,7 +18,7 @@ import SwiftUI
 
 struct CombinedTextView: SwiftUI.View {
     @Environment(\.data) private var data
-    @EnvironmentObject private var componentState: ComponentState
+    @Environment(\.componentBindings) private var componentBindings
 
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.colorSchemeContrast) private var colorSchemeContrast
@@ -34,7 +34,7 @@ struct CombinedTextView: SwiftUI.View {
             combinedLayers.reduce(Text("")) { result, value in
                 let textLayer = value.0
                 let string = value.1
-                return result + Text(string).modifiers(for: textLayer, documentNode: document, sizeCategory: sizeCategory, colorScheme: colorScheme, colorSchemeContrast: colorSchemeContrast, propertyValues: componentState.propertyValues, data: data)
+                return result + Text(string).modifiers(for: textLayer, documentNode: document, sizeCategory: sizeCategory, colorScheme: colorScheme, colorSchemeContrast: colorSchemeContrast, propertyValues: componentBindings.propertyValues, data: data)
             }
         }
     }
@@ -49,7 +49,7 @@ struct CombinedTextView: SwiftUI.View {
         textLayers.map { textLayer in
             (
                 textLayer,
-                realizeText(textLayer.value, localized: true, strings: document.strings, propertyValues: componentState.propertyValues, data: data)
+                realizeText(textLayer.value, localized: true, strings: document.strings, propertyValues: componentBindings.propertyValues, data: data)
             )
         }
     }

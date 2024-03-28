@@ -21,26 +21,10 @@ import os.log
 
 struct ArtboardView: SwiftUI.View {
     var artboard: ArtboardNode
-    @StateObject private var componentState: ComponentState
-
-    init(artboard: ArtboardNode, userBindings: [String: ComponentBinding], userViews: [String: any View]) {
-        self.artboard = artboard
-        self._componentState = StateObject(
-            wrappedValue: ComponentState(
-                bindings: userBindings,
-                views: userViews
-            )
-        )
-    }
 
     var body: some SwiftUI.View {
-        ForEach(orderedNodes, id: \.id) { node in
+        ForEach(artboard.children, id: \.id) { node in
             NodeView(node: node)
         }
-        .environmentObject(componentState)
-    }
-
-    private var orderedNodes: [Node] {
-        artboard.children
     }
 }

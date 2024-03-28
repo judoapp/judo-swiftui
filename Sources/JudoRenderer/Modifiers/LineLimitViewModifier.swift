@@ -17,7 +17,7 @@ import JudoDocument
 import SwiftUI
 
 struct LineLimitViewModifier: SwiftUI.ViewModifier {
-    @EnvironmentObject private var componentState: ComponentState
+    @Environment(\.componentBindings) private var componentBindings
     @Environment(\.data) private var data
 
     var modifier: LineLimitModifier
@@ -57,7 +57,7 @@ struct LineLimitViewModifier: SwiftUI.ViewModifier {
 
     private var minValue: Int? {
         let resolvedValue = modifier.min?.forceResolve(
-            propertyValues: componentState.propertyValues,
+            propertyValues: componentBindings.propertyValues,
             data: data
         )
         
@@ -66,7 +66,7 @@ struct LineLimitViewModifier: SwiftUI.ViewModifier {
 
     private var maxValue: Int? {
         let resolvedValue = modifier.max?.forceResolve(
-            propertyValues: componentState.propertyValues,
+            propertyValues: componentBindings.propertyValues,
             data: data
         )
         

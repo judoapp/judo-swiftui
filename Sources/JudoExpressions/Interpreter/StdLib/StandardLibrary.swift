@@ -17,7 +17,7 @@ import Foundation
 
 /// Library of standard functions
 let standardLibrary = [
-    ExpressionFunction("formatted", closure: { caller, _ in
+    JudoExpressionFunction("formatted", closure: { caller, _ in
         guard let value = caller as? Double else {
             return caller
         }

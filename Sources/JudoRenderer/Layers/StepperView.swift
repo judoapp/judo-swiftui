@@ -17,14 +17,14 @@ import JudoDocument
 import SwiftUI
 
 struct StepperView: SwiftUI.View {
-    @EnvironmentObject private var componentState: ComponentState
+    @Environment(\.componentBindings) private var componentBindings
     @Environment(\.data) private var data
 
     var stepper: JudoDocument.StepperLayer
 
     var body: some SwiftUI.View {
         RealizeText(stepper.label) { label in
-            switch (range, stepper.step?.forceResolve(propertyValues: componentState.propertyValues, data: data)) {
+            switch (range, stepper.step?.forceResolve(propertyValues: componentBindings.propertyValues, data: data)) {
             case (.some(let range), .some(let step)):
                 SwiftUI.Stepper(label, value: valueBinding, in: range, step: step)
             case (.some(let range), .none):
@@ -40,18 +40,18 @@ struct StepperView: SwiftUI.View {
     private var valueBinding: Binding<Double> {
         Binding {
             stepper.value.forceResolve(
-                propertyValues: componentState.propertyValues,
+                propertyValues: componentBindings.propertyValues,
                 data: data
             )
         } set: { newValue in
             if case .property(let name) = stepper.value.binding {
-                componentState.bindings[name]?.value = .number(newValue)
+                componentBindings[name]?.wrappedValue = newValue
             }
         }
     }
 
     private var range: ClosedRange<Double>? {
-        guard let minValue = stepper.minValue?.forceResolve(propertyValues: componentState.propertyValues, data: data), let maxValue = stepper.maxValue?.forceResolve(propertyValues: componentState.propertyValues, data: data) else { return nil }
+        guard let minValue = stepper.minValue?.forceResolve(propertyValues: componentBindings.propertyValues, data: data), let maxValue = stepper.maxValue?.forceResolve(propertyValues: componentBindings.propertyValues, data: data) else { return nil }
         if minValue < maxValue {
             return minValue...maxValue
         } else {

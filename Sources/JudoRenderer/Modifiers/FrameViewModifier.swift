@@ -18,7 +18,7 @@ import SwiftUI
 
 struct FrameViewModifier: SwiftUI.ViewModifier {
     @Environment(\.data) private var data
-    @EnvironmentObject private var componentState: ComponentState
+    @Environment(\.componentBindings) private var componentBindings
     
     var modifier: JudoDocument.FrameModifier
 
@@ -41,7 +41,7 @@ struct FrameViewModifier: SwiftUI.ViewModifier {
     
     private var width: CGFloat? {
         let resolvedValue = modifier.width?.forceResolve(
-            propertyValues: componentState.propertyValues,
+            propertyValues: componentBindings.propertyValues,
             data: data
         )
             
@@ -50,7 +50,7 @@ struct FrameViewModifier: SwiftUI.ViewModifier {
     
     private var maxWidth: CGFloat? {
         let resolvedValue = modifier.maxWidth?.forceResolve(
-            propertyValues: componentState.propertyValues,
+            propertyValues: componentBindings.propertyValues,
             data: data
         )
             
@@ -59,7 +59,7 @@ struct FrameViewModifier: SwiftUI.ViewModifier {
     
     private var minWidth: CGFloat? {
         let resolvedValue = modifier.minWidth?.forceResolve(
-            propertyValues: componentState.propertyValues,
+            propertyValues: componentBindings.propertyValues,
             data: data
         )
             
@@ -68,7 +68,7 @@ struct FrameViewModifier: SwiftUI.ViewModifier {
     
     private var height: CGFloat? {
         let resolvedValue = modifier.height?.forceResolve(
-            propertyValues: componentState.propertyValues,
+            propertyValues: componentBindings.propertyValues,
             data: data
         )
             
@@ -77,7 +77,7 @@ struct FrameViewModifier: SwiftUI.ViewModifier {
     
     private var maxHeight: CGFloat? {
         let resolvedValue = modifier.maxHeight?.forceResolve(
-            propertyValues: componentState.propertyValues,
+            propertyValues: componentBindings.propertyValues,
             data: data
         )
             
@@ -86,7 +86,7 @@ struct FrameViewModifier: SwiftUI.ViewModifier {
     
     private var minHeight: CGFloat? {
         let resolvedValue = modifier.minHeight?.forceResolve(
-            propertyValues: componentState.propertyValues,
+            propertyValues: componentBindings.propertyValues,
             data: data
         )
             

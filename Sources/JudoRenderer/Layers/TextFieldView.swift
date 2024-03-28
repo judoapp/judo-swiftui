@@ -17,7 +17,7 @@ import JudoDocument
 import SwiftUI
 
 struct TextFieldView: SwiftUI.View {
-    @EnvironmentObject private var componentState: ComponentState
+    @Environment(\.componentBindings) private var componentBindings
     @Environment(\.data) private var data
 
     var textField: JudoDocument.TextFieldLayer
@@ -30,8 +30,8 @@ struct TextFieldView: SwiftUI.View {
             RealizeText(textField.text, localized: false) { text in
 
                 if case .property(let name) = textField.text.binding {
-                    switch componentState.bindings[name]?.value {
-                    case .number:
+                    switch componentBindings[name]?.wrappedValue {
+                    case is Double:
                         SwiftUI.TextField(title, value: numberValueBinding(text), formatter: NumberFormatter.allowsFloatsNumberFormatter)
                     default:
                         textField(title: title, text: text)
@@ -56,9 +56,9 @@ struct TextFieldView: SwiftUI.View {
             value
         } set: { newValue in
             if case .property(let name) = textField.text.binding {
-                switch componentState.bindings[name]?.value {
-                case .text:
-                    componentState.bindings[name]?.value = .text(newValue)
+                switch componentBindings[name]?.wrappedValue {
+                case is String:
+                    componentBindings[name]?.wrappedValue = newValue
                 default:
                     break
                 }
@@ -71,10 +71,10 @@ struct TextFieldView: SwiftUI.View {
             Double(value)
         } set: { newValue in
             if case .property(let name) = textField.text.binding {
-                switch componentState.bindings[name]?.value {
-                case .number:
+                switch componentBindings[name]?.wrappedValue {
+                case is Double:
                     if let newValue {
-                        componentState.bindings[name]?.value = .number(newValue)
+                        componentBindings[name]?.wrappedValue = newValue
                     }
                 default:
                     break

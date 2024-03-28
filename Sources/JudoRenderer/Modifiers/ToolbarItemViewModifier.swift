@@ -76,7 +76,7 @@ private struct ModernToolbarItemButtonView: SwiftUI.View {
     @Environment(\.openURL) private var openURL
     @Environment(\.actionHandlers) private var actionHandlers
     @Environment(\.data) private var data
-    @EnvironmentObject private var componentState: ComponentState
+    @Environment(\.componentBindings) private var componentBindings
 
     let modifier: ToolbarItemModifier
 
@@ -96,7 +96,7 @@ private struct ModernToolbarItemButtonView: SwiftUI.View {
 
             case let action as JudoDocument.OpenURLAction:
                 let urlString = action.url.forceResolve(
-                    propertyValues: componentState.propertyValues,
+                    propertyValues: componentBindings.propertyValues,
                     data: data
                 )
                 
@@ -111,7 +111,7 @@ private struct ModernToolbarItemButtonView: SwiftUI.View {
 
             case let action as CustomAction:
                 let identifier = action.identifier.forceResolve(
-                    propertyValues: componentState.propertyValues,
+                    propertyValues: componentBindings.propertyValues,
                     data: data
                 )
                 
@@ -120,21 +120,21 @@ private struct ModernToolbarItemButtonView: SwiftUI.View {
                 let parameters: [String: Any] = action.parameters.reduce(into: [:], { partialResult, parameter in
                     if let textValue = parameter.textValue {
                         let resolvedValue = textValue.forceResolve(
-                            propertyValues: componentState.propertyValues,
+                            propertyValues: componentBindings.propertyValues,
                             data: data
                         )
                         
                         partialResult[parameter.key] = resolvedValue
                     } else if let numberValue = parameter.numberValue {
                         let resolvedValue = numberValue.forceResolve(
-                            propertyValues: componentState.propertyValues,
+                            propertyValues: componentBindings.propertyValues,
                             data: data
                         )
                         
                         partialResult[parameter.key] = resolvedValue
                     } else if let booleanValue = parameter.booleanValue {
                         let resolvedValue = booleanValue.forceResolve(
-                            propertyValues: componentState.propertyValues,
+                            propertyValues: componentBindings.propertyValues,
                             data: data
                         )
                         
@@ -145,8 +145,8 @@ private struct ModernToolbarItemButtonView: SwiftUI.View {
                 actionHandlers[name]?(parameters)
 
             case let action as PropertyAction:
-                processPropertyAction(action, componentState: componentState, data: data)
-                
+                processPropertyAction(action, componentBindings: componentBindings, data: data)
+
             default:
                 assertionFailure("Unexpected action")
             }
@@ -159,7 +159,7 @@ private struct ToolbarItemButtonView: SwiftUI.View {
     @Environment(\.openURL) private var openURL
     @Environment(\.actionHandlers) private var actionHandlers
     @Environment(\.data) private var data
-    @EnvironmentObject private var componentState: ComponentState
+    @Environment(\.componentBindings) private var componentBindings
 
     let modifier: ToolbarItemModifier
 
@@ -179,7 +179,7 @@ private struct ToolbarItemButtonView: SwiftUI.View {
 
             case let action as JudoDocument.OpenURLAction:
                 let urlString = action.url.forceResolve(
-                    propertyValues: componentState.propertyValues,
+                    propertyValues: componentBindings.propertyValues,
                     data: data
                 )
                 
@@ -193,7 +193,7 @@ private struct ToolbarItemButtonView: SwiftUI.View {
                 break
 
             case let action as CustomAction:
-                guard let identifier = action.identifier.resolve(propertyValues: componentState.propertyValues, data: data) else {
+                guard let identifier = action.identifier.resolve(propertyValues: componentBindings.propertyValues, data: data) else {
                     continue
                 }
                 
@@ -202,21 +202,21 @@ private struct ToolbarItemButtonView: SwiftUI.View {
                 let parameters: [String: Any] = action.parameters.reduce(into: [:], { partialResult, parameter in
                     if let textValue = parameter.textValue {
                         let resolvedValue = textValue.forceResolve(
-                            propertyValues: componentState.propertyValues,
+                            propertyValues: componentBindings.propertyValues,
                             data: data
                         )
                         
                         partialResult[parameter.key] = resolvedValue
                     } else if let numberValue = parameter.numberValue {
                         let resolvedValue = numberValue.forceResolve(
-                            propertyValues: componentState.propertyValues,
+                            propertyValues: componentBindings.propertyValues,
                             data: data
                         )
                         
                         partialResult[parameter.key] = resolvedValue
                     } else if let booleanValue = parameter.booleanValue {
                         let resolvedValue = booleanValue.forceResolve(
-                            propertyValues: componentState.propertyValues,
+                            propertyValues: componentBindings.propertyValues,
                             data: data
                         )
                         
@@ -227,8 +227,8 @@ private struct ToolbarItemButtonView: SwiftUI.View {
                 actionHandlers[name]?(parameters)
 
             case let action as PropertyAction:
-                processPropertyAction(action, componentState: componentState, data: data)
-            
+                processPropertyAction(action, componentBindings: componentBindings, data: data)
+
             default:
                 assertionFailure("Unexpected action")
             }
@@ -236,7 +236,7 @@ private struct ToolbarItemButtonView: SwiftUI.View {
     }
 }
 
-private func processPropertyAction(_ action: JudoDocument.PropertyAction, componentState: ComponentState, data: Any?) {
+private func processPropertyAction(_ action: JudoDocument.PropertyAction, componentBindings: ComponentBindings, data: Any?) {
     guard let propertyName = action.propertyName else {
         return
     }
@@ -245,63 +245,64 @@ private func processPropertyAction(_ action: JudoDocument.PropertyAction, compon
     case let action as SetPropertyAction:
         if let textValue = action.textValue {
             let resolvedValue = textValue.forceResolve(
-                propertyValues: componentState.propertyValues,
+                propertyValues: componentBindings.propertyValues,
                 data: data
             )
             
-            componentState.bindings[propertyName]?.value = .text(resolvedValue)
+            componentBindings[propertyName]?.wrappedValue = resolvedValue
         } else if let numberValue = action.numberValue {
             let resolvedValue = numberValue.forceResolve(
-                propertyValues: componentState.propertyValues,
+                propertyValues: componentBindings.propertyValues,
                 data: data
             )
             
-            componentState.bindings[propertyName]?.value = .number(resolvedValue)
+            componentBindings[propertyName]?.wrappedValue = resolvedValue
         } else if let booleanValue = action.booleanValue {
             let resolvedValue = booleanValue.forceResolve(
-                propertyValues: componentState.propertyValues,
+                propertyValues: componentBindings.propertyValues,
                 data: data
             )
             
-            componentState.bindings[propertyName]?.value = .boolean(resolvedValue)
+            componentBindings[propertyName]?.wrappedValue = resolvedValue
         } else if let imageValue = action.imageValue {
             let resolvedValue = imageValue.forceResolve(
-                propertyValues: componentState.propertyValues,
+                propertyValues: componentBindings.propertyValues,
                 data: data
             )
             
-            componentState.bindings[propertyName]?.value = .image(resolvedValue)
+            componentBindings[propertyName]?.wrappedValue = resolvedValue
         }
-        
     case is TogglePropertyAction:
-        if case .boolean(let value) = componentState.bindings[propertyName]?.value {
-            componentState.bindings[propertyName]?.value = .boolean(!value)
-        } else {
+        guard let value = componentBindings[propertyName]?.wrappedValue as? Bool else {
             assertionFailure("Unexpected binding type")
+            return
         }
-        
+
+        componentBindings[propertyName]?.wrappedValue = !value
     case let action as IncrementPropertyAction:
-        if case .number(let value) = componentState.bindings[propertyName]?.value {
-            let resolvedByValue = action.value.forceResolve(
-                propertyValues: componentState.propertyValues,
-                data: data
-            )
-            
-            componentState.bindings[propertyName]?.value = .number(value + resolvedByValue)
-        } else {
+        guard let value = componentBindings[propertyName]?.wrappedValue as? Double else {
             assertionFailure("Unexpected binding")
+            return
         }
+
+        let resolvedByValue = action.value.forceResolve(
+            propertyValues: componentBindings.propertyValues,
+            data: data
+        )
+
+        componentBindings[propertyName]?.wrappedValue = value + resolvedByValue
     case let action as DecrementPropertyAction:
-        if case .number(let value) = componentState.bindings[propertyName]?.value {
-            let resolvedByValue = action.value.forceResolve(
-                propertyValues: componentState.propertyValues,
-                data: data
-            )
-            
-            componentState.bindings[propertyName]?.value = .number(value - resolvedByValue)
-        } else {
+        guard let value = componentBindings[propertyName]?.wrappedValue as? Double else {
             assertionFailure("Unexpected binding")
+            return
         }
+
+        let resolvedByValue = action.value.forceResolve(
+            propertyValues: componentBindings.propertyValues,
+            data: data
+        )
+
+        componentBindings[propertyName]?.wrappedValue = value - resolvedByValue
     default:
         assertionFailure("Unexpected action")
     }

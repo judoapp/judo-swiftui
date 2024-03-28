@@ -17,7 +17,7 @@ import JudoDocument
 import SwiftUI
 
 struct BorderViewModifier: SwiftUI.ViewModifier {
-    @EnvironmentObject private var componentState: ComponentState
+    @Environment(\.componentBindings) private var componentBindings
     @Environment(\.data) private var data
 
     var modifier: BorderModifier
@@ -30,7 +30,7 @@ struct BorderViewModifier: SwiftUI.ViewModifier {
 
     private var width: Double {
         modifier.width.forceResolve(
-            propertyValues: componentState.propertyValues,
+            propertyValues: componentBindings.propertyValues,
             data: data
         )
     }

@@ -58,14 +58,14 @@ private struct ButtonWithoutRole<Content: SwiftUI.View>: SwiftUI.View {
     @Environment(\.actionHandlers) private var actionHandlers
     @Environment(\.presentationMode) private var presentationMode
     @Environment(\.data) private var data
-    @EnvironmentObject private var componentState: ComponentState
+    @Environment(\.componentBindings) private var componentBindings
 
     let actions: [Action]
     let content: Content
 
     var body: some SwiftUI.View {
         SwiftUI.Button {
-            Actions.perform(actions: actions, componentState: componentState, data: data, actionHandlers: actionHandlers) {
+            Actions.perform(actions: actions, componentBindings: componentBindings, data: data, actionHandlers: actionHandlers) {
                 presentationMode.wrappedValue.dismiss()
             } openURL: { url in
                 openURL(url)
@@ -83,7 +83,7 @@ private struct ButtonWithRole<Content: SwiftUI.View>: SwiftUI.View {
     @Environment(\.dismiss) private var dismiss // Only available in iOS 15+
     @Environment(\.refresh) private var refresh // Only available in iOS 15+
     @Environment(\.data) private var data
-    @EnvironmentObject private var componentState: ComponentState
+    @Environment(\.componentBindings) private var componentBindings
 
     let actions: [Action]
     let role: SwiftUI.ButtonRole?
@@ -91,7 +91,7 @@ private struct ButtonWithRole<Content: SwiftUI.View>: SwiftUI.View {
 
     var body: some SwiftUI.View {
         SwiftUI.Button(role: role) {
-            Actions.perform(actions: actions, componentState: componentState, data: data, actionHandlers: actionHandlers) {
+            Actions.perform(actions: actions, componentBindings: componentBindings, data: data, actionHandlers: actionHandlers) {
                 dismiss()
             } openURL: { url in
                 openURL(url)

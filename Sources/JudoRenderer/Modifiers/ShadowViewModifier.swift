@@ -17,7 +17,7 @@ import JudoDocument
 import SwiftUI
 
 struct ShadowViewModifier: SwiftUI.ViewModifier {
-    @EnvironmentObject private var componentState: ComponentState
+    @Environment(\.componentBindings) private var componentBindings
     @Environment(\.data) private var data
 
     var modifier: JudoDocument.ShadowModifier
@@ -37,11 +37,11 @@ struct ShadowViewModifier: SwiftUI.ViewModifier {
     private var offset: CGSize {
         CGSize(
             width: modifier.offsetWidth.forceResolve(
-                propertyValues: componentState.propertyValues,
+                propertyValues: componentBindings.propertyValues,
                 data: data
             ),
             height: modifier.offsetHeight.forceResolve(
-                propertyValues: componentState.propertyValues,
+                propertyValues: componentBindings.propertyValues,
                 data: data
             )
         )
@@ -49,7 +49,7 @@ struct ShadowViewModifier: SwiftUI.ViewModifier {
 
     private var radius: CGFloat {
         modifier.radius.forceResolve(
-            propertyValues: componentState.propertyValues,
+            propertyValues: componentBindings.propertyValues,
             data: data
         )
     }

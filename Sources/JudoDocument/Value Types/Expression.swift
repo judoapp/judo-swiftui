@@ -36,15 +36,15 @@ public struct Expression<T: Codable & Hashable & CustomStringConvertible>: Hasha
     }
 
     /// Evaluates an expression using a specified properties and functions.
-    func evaluate(propertyValues: [String: PropertyValue], data: Any?, functions: [ExpressionFunction] = []) throws -> T? {
+    func evaluate(propertyValues: [String: PropertyValue], data: Any?, functions: [JudoExpressionFunction] = []) throws -> T? {
         var variables = propertyValues.compactMap { element in
             switch element.value {
             case .number(let doubleValue):
-                return ExpressionVariable(element.key, value: doubleValue)
+                return JudoExpressionVariable(element.key, value: doubleValue)
             case .text(let stringValue):
-                return ExpressionVariable(element.key, value: stringValue)
+                return JudoExpressionVariable(element.key, value: stringValue)
             case .boolean(let boolValue):
-                return ExpressionVariable(element.key, value: boolValue)
+                return JudoExpressionVariable(element.key, value: boolValue)
             case .computed(let computedValue):
 
                 // replace expression with resulting value
@@ -53,12 +53,12 @@ public struct Expression<T: Codable & Hashable & CustomStringConvertible>: Hasha
 
                 switch computedValue {
                 case .number(let expression):
-                    return try? ExpressionVariable(element.key, value: expression.evaluate(propertyValues: propertyValues, data: data, functions: functions))
+                    return try? JudoExpressionVariable(element.key, value: expression.evaluate(propertyValues: propertyValues, data: data, functions: functions))
                 case .text(let expression):
-                    return try? ExpressionVariable(element.key, value: expression.evaluate(propertyValues: propertyValues, data: data, functions: functions))
+                    return try? JudoExpressionVariable(element.key, value: expression.evaluate(propertyValues: propertyValues, data: data, functions: functions))
                 case .boolean(let expression):
                     if let evaluatedValue = try? expression.evaluate(propertyValues: propertyValues, data: data, functions: functions) {
-                        return ExpressionVariable(element.key, value: evaluatedValue)
+                        return JudoExpressionVariable(element.key, value: evaluatedValue)
                     } else {
                         return nil
                     }
@@ -76,18 +76,18 @@ public struct Expression<T: Codable & Hashable & CustomStringConvertible>: Hasha
     }
 
     /// Evaluates an expression using a specified variables and functions.
-    func evaluate(variables: [JudoExpressions.ExpressionVariable] = [], functions: [ExpressionFunction] = []) throws -> T? {
-        try Interpreter(variables: variables, functions: functions).interpret(expression) as? T
+    func evaluate(variables: [JudoExpressions.JudoExpressionVariable] = [], functions: [JudoExpressionFunction] = []) throws -> T? {
+        try JudoInterpreter(variables: variables, functions: functions).interpret(expression) as? T
     }
 
-    private func dataVariables(value: Any, keyPath: [String]) -> [ExpressionVariable]? {
+    private func dataVariables(value: Any, keyPath: [String]) -> [JudoExpressionVariable]? {
         switch value {
         case let number as Double:
-            return [ExpressionVariable(keyPath.joined(separator: "\u{B7}"), value: number)]
+            return [JudoExpressionVariable(keyPath.joined(separator: "\u{B7}"), value: number)]
         case let string as String:
-            return [ExpressionVariable(keyPath.joined(separator: "\u{B7}"), value: string)]
+            return [JudoExpressionVariable(keyPath.joined(separator: "\u{B7}"), value: string)]
         case let dictionary as [String: Any]:
-            return dictionary.reduce(into: [ExpressionVariable]()) { partialResult, element in
+            return dictionary.reduce(into: [JudoExpressionVariable]()) { partialResult, element in
                 let keyPath = keyPath + [element.key]
                 partialResult += dataVariables(value: element.value, keyPath: keyPath) ?? []
             }
@@ -149,7 +149,7 @@ extension Expression<Bool>: ExpressibleByBooleanLiteral {
 
 /// Library of standard functions
 private let standardLibrary = [
-    ExpressionFunction("formatted", closure: { caller, _ in
+    JudoExpressionFunction("formatted", closure: { caller, _ in
         guard let value = caller as? Double else {
             return caller
         }

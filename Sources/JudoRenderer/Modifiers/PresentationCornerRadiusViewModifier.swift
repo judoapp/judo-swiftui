@@ -18,7 +18,7 @@ import SwiftUI
 
 struct PresentationCornerRadiusViewModifier: SwiftUI.ViewModifier {
     @Environment(\.data) private var data
-    @EnvironmentObject private var componentState: ComponentState
+    @Environment(\.componentBindings) private var componentBindings
 
     var modifier: PresentationCornerRadiusModifier
 
@@ -32,7 +32,7 @@ struct PresentationCornerRadiusViewModifier: SwiftUI.ViewModifier {
     }
 
     var radius: CGFloat? {
-        let resolvedValue = modifier.radius?.forceResolve(propertyValues: componentState.propertyValues, data: data)
+        let resolvedValue = modifier.radius?.forceResolve(propertyValues: componentBindings.propertyValues, data: data)
 
         return resolvedValue.map { CGFloat($0 )}
     }

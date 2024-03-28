@@ -60,7 +60,7 @@ public struct DocumentNode: Node {
         self.userData = userData
     }
     
-    public var allNodes: [Any] {
+    public var allNodes: [Node] {
         children + deletedNodes
     }
 

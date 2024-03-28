@@ -17,7 +17,7 @@ import JudoDocument
 import SwiftUI
 
 struct ToggleView: SwiftUI.View {
-    @EnvironmentObject private var componentState: ComponentState
+    @Environment(\.componentBindings) private var componentBindings
     @Environment(\.data) private var data
 
     var toggle: JudoDocument.ToggleLayer
@@ -31,12 +31,12 @@ struct ToggleView: SwiftUI.View {
     private var isOnBinding: Binding<Bool> {
         Binding {
             toggle.isOn.forceResolve(
-                propertyValues: componentState.propertyValues,
+                propertyValues: componentBindings.propertyValues,
                 data: data
             )
         } set: { newValue in
             if case .property(let name) = toggle.isOn.binding {
-                componentState.bindings[name]?.value = .boolean(newValue)
+                componentBindings[name]?.wrappedValue = newValue
             }
         }
 

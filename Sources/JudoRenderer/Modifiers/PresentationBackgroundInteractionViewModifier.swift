@@ -17,7 +17,7 @@ import JudoDocument
 import SwiftUI
 
 struct PresentationBackgroundInteractionViewModifier: SwiftUI.ViewModifier {
-    @EnvironmentObject private var componentState: ComponentState
+    @Environment(\.componentBindings) private var componentBindings
     @Environment(\.data) private var data
 
     var modifier: PresentationBackgroundInteractionModifier
@@ -53,13 +53,13 @@ struct PresentationBackgroundInteractionViewModifier: SwiftUI.ViewModifier {
             }
 
             if let fractionValue = detent.fractionValue {
-                let resolvedValue = fractionValue.forceResolve(propertyValues: componentState.propertyValues, data: data)
+                let resolvedValue = fractionValue.forceResolve(propertyValues: componentBindings.propertyValues, data: data)
 
                 return .enabled(upThrough: .fraction(resolvedValue))
             }
 
             if let heightValue = detent.heightValue {
-                let resolvedValue = heightValue.forceResolve(propertyValues: componentState.propertyValues, data: data)
+                let resolvedValue = heightValue.forceResolve(propertyValues: componentBindings.propertyValues, data: data)
 
                 return .enabled(upThrough: .height(resolvedValue))
             }

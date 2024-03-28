@@ -18,7 +18,7 @@ import SwiftUI
 
 struct OnTapGestureViewModifier: SwiftUI.ViewModifier {
     @Environment(\.data) private var data
-    @EnvironmentObject private var componentState: ComponentState
+    @Environment(\.componentBindings) private var componentBindings
 
     var modifier: JudoDocument.OnTapGestureModifier
 
@@ -35,7 +35,7 @@ struct OnTapGestureViewModifier: SwiftUI.ViewModifier {
     private var count: Int {
         // Count must always be positive.
         let count = Int(modifier.count.forceResolve(
-            propertyValues: componentState.propertyValues,
+            propertyValues: componentBindings.propertyValues,
             data: data
         ))
         return count > 0 ? count : 1
@@ -49,7 +49,7 @@ private struct OnTapGesture_iOS15_Modifier: SwiftUI.ViewModifier {
     @Environment(\.dismiss) private var dismiss // Only available in iOS 15+
     @Environment(\.refresh) private var refresh // Only available in iOS 15+
     @Environment(\.data) private var data
-    @EnvironmentObject private var componentState: ComponentState
+    @Environment(\.componentBindings) private var componentBindings
 
     let actions: [Action]
     let count: Int
@@ -59,7 +59,7 @@ private struct OnTapGesture_iOS15_Modifier: SwiftUI.ViewModifier {
             .onTapGesture(count: count) {
                 Actions.perform(
                     actions: actions,
-                    componentState: componentState,
+                    componentBindings: componentBindings,
                     data: data,
                     actionHandlers: actionHandlers
                 ) {
@@ -80,7 +80,7 @@ private struct OnTapGesture_Legacy_Modifier: SwiftUI.ViewModifier {
     @Environment(\.actionHandlers) private var actionHandlers
     @Environment(\.presentationMode) private var presentationMode
     @Environment(\.data) private var data
-    @EnvironmentObject private var componentState: ComponentState
+    @Environment(\.componentBindings) private var componentBindings
 
     let actions: [Action]
     let count: Int
@@ -90,7 +90,7 @@ private struct OnTapGesture_Legacy_Modifier: SwiftUI.ViewModifier {
             .onTapGesture(count: count) {
                 Actions.perform(
                     actions: actions,
-                    componentState: componentState,
+                    componentBindings: componentBindings,
                     data: data,
                     actionHandlers: actionHandlers
                 ) {

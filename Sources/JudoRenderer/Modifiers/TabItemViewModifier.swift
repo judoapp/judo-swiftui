@@ -17,7 +17,7 @@ import JudoDocument
 import SwiftUI
 
 struct TabItemViewModifier: SwiftUI.ViewModifier {
-    @EnvironmentObject private var componentState: ComponentState
+    @Environment(\.componentBindings) private var componentBindings
 
     var modifier: TabItemModifier
 

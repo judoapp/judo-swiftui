@@ -19,7 +19,7 @@ import SwiftUI
 struct FontViewModifier: SwiftUI.ViewModifier {
     @Environment(\.document) private var document
 
-    @EnvironmentObject private var componentState: ComponentState
+    @Environment(\.componentBindings) private var componentBindings
     @Environment(\.data) private var data
 
     @Environment(\.sizeCategory) private var sizeCategory
@@ -33,7 +33,7 @@ struct FontViewModifier: SwiftUI.ViewModifier {
                     modifier.font,
                     documentNode: document,
                     sizeCategory: sizeCategory,
-                    propertyValues: componentState.propertyValues,
+                    propertyValues: componentBindings.propertyValues,
                     data: data
                 )
             )

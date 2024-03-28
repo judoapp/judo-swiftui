@@ -17,7 +17,7 @@ import JudoDocument
 import SwiftUI
 
 struct MinimumScaleFactorViewModifier: SwiftUI.ViewModifier {
-    @EnvironmentObject private var componentState: ComponentState
+    @Environment(\.componentBindings) private var componentBindings
     @Environment(\.data) private var data
 
     var modifier: MinimumScaleFactorModifier
@@ -29,7 +29,7 @@ struct MinimumScaleFactorViewModifier: SwiftUI.ViewModifier {
 
     private var scaleFactor: Double {
         let scaleFactor = modifier.scaleFactor.forceResolve(
-            propertyValues: componentState.propertyValues,
+            propertyValues: componentBindings.propertyValues,
             data: data
         )
 

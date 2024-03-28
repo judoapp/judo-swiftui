@@ -13,16 +13,27 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-public struct ExpressionFunction: Callable {
-    let selector: String
-    let closure: (_ caller: Any?, _ arguments: [Any?]) throws -> Any?
+public struct JudoExpressionVariable {
+    public let identifier: String
+    let value: Any?
 
-    public init(_ selector: String, closure: @escaping (_ caller: Any?, _ arguments: [Any?]) throws -> Any?) {
-        self.selector = selector
-        self.closure = closure
+    public init(_ identifier: String, value: String?) {
+        self.identifier = identifier
+        self.value = value
     }
 
-    func call(_ interpreter: Interpreter, caller: Any?, _ args: [Any?]) throws -> Any? {
-        try closure(caller, args)
+    public init(_ identifier: String, value: Double?) {
+        self.identifier = identifier
+        self.value = value
+    }
+
+    public init(_ identifier: String, value: Int?) {
+        self.identifier = identifier
+        self.value = value != nil ? Double(value!) : nil
+    }
+
+    public init(_ identifier: String, value: Bool) {
+        self.identifier = identifier
+        self.value = value
     }
 }

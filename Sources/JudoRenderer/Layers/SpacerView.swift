@@ -17,7 +17,7 @@ import JudoDocument
 import SwiftUI
 
 struct SpacerView: SwiftUI.View {
-    @EnvironmentObject private var componentState: ComponentState
+    @Environment(\.componentBindings) private var componentBindings
     @Environment(\.data) private var data
 
     var spacer: JudoDocument.SpacerLayer
@@ -30,7 +30,7 @@ struct SpacerView: SwiftUI.View {
     
     private var minLength: Double? {
         spacer.minLength?.forceResolve(
-            propertyValues: componentState.propertyValues,
+            propertyValues: componentBindings.propertyValues,
             data: data
         )
     }

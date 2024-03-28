@@ -17,7 +17,7 @@ import JudoDocument
 import SwiftUI
 
 struct ClippedViewModifier: SwiftUI.ViewModifier {
-    @EnvironmentObject private var componentState: ComponentState
+    @Environment(\.componentBindings) private var componentBindings
     @Environment(\.data) private var data
 
     var modifier: ClippedModifier
@@ -29,7 +29,7 @@ struct ClippedViewModifier: SwiftUI.ViewModifier {
 
     private var isAntialiased: Bool {
         modifier.isAntialiased.forceResolve(
-            propertyValues: componentState.propertyValues,
+            propertyValues: componentBindings.propertyValues,
             data: data
         )
     }

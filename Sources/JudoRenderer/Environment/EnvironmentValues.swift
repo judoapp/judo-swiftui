@@ -36,6 +36,10 @@ private struct FetchedImageKey: EnvironmentKey {
     static var defaultValue: SwiftUI.Image?
 }
 
+private struct ComponentBindingsKey: EnvironmentKey {
+    static var defaultValue = ComponentBindings()
+}
+
 extension EnvironmentValues {
     var assetManager: AssetManager {
         get { self[AssetManagerKey.self] }
@@ -60,5 +64,10 @@ extension EnvironmentValues {
     var fetchedImage: SwiftUI.Image? {
         get { self[FetchedImageKey.self] }
         set { self[FetchedImageKey.self] = newValue }
+    }
+
+    var componentBindings: ComponentBindings {
+        get { self[ComponentBindingsKey.self] }
+        set { self[ComponentBindingsKey.self] = newValue }
     }
 }

@@ -17,7 +17,7 @@ import JudoDocument
 import SwiftUI
 
 struct AspectRatioViewModifier: SwiftUI.ViewModifier {
-    @EnvironmentObject private var componentState: ComponentState
+    @Environment(\.componentBindings) private var componentBindings
     @Environment(\.data) private var data
 
     var modifier: AspectRatioModifier
@@ -32,7 +32,7 @@ struct AspectRatioViewModifier: SwiftUI.ViewModifier {
     
     private var ratio: Double? {
         modifier.ratio?.forceResolve(
-            propertyValues: componentState.propertyValues,
+            propertyValues: componentBindings.propertyValues,
             data: data
         )
     }

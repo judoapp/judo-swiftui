@@ -17,7 +17,7 @@ import JudoDocument
 import SwiftUI
 
 struct RotationEffectViewModifier: SwiftUI.ViewModifier {
-    @EnvironmentObject private var componentState: ComponentState
+    @Environment(\.componentBindings) private var componentBindings
     @Environment(\.data) private var data
 
     var modifier: JudoDocument.RotationEffectModifier
@@ -37,7 +37,7 @@ struct RotationEffectViewModifier: SwiftUI.ViewModifier {
     }
 
     private var angleValue: Double {
-        modifier.angleSize.forceResolve(propertyValues: componentState.propertyValues, data: data)
+        modifier.angleSize.forceResolve(propertyValues: componentBindings.propertyValues, data: data)
     }
     
     private var anchor: SwiftUI.UnitPoint {

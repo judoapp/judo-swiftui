@@ -37,7 +37,7 @@ private struct OnAppear_iOS15_Modifier: SwiftUI.ViewModifier {
     @Environment(\.dismiss) private var dismiss // Only available in iOS 15+
     @Environment(\.refresh) private var refresh // Only available in iOS 15+
     @Environment(\.data) private var data
-    @EnvironmentObject private var componentState: ComponentState
+    @Environment(\.componentBindings) private var componentBindings
 
     let actions: [Action]
 
@@ -46,7 +46,7 @@ private struct OnAppear_iOS15_Modifier: SwiftUI.ViewModifier {
             .onAppear {
                 Actions.perform(
                     actions: actions,
-                    componentState: componentState,
+                    componentBindings: componentBindings,
                     data: data,
                     actionHandlers: actionHandlers
                 ) {
@@ -67,7 +67,7 @@ private struct OnAppear_Legacy_Modifier: SwiftUI.ViewModifier {
     @Environment(\.actionHandlers) private var actionHandlers
     @Environment(\.presentationMode) private var presentationMode
     @Environment(\.data) private var data
-    @EnvironmentObject private var componentState: ComponentState
+    @Environment(\.componentBindings) private var componentBindings
 
     let actions: [Action]
 
@@ -76,7 +76,7 @@ private struct OnAppear_Legacy_Modifier: SwiftUI.ViewModifier {
             .onAppear {
                 Actions.perform(
                     actions: actions,
-                    componentState: componentState,
+                    componentBindings: componentBindings,
                     data: data,
                     actionHandlers: actionHandlers
                 ) {

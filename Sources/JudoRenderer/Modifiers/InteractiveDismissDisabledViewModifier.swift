@@ -17,7 +17,7 @@ import JudoDocument
 import SwiftUI
 
 struct InteractiveDismissDisabledViewModifier: SwiftUI.ViewModifier {
-    @EnvironmentObject private var componentState: ComponentState
+    @Environment(\.componentBindings) private var componentBindings
     @Environment(\.data) private var data
 
     var modifier: InteractiveDismissDisabledModifier
@@ -29,7 +29,7 @@ struct InteractiveDismissDisabledViewModifier: SwiftUI.ViewModifier {
 
     private var isDisabled: Bool {
         modifier.isDisabled.forceResolve(
-            propertyValues: componentState.propertyValues,
+            propertyValues: componentBindings.propertyValues,
             data: data
         )
     }
