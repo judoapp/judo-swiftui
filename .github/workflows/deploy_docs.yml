@@ -1,0 +1,44 @@
+name: Deploy DocC
+
+on:
+  # Runs on pushes targeting the default branch
+  push:
+    branches: ["andrew/deploy-swift-docc-via-github-pages"]
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow one concurrent deployment
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: macos-14
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Build All DocC 🛠
+        run: |
+          xcodebuild docbuild -scheme Judo-Package -derivedDataPath /tmp/docbuild -destination 'generic/platform=iOS';
+          $(xcrun --find docc) process-archive \
+            transform-for-static-hosting /tmp/docbuild/Build/Products/Debug-iphoneos/Judo.doccarchive \
+            --output-path docs \
+            --hosting-base-path judo-swiftui;
+          echo "<script>window.location.href += \"/documentation/judo\"</script>" > docs/index.html;
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v1
+        with:
+          # Upload docs directory
+          path: 'docs'
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v1
