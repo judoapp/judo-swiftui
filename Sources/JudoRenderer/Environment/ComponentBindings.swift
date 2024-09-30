@@ -34,11 +34,11 @@ extension ComponentBindings {
                 partialResult[element.key] = .component(value)
             case let value as Video:
                 partialResult[element.key] = .video(value)
-            case let value as Expression<String>:
+            case let value as JudoDocument.Expression<String>:
                 partialResult[element.key] = .computed(.text(value))
-            case let value as Expression<Double>:
+            case let value as JudoDocument.Expression<Double>:
                 partialResult[element.key] = .computed(.number(value))
-            case let value as Expression<Bool>:
+            case let value as JudoDocument.Expression<Bool>:
                 partialResult[element.key] = .computed(.boolean(value))
             default:
                 break

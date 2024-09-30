@@ -76,6 +76,14 @@ struct MainComponentView: SwiftUI.View {
                         return String(value)
                     case (.text, let binding as Binding<String>):
                         return binding.wrappedValue
+                    case (.text, let value as IntegerLiteralType):
+                        return String(value)
+                    case (.text, let binding as Binding<Int>):
+                        return String(binding.wrappedValue)
+                    case (.text, let value as FloatLiteralType):
+                        return String(value)
+                    case (.text, let binding as Binding<Double>):
+                        return String(binding.wrappedValue)
                     case (.image, let value as SwiftUI.Image):
                         return ImageReference.inline(image: value)
                     case (.image, let value as UIImage):
